@@ -1,0 +1,102 @@
+# ==========================
+# Python / ML part
+# ==========================
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Model weights and checkpoints
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.mlmodel
+*.engine
+
+# Training outputs
+runs/
+logs/
+wandb/
+lightning_logs/
+checkpoints/
+output/
+results/
+
+# Dataset artifacts
+training/datasets/images/
+training/datasets/labels/
+*.zip
+*.tar
+*.tar.gz
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Compiled / temp files
+*.so
+*.o
+*.a
+*.out
+*.log
+*.tmp
+*.bak
+*.swp
+
+# IDE / Editor
+.vscode/
+.idea/
+*.code-workspace
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# ==========================
+# iOS / Swift part
+# ==========================
+
+# Xcode
+DerivedData/
+build/
+*.xcworkspace/
+*.xcuserstate
+*.xccheckout
+*.xcuserdatad/
+*.xcscmblueprint
+
+# Swift Package Manager
+/.build/
+/Packages
+Package.resolved
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+
+# Temporary user data
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.pbxuser
+
+# ==========================
+# Docker / Server
+# ==========================
+server/__pycache__/
+server/.env
+server/*.log
+server/tmp/
+server/data/
+server/models/
