@@ -1,0 +1,7 @@
+path: ./datasets
+train: images
+val: images
+test: images
+
+nc: 0 # number of classes
+names: [] # class names
