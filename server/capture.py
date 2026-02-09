@@ -32,7 +32,6 @@ async def handler(ws):
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
-
 async def websocket_handler(host, port):
     async with websockets.serve(handler, host, port, max_size=10 * 1024 * 1024):
         await asyncio.Future()  # run forever

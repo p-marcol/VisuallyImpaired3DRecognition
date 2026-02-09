@@ -29,6 +29,12 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.ktor.client.okhttp.v340)
+            implementation(libs.androidx.camera.core)
+            implementation(libs.androidx.camera.camera2)
+            implementation(libs.androidx.camera.lifecycle)
+            implementation(libs.androidx.camera.view)
+
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -39,6 +45,10 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.ktor.client.core.v340)
+            implementation(libs.ktor.client.websockets.v340)
+            implementation(libs.kotlinx.coroutines.core.v1102)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
