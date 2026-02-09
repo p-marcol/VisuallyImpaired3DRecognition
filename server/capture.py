@@ -1,69 +1,38 @@
+import websockets
+import numpy as np
 import cv2
 import time
-import os
+import asyncio
 
-# Zapytaj użytkownika, czy chce podać adres strumienia ręcznie
-# INPUT_URL = input("Do you want to input the stream URL manually? (y/n): ").lower() == "y"
-
-INPUT_URL = False
-
-# Adres strumienia z telefonu (np. IP Webcam)
-if INPUT_URL:
-    stream_url = input("Stream URL: ")
-    stream_port = input("Stream Port: ")
-else:
-    stream_url = "10.152.79.206"
-    stream_port = "4747"
-stream_string = f"http://{stream_url}:{stream_port}/video"
-cap = cv2.VideoCapture(stream_string)
+last = time.time()
+fps = 0
 
 
-if not cap.isOpened():
-    print("Can't open stream. Check the URL and/or Wi-Fi connection.")
-    exit()
+async def handler(ws):
+    global last, fps
+    print("Client connected")
 
-frame_id = 0
-os.makedirs("data", exist_ok=True)
-save_path = f"{os.getcwd()}/data/"
-interval = 1  # co ile sekund zapisywać klatkę
-crop_top = 20  # ile pikseli przyciąć od góry
+    async for msg in ws:
+        if not isinstance(msg, bytes):
+            continue
 
-last_save = time.time()
+        frame = cv2.imdecode(np.frombuffer(msg, np.uint8), cv2.IMREAD_COLOR)
 
-print("Opening stream. Press 'q' to quit, 's' to save frame.")
+        if frame is None:
+            continue
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        print("No more frames to read or error occurred. Exiting...")
-        break
+        fps += 1
+        now = time.time()
+        if now - last >= 1.0:
+            print(f"FPS: {fps}")
+            fps = 0
+            last = now
 
-    # Przycinanie górnej części klatki
-    frame = frame[crop_top:, :]
+        cv2.imshow("VI3DR stream", frame)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
 
-    cv2.imshow("Frame", frame)
 
-    key = cv2.waitKey(1) & 0xFF
-
-    # naciśnięcie 's' zapisuje pojedynczą klatkę
-    if key == ord("s"):
-        filename = f"{save_path}frame_{frame_id:05d}.jpg"
-        cv2.imwrite(filename, frame)
-        print(f"Saved {filename}")
-        frame_id += 1
-
-    # automatyczny zapis co określony czas (opcjonalnie)
-    if False:
-        # if time.time() - last_save > interval:
-        filename = f"{save_path}auto_{frame_id:05d}.jpg"
-        cv2.imwrite(filename, frame)
-        print(f"Auto save: {filename}")
-        frame_id += 1
-        last_save = time.time()
-
-    if key == ord("q"):
-        print("Exit requested. Stopping...")
-        break
-
-cap.release()
-cv2.destroyAllWindows()
+async def websocket_handler(host, port):
+    async with websockets.serve(handler, host, port, max_size=10 * 1024 * 1024):
+        await asyncio.Future()  # run forever

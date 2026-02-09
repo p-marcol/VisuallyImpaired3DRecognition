@@ -3,12 +3,12 @@
 # ==========================
 
 # Virtual environments
-venv/
+**/venv/
 .env/
 .venv/
 
 # Python cache
-__pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 
@@ -55,7 +55,7 @@ training/datasets/labels/
 *.code-workspace
 
 # OS metadata
-.DS_Store
+**/.DS_Store
 Thumbs.db
 
 # ==========================
