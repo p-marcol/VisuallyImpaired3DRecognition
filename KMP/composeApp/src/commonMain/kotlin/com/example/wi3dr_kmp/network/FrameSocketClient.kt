@@ -26,6 +26,8 @@ class FrameSocketClient(
 
     suspend fun close() {
         session?.close()
+        session = null
+        client.close()
     }
 
 }

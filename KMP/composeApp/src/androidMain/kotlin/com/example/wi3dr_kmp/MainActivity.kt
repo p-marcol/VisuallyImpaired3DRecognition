@@ -2,7 +2,8 @@ package com.example.wi3dr_kmp
 
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
+import android.util.Size
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,10 +12,9 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import com.example.wi3dr_kmp.camera.CameraAnalyzer
-import com.example.wi3dr_kmp.network.FrameSocketClient
-import kotlinx.coroutines.launch
+import com.example.wi3dr_kmp.streaming.ImageQualityPreset
+import com.example.wi3dr_kmp.streaming.StreamingController
 import java.util.concurrent.Executors
 import androidx.camera.core.Preview
 import androidx.compose.foundation.layout.Arrangement
@@ -22,22 +22,27 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
+import java.util.concurrent.ExecutorService
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
 
-    private var streamingEnabled = false
-    lateinit var previewView: PreviewView
-    private var socketClient: FrameSocketClient? = null
-    private var currentFps: Int = 10
-
+    private lateinit var previewView: PreviewView
+    private val streamingController = StreamingController()
+    private val cameraAnalysisExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    private var appliedCameraQualityPreset: ImageQualityPreset? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        observeConnectionErrors()
 
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         WindowCompat.setDecorFitsSystemWindows(window, true)
@@ -55,6 +60,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
+            val uiState by streamingController.uiState.collectAsState()
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -63,26 +69,26 @@ class MainActivity : ComponentActivity() {
             ) {
                 // LEFT SIDE: UI
                 App(
-                    onStartStream = { ip, port, fps -> startStreaming(ip, port, fps) },
-                    onStopStream = { stopStreaming() },
-                    onFpsChanged = {fps -> updateFps(fps)},
+                    streamingController = streamingController,
                     modifier = Modifier.width(300.dp)
-
                 )
 
                 // RIGHT SIDE: Camera Preview
                 AndroidApp(
                     previewView,
+                    isLive = uiState.isLive,
                     modifier = Modifier.weight(1f)
                 )
             }
         }
 
-        startCamera()
+        startCamera(streamingController.uiState.value.imageQualityPreset)
+        observeCameraQualityChanges()
 
     }
 
-    private fun startCamera() {
+    private fun startCamera(qualityPreset: ImageQualityPreset) {
+        appliedCameraQualityPreset = qualityPreset
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
@@ -93,16 +99,13 @@ class MainActivity : ComponentActivity() {
             }
 
             val analysis = ImageAnalysis.Builder()
+                .setTargetResolution(qualityPreset.toAndroidTargetResolution())
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
                     it.setAnalyzer(
-                        Executors.newSingleThreadExecutor(),
-                        CameraAnalyzer(
-                            getSocketClient = { socketClient },
-                            isStreaming = { streamingEnabled },
-                            getFps = { currentFps }
-                        )
+                        cameraAnalysisExecutor,
+                        CameraAnalyzer(streamingController = streamingController)
                     )
                 }
 
@@ -117,24 +120,32 @@ class MainActivity : ComponentActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-
-    fun startStreaming(ip: String, port: Int, fps: Int) {
-        streamingEnabled = true
-        currentFps = fps
-
-        socketClient = FrameSocketClient("ws://$ip:$port")
-        Log.d("Stream", "Connecting to ws://$ip:$port")
-
+    private fun observeCameraQualityChanges() {
         lifecycleScope.launch {
-            socketClient?.connect()
+            streamingController.uiState.collect { state ->
+                val preset = state.imageQualityPreset
+                if (appliedCameraQualityPreset != preset) {
+                    startCamera(preset)
+                }
+            }
         }
     }
 
-    fun stopStreaming() {
-        streamingEnabled = false
+    private fun observeConnectionErrors() {
+        lifecycleScope.launch {
+            streamingController.connectionErrors.collect { message ->
+                Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
-    fun updateFps(fps: Int) {
-        currentFps = fps
+    override fun onDestroy() {
+        streamingController.dispose()
+        cameraAnalysisExecutor.shutdown()
+        super.onDestroy()
     }
+}
+
+private fun ImageQualityPreset.toAndroidTargetResolution(): Size = when (this) {
+    else -> Size(targetWidth, targetHeight)
 }

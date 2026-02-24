@@ -50,6 +50,9 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core.v1102)
 
         }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin.v340)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
@@ -86,4 +89,3 @@ android {
 dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
-
