@@ -6,32 +6,79 @@ import asyncio
 
 last = time.time()
 fps = 0
+WS_MAX_SIZE = None  # disable message size limit to tolerate resolution changes
+JPEG_SOI = b"\xff\xd8"
+WINDOW_NAME = "VI3DR stream"
+
+
+def is_jpeg_frame(image_bytes):
+    return len(image_bytes) >= len(JPEG_SOI) and image_bytes[: len(JPEG_SOI)] == JPEG_SOI
 
 
 async def handler(ws):
     global last, fps
     print("Client connected")
+    last_resolution = None
+    cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
 
-    async for msg in ws:
-        if not isinstance(msg, bytes):
-            continue
+    try:
+        async for msg in ws:
+            try:
+                if not isinstance(msg, bytes):
+                    continue
 
-        frame = cv2.imdecode(np.frombuffer(msg, np.uint8), cv2.IMREAD_COLOR)
+                if not is_jpeg_frame(msg):
+                    print("unsupported frame")
+                    continue
 
-        if frame is None:
-            continue
+                frame = cv2.imdecode(np.frombuffer(msg, np.uint8), cv2.IMREAD_COLOR)
 
-        fps += 1
-        now = time.time()
-        if now - last >= 1.0:
-            print(f"FPS: {fps}")
-            fps = 0
-            last = now
+                if frame is None:
+                    print("unsupported frame")
+                    continue
 
-        cv2.imshow("VI3DR stream", frame)
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
+                height, width = frame.shape[:2]
+                current_resolution = (width, height)
+                if current_resolution != last_resolution:
+                    print(f"resolution changed: {width}x{height}")
+                    last_resolution = current_resolution
+
+                frame_size_kb = len(msg) / 1024.0
+                raw_frame_kb = (frame.size * frame.itemsize) / 1024.0
+                compression_ratio = (raw_frame_kb / frame_size_kb) if frame_size_kb > 0 else None
+
+                fps += 1
+                now = time.time()
+                if now - last >= 1.0:
+                    compression_text = (
+                        f"{compression_ratio:.2f}x"
+                        if compression_ratio is not None
+                        else "N/A"
+                    )
+                    print(
+                        f"FPS: {fps} | image: {width}x{height} | payload: {frame_size_kb:.1f} KB"
+                        f" | compression: {compression_text}"
+                    )
+                    fps = 0
+                    last = now
+
+                cv2.imshow(WINDOW_NAME, frame)
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+            except cv2.error as err:
+                print(f"frame processing error (OpenCV): {err}")
+                continue
+            except Exception as err:
+                print(f"frame processing error: {err}")
+                continue
+    except websockets.exceptions.ConnectionClosed as err:
+        print(f"client disconnected: code={err.code}, reason={err.reason or '-'}")
+    finally:
+        try:
+            cv2.destroyWindow(WINDOW_NAME)
+        except cv2.error:
+            pass
 
 async def websocket_handler(host, port):
-    async with websockets.serve(handler, host, port, max_size=10 * 1024 * 1024):
+    async with websockets.serve(handler, host, port, max_size=WS_MAX_SIZE):
         await asyncio.Future()  # run forever
