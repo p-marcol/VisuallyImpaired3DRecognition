@@ -1,3 +1,5 @@
-websockets
-opencv-python
-numpy
+ifaddr==0.2.0
+numpy==2.2.6
+opencv-python==4.12.0.88
+websockets==16.0
+zeroconf==0.148.0
