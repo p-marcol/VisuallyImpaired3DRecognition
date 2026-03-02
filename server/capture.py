@@ -3,12 +3,10 @@ import numpy as np
 import cv2
 import time
 import asyncio
+from settings import JPEG_SOI, WINDOW_NAME, WS_MAX_SIZE
 
 last = time.time()
 fps = 0
-WS_MAX_SIZE = None  # disable message size limit to tolerate resolution changes
-JPEG_SOI = b"\xff\xd8"
-WINDOW_NAME = "VI3DR stream"
 
 
 def is_jpeg_frame(image_bytes):
