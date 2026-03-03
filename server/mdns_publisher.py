@@ -47,12 +47,17 @@ class MDNSPublisher:
         }
         full_name = f"{self.SERVICE_NAME}.{self.SERVICE_TYPE}"
         self.zeroconf = Zeroconf()
+        hostname = socket.gethostname()
+        if not hostname.endswith(".local"):
+            hostname = f"{hostname}.local."
+
         self.service_info = ServiceInfo(
             type_=self.SERVICE_TYPE,
             name=full_name,
             addresses=[socket.inet_aton(self.ip)],
             port=self.port,
             properties=properties,
+            server=hostname,
         )
         self.zeroconf.register_service(self.service_info)
         print(f"mDNS registered: {self.ip}:{self.port}")
