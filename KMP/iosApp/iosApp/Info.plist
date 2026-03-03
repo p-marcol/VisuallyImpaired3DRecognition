@@ -10,9 +10,9 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Aplikacja używa kamery do przesyłania obrazu do serwera rozpoznawania.</string>
+	<string>This app uses the camera to stream video to the recognition server.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Aplikacja łączy się z serwerem w sieci lokalnej, aby przesyłać obraz z kamery.</string>
+	<string>This app connects to a server on your local network to stream camera video.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
