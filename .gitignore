@@ -100,3 +100,6 @@ server/*.log
 server/tmp/
 server/data/
 server/models/
+
+# CODEX NOTES
+**/CODEX_NOTES.md
