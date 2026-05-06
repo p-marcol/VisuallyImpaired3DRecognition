@@ -88,6 +88,7 @@ class StreamingController {
                         isStreaming = true,
                         connectionStatus = ConnectionStatus.Connected
                     )
+                    observeServerCommands(newClient)
                 }
                 .onFailure { error ->
                 if (socketClient === newClient) {
@@ -104,6 +105,10 @@ class StreamingController {
     }
 
     fun stopStreaming() {
+        stopStreaming(sendStopMessage = true)
+    }
+
+    private fun stopStreaming(sendStopMessage: Boolean) {
         _uiState.value = _uiState.value.copy(
             isStreaming = false,
             connectionStatus = ConnectionStatus.Disconnected
@@ -113,7 +118,36 @@ class StreamingController {
         val clientToClose = socketClient
         socketClient = null
         scope.launch {
+            if (sendStopMessage) {
+                runCatching {
+                    clientToClose?.sendStop()
+                }
+            }
             clientToClose?.close()
+        }
+    }
+
+    private fun observeServerCommands(client: FrameSocketClient) {
+        scope.launch {
+            while (socketClient === client) {
+                val message = runCatching {
+                    client.awaitNextTextMessage()
+                }.getOrNull()
+
+                if (message == null) {
+                    if (socketClient === client) {
+                        stopStreaming(sendStopMessage = false)
+                        _connectionErrors.tryEmit("Connection closed by server")
+                    }
+                    break
+                }
+
+                if (message.trim() == "client_stop" && socketClient === client) {
+                    _connectionErrors.tryEmit("Connection closed by server")
+                    stopStreaming(sendStopMessage = false)
+                    break
+                }
+            }
         }
     }
 

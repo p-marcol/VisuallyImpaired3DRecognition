@@ -6,6 +6,7 @@ import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.websocket.Frame
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
+import io.ktor.websocket.readText
 
 class FrameSocketClient(
     private val url: String
@@ -22,6 +23,22 @@ class FrameSocketClient(
 
     suspend fun send(bytes: ByteArray) {
         session?.send(Frame.Binary(true, bytes))
+    }
+
+    suspend fun sendStop() {
+        session?.send(Frame.Text("stop"))
+    }
+
+    suspend fun awaitNextTextMessage(): String? {
+        val activeSession = session ?: return null
+
+        while (true) {
+            when (val frame = activeSession.incoming.receive()) {
+                is Frame.Text -> return frame.readText()
+                is Frame.Close -> return null
+                else -> Unit
+            }
+        }
     }
 
     suspend fun close() {
