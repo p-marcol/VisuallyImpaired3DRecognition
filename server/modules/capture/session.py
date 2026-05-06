@@ -1,11 +1,14 @@
+import asyncio
 import time
 
 import cv2
 import numpy as np
 import websockets
 
-from .protocol import is_jpeg_frame, is_stop_command
+from .protocol import CLIENT_STOP_COMMAND, is_jpeg_frame, is_stop_command
 from .preview import PreviewWindow
+
+MESSAGE_POLL_TIMEOUT_SECONDS = 0.05
 
 
 class CaptureSession:
@@ -21,7 +24,19 @@ class CaptureSession:
         self.preview.open()
 
         try:
-            async for message in self.ws:
+            while True:
+                try:
+                    message = await asyncio.wait_for(
+                        self.ws.recv(), timeout=MESSAGE_POLL_TIMEOUT_SECONDS
+                    )
+                except asyncio.TimeoutError:
+                    if await self._handle_preview_events():
+                        break
+                    continue
+                except websockets.exceptions.ConnectionClosed as err:
+                    print(f"client disconnected: code={err.code}, reason={err.reason or '-'}")
+                    break
+
                 try:
                     should_continue = await self._handle_message(message)
                     if not should_continue:
@@ -30,8 +45,6 @@ class CaptureSession:
                     print(f"frame processing error (OpenCV): {err}")
                 except Exception as err:
                     print(f"frame processing error: {err}")
-        except websockets.exceptions.ConnectionClosed as err:
-            print(f"client disconnected: code={err.code}, reason={err.reason or '-'}")
         finally:
             self.preview.close()
 
@@ -67,10 +80,13 @@ class CaptureSession:
         self._log_performance(width, height, payload, frame)
 
         self.preview.show(frame)
-        if self.preview.should_close():
-            await self.close("preview closed on server")
+        return not await self._handle_preview_events()
+
+    async def _handle_preview_events(self) -> bool:
+        if not self.preview.poll_close_requested():
             return False
 
+        await self.close("preview closed on server", notify_client=True)
         return True
 
     def _log_resolution(self, frame):
@@ -99,6 +115,9 @@ class CaptureSession:
         self.fps = 0
         self.last_fps_at = now
 
-    async def close(self, reason: str):
+    async def close(self, reason: str, notify_client: bool = False):
+        self.preview.close()
         if self.ws.close_code is None:
+            if notify_client:
+                await self.ws.send(CLIENT_STOP_COMMAND)
             await self.ws.close(code=1000, reason=reason)

@@ -1,6 +1,7 @@
 from settings import JPEG_SOI
 
 STOP_COMMAND = "stop"
+CLIENT_STOP_COMMAND = "client_stop"
 
 
 def is_stop_command(message: str) -> bool:
