@@ -12,16 +12,20 @@ MESSAGE_POLL_TIMEOUT_SECONDS = 0.05
 
 
 class CaptureSession:
-    def __init__(self, ws, preview: PreviewWindow):
+    def __init__(self, ws, preview: PreviewWindow | None = None, frame_callback=None, session_event_callback=None):
         self.ws = ws
         self.preview = preview
+        self.frame_callback = frame_callback
+        self.session_event_callback = session_event_callback
         self.last_resolution = None
         self.last_fps_at = time.time()
         self.fps = 0
 
     async def run(self):
         print("Client connected")
-        self.preview.open()
+        if self.preview is not None:
+            self.preview.open()
+        self._emit_session_event("connected", "Client connected")
 
         try:
             while True:
@@ -46,7 +50,9 @@ class CaptureSession:
                 except Exception as err:
                     print(f"frame processing error: {err}")
         finally:
-            self.preview.close()
+            if self.preview is not None:
+                self.preview.close()
+            self._emit_session_event("disconnected", "Session closed")
 
     async def _handle_message(self, message) -> bool:
         if isinstance(message, str):
@@ -78,11 +84,17 @@ class CaptureSession:
 
         width, height = self._log_resolution(frame)
         self._log_performance(width, height, payload, frame)
+        self._emit_frame(payload, width, height)
 
-        self.preview.show(frame)
+        if self.preview is not None:
+            self.preview.show(frame)
+
         return not await self._handle_preview_events()
 
     async def _handle_preview_events(self) -> bool:
+        if self.preview is None:
+            return False
+
         if not self.preview.poll_close_requested():
             return False
 
@@ -116,8 +128,17 @@ class CaptureSession:
         self.last_fps_at = now
 
     async def close(self, reason: str, notify_client: bool = False):
-        self.preview.close()
+        if self.preview is not None:
+            self.preview.close()
         if self.ws.close_code is None:
             if notify_client:
                 await self.ws.send(CLIENT_STOP_COMMAND)
             await self.ws.close(code=1000, reason=reason)
+
+    def _emit_frame(self, payload: bytes, width: int, height: int):
+        if self.frame_callback is not None:
+            self.frame_callback(payload, width, height)
+
+    def _emit_session_event(self, state: str, message: str):
+        if self.session_event_callback is not None:
+            self.session_event_callback(state, message)

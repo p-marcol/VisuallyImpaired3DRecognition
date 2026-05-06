@@ -1,0 +1,248 @@
+:root {
+  color-scheme: dark;
+  --bg: #091015;
+  --bg-soft: #111922;
+  --panel: rgba(13, 20, 29, 0.88);
+  --line: rgba(227, 235, 245, 0.08);
+  --text: #edf4ff;
+  --muted: #91a2ba;
+  --accent: #89f7d1;
+  --accent-strong: #2cc998;
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(137, 247, 209, 0.16), transparent 22%),
+    linear-gradient(155deg, #071017 0%, #0d141c 58%, #05080d 100%);
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 22px;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.brand-block h1,
+.preview-panel__header h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: 0.02em;
+}
+
+.brand-block h1 {
+  font-size: 2rem;
+}
+
+.eyebrow,
+.status-chip__label {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.status-group {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.status-chip,
+.preview-panel,
+.info-card {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+.status-chip {
+  min-width: 160px;
+  padding: 12px 16px;
+}
+
+.status-chip strong {
+  display: block;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+}
+
+.action-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font: inherit;
+  font-weight: 700;
+  color: #061018;
+  background: linear-gradient(135deg, var(--accent), #f5ce73);
+  cursor: pointer;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.language-picker {
+  min-width: 160px;
+  padding: 12px 16px;
+}
+
+.status-chip--select {
+  display: grid;
+  gap: 6px;
+}
+
+.language-picker__select {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+  outline: none;
+}
+
+.language-picker__select:focus {
+  border-color: rgba(137, 247, 209, 0.5);
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+}
+
+.preview-panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+
+.preview-panel__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.preview-panel__header h2 {
+  font-size: 1.9rem;
+}
+
+.frame-meta,
+.detail-text,
+.kv-list dt {
+  color: var(--muted);
+}
+
+.preview-stage {
+  position: relative;
+  min-height: 620px;
+  border-radius: 20px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)),
+    #04080d;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#preview-image,
+.preview-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#preview-image {
+  display: none;
+  object-fit: contain;
+  background: #020507;
+}
+
+.preview-placeholder {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.side-panel {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.info-card {
+  padding: 18px;
+}
+
+.kv-list {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0 0;
+}
+
+.kv-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.kv-list dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 700;
+}
+
+.detail-text {
+  margin: 8px 0 0;
+  line-height: 1.6;
+}
+
+@media (max-width: 1080px) {
+  .topbar,
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .status-group {
+    justify-content: start;
+  }
+
+  .toolbar-actions {
+    justify-content: start;
+  }
+
+  .preview-stage {
+    min-height: 420px;
+  }
+}

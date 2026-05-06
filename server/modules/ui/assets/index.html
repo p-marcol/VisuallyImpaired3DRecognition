@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VI3DR Control Room</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <script src="translations.js"></script>
+    <script src="i18n.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <span class="eyebrow">VI3DR</span>
+          <h1>Control Room</h1>
+        </div>
+
+        <div class="status-group">
+          <div class="status-chip">
+            <span class="status-chip__label" data-i18n="labels.backend">Backend</span>
+            <strong id="backend-status">BOOTING</strong>
+          </div>
+          <div class="status-chip">
+            <span class="status-chip__label" data-i18n="labels.session">Session</span>
+            <strong id="capture-status">IDLE</strong>
+          </div>
+        </div>
+
+        <div class="toolbar-actions">
+          <label class="status-chip status-chip--select language-picker">
+            <span class="status-chip__label" data-i18n="labels.language">Language</span>
+            <select id="language-select" class="language-picker__select">
+              <option value="en">English</option>
+              <option value="pl">Polski</option>
+            </select>
+          </label>
+          <button id="shutdown-button" class="action-button" data-i18n="actions.close">Close</button>
+        </div>
+      </header>
+
+      <main class="main-grid">
+        <section class="preview-panel">
+          <div class="preview-panel__header">
+            <div>
+              <span class="eyebrow" data-i18n="labels.live_preview">Live Preview</span>
+              <h2 data-i18n="labels.phone_preview">Phone Preview</h2>
+            </div>
+            <div id="frame-meta" class="frame-meta" data-i18n="messages.no_frame">No frame</div>
+          </div>
+
+          <div class="preview-stage">
+            <img id="preview-image" alt="Preview stream" />
+            <div
+              id="preview-placeholder"
+              class="preview-placeholder"
+              data-i18n="messages.waiting_for_phone"
+            >Waiting for a phone connection</div>
+          </div>
+        </section>
+
+        <aside class="side-panel">
+          <section class="info-card">
+            <span class="eyebrow" data-i18n="labels.transport">Transport</span>
+            <dl class="kv-list">
+              <div>
+                <dt data-i18n="labels.port">Port</dt>
+                <dd id="port-value">-</dd>
+              </div>
+              <div>
+                <dt data-i18n="labels.mdns_ip">mDNS / LAN IP</dt>
+                <dd id="mdns-value">-</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="info-card">
+            <span class="eyebrow" data-i18n="labels.session">Session</span>
+            <p
+              id="capture-detail"
+              class="detail-text"
+              data-i18n="messages.waiting_for_phone_detail"
+            >Waiting for a phone connection.</p>
+          </section>
+
+          <section class="info-card">
+            <span class="eyebrow" data-i18n="labels.next">Next</span>
+            <p class="detail-text" data-i18n="messages.next_step">
+              The next step is a YOLO overlay and shape material controls.
+            </p>
+          </section>
+        </aside>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

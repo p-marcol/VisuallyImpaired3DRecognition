@@ -1,5 +1,3 @@
-import asyncio
-
 import websockets
 
 from settings import WINDOW_NAME, WS_MAX_SIZE
@@ -10,15 +8,53 @@ from .session import CaptureSession
 
 
 class CaptureServer:
-    def __init__(self, host: str, port: int, window_name: str = WINDOW_NAME):
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        window_name: str = WINDOW_NAME,
+        preview_enabled: bool = True,
+        frame_callback=None,
+        session_event_callback=None,
+    ):
         self.host = host
         self.port = port
         self.window_name = window_name
+        self.preview_enabled = preview_enabled
+        self.frame_callback = frame_callback
+        self.session_event_callback = session_event_callback
         self._session_active = False
+        self._server = None
+
+    async def start(self):
+        if self._server is not None:
+            return
+
+        self._server = await websockets.serve(
+            self._handle_connection,
+            self.host,
+            self.port,
+            max_size=WS_MAX_SIZE,
+        )
+
+    async def stop(self):
+        if self._server is None:
+            return
+
+        self._server.close()
+        try:
+            await self._server.wait_closed()
+        finally:
+            self._server = None
+
+    async def wait_closed(self):
+        if self._server is None:
+            return
+        await self._server.wait_closed()
 
     async def run(self):
-        async with websockets.serve(self._handle_connection, self.host, self.port, max_size=WS_MAX_SIZE):
-            await asyncio.Future()
+        await self.start()
+        await self.wait_closed()
 
     async def _handle_connection(self, ws):
         if self._session_active:
@@ -29,7 +65,13 @@ class CaptureServer:
 
         self._session_active = True
         try:
-            session = CaptureSession(ws=ws, preview=PreviewWindow(self.window_name))
+            preview = PreviewWindow(self.window_name) if self.preview_enabled else None
+            session = CaptureSession(
+                ws=ws,
+                preview=preview,
+                frame_callback=self.frame_callback,
+                session_event_callback=self.session_event_callback,
+            )
             await session.run()
         finally:
             self._session_active = False
