@@ -6,7 +6,7 @@ import torch
 
 ROOT_DIR = Path(__file__).resolve().parent
 
-DATASET_YAML = ROOT_DIR / "dataset.yaml"
+DATASET_EXAMPLE_YAML = ROOT_DIR / "examples" / "dataset.yaml"
 MODEL_SOURCE = "yolov8n.pt"
 PROJECT_DIR = ROOT_DIR / "runs"
 RUN_NAME = "vi3dr-yolo"

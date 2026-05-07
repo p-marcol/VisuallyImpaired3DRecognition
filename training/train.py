@@ -11,7 +11,12 @@ from dataset import DatasetConfigError, validate_yolo_dataset_config
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train the VI3DR YOLO detector.")
-    parser.add_argument("--data", default=str(config.DATASET_YAML), help="Path to YOLO dataset.yaml")
+    dataset_group = parser.add_mutually_exclusive_group(required=True)
+    dataset_group.add_argument("--data", help="Path to YOLO dataset.yaml")
+    dataset_group.add_argument(
+        "--dataset-dir",
+        help="Dataset directory containing dataset.yaml",
+    )
     parser.add_argument("--model", default=config.MODEL_SOURCE, help="YOLO model name, .pt, or .yaml")
     parser.add_argument("--epochs", type=int, default=config.EPOCHS)
     parser.add_argument("--imgsz", type=int, default=config.IMG_SIZE)
@@ -23,12 +28,24 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def resolve_dataset_yaml(args: argparse.Namespace) -> Path:
+    if args.dataset_dir:
+        return Path(args.dataset_dir).expanduser().resolve() / "dataset.yaml"
+
+    return Path(args.data).expanduser().resolve()
+
+
 def train(args: argparse.Namespace):
-    dataset_path = Path(args.data).resolve()
-    validate_yolo_dataset_config(dataset_path)
+    dataset_path = resolve_dataset_yaml(args)
+    dataset_config = validate_yolo_dataset_config(dataset_path)
 
     if args.dry_run:
-        print(f"Dataset config OK: {dataset_path}")
+        print(f"Dataset config OK: {dataset_config.config_path}")
+        print(f"Dataset root: {dataset_config.root_path}")
+        print(f"Train split: {dataset_config.train_path}")
+        print(f"Val split: {dataset_config.val_path}")
+        if dataset_config.test_path is not None:
+            print(f"Test split: {dataset_config.test_path}")
         print(f"Model source: {args.model}")
         print(f"Device: {args.device}")
         return None

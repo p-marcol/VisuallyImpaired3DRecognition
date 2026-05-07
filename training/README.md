@@ -5,10 +5,11 @@ package consumes trained artifacts later; do not put server runtime changes here
 
 ## Dataset layout
 
-`dataset.yaml` follows the Ultralytics YOLO format:
+Keep `dataset.yaml` next to the dataset, including on an external disk. The
+repository only keeps an example in `examples/dataset.yaml`.
 
 ```yaml
-path: ./datasets/vi3dr
+path: .
 train: images/train
 val: images/val
 test: images/test
@@ -29,8 +30,14 @@ datasets/vi3dr/
 ## Train
 
 ```bash
-./.venv/bin/python train.py --dry-run
-./.venv/bin/python train.py
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --dry-run
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset
+```
+
+You can also point directly to the YAML file:
+
+```bash
+./.venv/bin/python train.py --data /Volumes/Data/vi3dr-dataset/dataset.yaml
 ```
 
 The default model source is configured in `config.py` as `yolov8n.pt`.
