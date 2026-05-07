@@ -18,10 +18,26 @@ def parse_args() -> argparse.Namespace:
         help="Dataset directory containing dataset.yaml",
     )
     parser.add_argument("--model", default=config.MODEL_SOURCE, help="YOLO model name, .pt, or .yaml")
+    parser.add_argument(
+        "--resume",
+        help="Resume an interrupted run from a last.pt checkpoint",
+    )
     parser.add_argument("--epochs", type=int, default=config.EPOCHS)
     parser.add_argument("--imgsz", type=int, default=config.IMG_SIZE)
     parser.add_argument("--batch", type=int, default=config.BATCH_SIZE)
     parser.add_argument("--device", default=config.DEVICE)
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=config.PATIENCE,
+        help="Early stopping patience in epochs; use 0 to disable",
+    )
+    parser.add_argument(
+        "--save-period",
+        type=int,
+        default=config.SAVE_PERIOD,
+        help="Save epoch checkpoints every N epochs; disabled if < 1",
+    )
     parser.add_argument("--project", default=str(config.PROJECT_DIR))
     parser.add_argument("--name", default=config.RUN_NAME)
     parser.add_argument("--dry-run", action="store_true", help="Validate config without training")
@@ -47,10 +63,15 @@ def train(args: argparse.Namespace):
         if dataset_config.test_path is not None:
             print(f"Test split: {dataset_config.test_path}")
         print(f"Model source: {args.model}")
+        if args.resume:
+            print(f"Resume checkpoint: {Path(args.resume).expanduser().resolve()}")
         print(f"Device: {args.device}")
+        print(f"Epoch limit: {args.epochs}")
+        print(f"Early stopping patience: {args.patience}")
         return None
 
-    model = YOLO(args.model)
+    model_source = Path(args.resume).expanduser().resolve() if args.resume else args.model
+    model = YOLO(str(model_source))
     result = model.train(
         data=str(dataset_path),
         epochs=args.epochs,
@@ -61,7 +82,9 @@ def train(args: argparse.Namespace):
         name=args.name,
         workers=config.WORKERS,
         lr0=config.LR0,
-        patience=config.PATIENCE,
+        patience=args.patience,
+        save_period=args.save_period,
+        resume=bool(args.resume),
         seed=config.SEED,
     )
 

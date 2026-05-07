@@ -6,17 +6,18 @@ import torch
 
 ROOT_DIR = Path(__file__).resolve().parent
 
-DATASET_EXAMPLE_YAML = ROOT_DIR / "examples" / "dataset.yaml"
+DATASET_EXAMPLE_YAML = ROOT_DIR / "examples" / "dataset.example.yaml"
 MODEL_SOURCE = "yolov8n.pt"
 PROJECT_DIR = ROOT_DIR / "runs"
 RUN_NAME = "vi3dr-yolo"
 
 IMG_SIZE = 640
 BATCH_SIZE = 8
-EPOCHS = 100
+EPOCHS = 300
 WORKERS = 4
 LR0 = 0.01
 PATIENCE = 25
+SAVE_PERIOD = -1
 SEED = 42
 
 CONFIDENCE_THRESHOLD = 0.25

@@ -6,7 +6,7 @@ package consumes trained artifacts later; do not put server runtime changes here
 ## Dataset layout
 
 Keep `dataset.yaml` next to the dataset, including on an external disk. The
-repository only keeps an example in `examples/dataset.yaml`.
+repository only keeps an example in `examples/dataset.example.yaml`.
 
 ```yaml
 path: .
@@ -41,6 +41,49 @@ You can also point directly to the YAML file:
 ```
 
 The default model source is configured in `config.py` as `yolov8n.pt`.
+Use `--model` to train from a different Ultralytics model definition or an
+existing checkpoint:
+
+```bash
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --model yolov8s.pt
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --model /path/to/custom-model.yaml
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --model /path/to/best.pt
+```
+
+## Epochs, Early Stopping And Resume
+
+YOLO training uses `--epochs` as an upper limit, not as a guarantee that all
+epochs will run. Early stopping is controlled by `--patience`: if validation
+fitness stops improving for that many epochs, training ends early and keeps the
+best checkpoint.
+
+For object detection, the stop decision should be based on validation metrics
+such as mAP/precision/recall through Ultralytics fitness, not only on validation
+loss. Validation loss is useful for diagnostics, but it is not the main quality
+criterion for detections.
+
+Recommended default workflow:
+
+```bash
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --epochs 300 --patience 25
+```
+
+There is no true unlimited epoch mode. Use a high `--epochs` ceiling with
+`--patience`, or use `--patience 0` to disable early stopping and stop manually.
+Manual stop keeps checkpoints from completed epochs; `last.pt` is written after
+each epoch and `best.pt` is written when validation fitness improves.
+
+Resume an interrupted run from `last.pt`:
+
+```bash
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --resume runs/vi3dr-yolo/weights/last.pt
+```
+
+Fine-tune from an existing trained model by using it as `--model`:
+
+```bash
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --model runs/vi3dr-yolo/weights/best.pt --name vi3dr-yolo-finetune
+```
 
 ## Predict With Hooks
 
