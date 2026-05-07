@@ -1,0 +1,2 @@
+# Optional place for a custom Ultralytics model definition.
+# By default training uses config.MODEL_SOURCE = "yolov8n.pt".

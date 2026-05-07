@@ -1,7 +1,10 @@
-path: ./datasets
-train: images
-val: images
-test: images
+path: ./datasets/vi3dr
+train: images/train
+val: images/val
+test: images/test
 
-nc: 0 # number of classes
-names: [] # class names
+# Fill before training, for example:
+# nc: 3
+# names: ["cube", "cylinder", "sphere"]
+nc: 0
+names: []

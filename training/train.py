@@ -1,49 +1,67 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader
-from torchvision import models
+from __future__ import annotations
 
-from dataset import DummyDataset
+import argparse
+from pathlib import Path
+
+from ultralytics import YOLO
+
 import config
+from dataset import DatasetConfigError, validate_yolo_dataset_config
 
-def train():
-    device = config.DEVICE
 
-    dataset = DummyDataset(
-        length=200,
-        num_classes=config.NUM_CLASSES,
-        img_size=config.IMG_SIZE
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Train the VI3DR YOLO detector.")
+    parser.add_argument("--data", default=str(config.DATASET_YAML), help="Path to YOLO dataset.yaml")
+    parser.add_argument("--model", default=config.MODEL_SOURCE, help="YOLO model name, .pt, or .yaml")
+    parser.add_argument("--epochs", type=int, default=config.EPOCHS)
+    parser.add_argument("--imgsz", type=int, default=config.IMG_SIZE)
+    parser.add_argument("--batch", type=int, default=config.BATCH_SIZE)
+    parser.add_argument("--device", default=config.DEVICE)
+    parser.add_argument("--project", default=str(config.PROJECT_DIR))
+    parser.add_argument("--name", default=config.RUN_NAME)
+    parser.add_argument("--dry-run", action="store_true", help="Validate config without training")
+    return parser.parse_args()
+
+
+def train(args: argparse.Namespace):
+    dataset_path = Path(args.data).resolve()
+    validate_yolo_dataset_config(dataset_path)
+
+    if args.dry_run:
+        print(f"Dataset config OK: {dataset_path}")
+        print(f"Model source: {args.model}")
+        print(f"Device: {args.device}")
+        return None
+
+    model = YOLO(args.model)
+    result = model.train(
+        data=str(dataset_path),
+        epochs=args.epochs,
+        imgsz=args.imgsz,
+        batch=args.batch,
+        device=args.device,
+        project=args.project,
+        name=args.name,
+        workers=config.WORKERS,
+        lr0=config.LR0,
+        patience=config.PATIENCE,
+        seed=config.SEED,
     )
-    loader = DataLoader(dataset, batch_size=config.BATCH_SIZE, shuffle=True)
 
-    model = models.resnet18(weights=None)
-    model.fc = nn.Linear(model.fc.in_features, config.NUM_CLASSES)
-    model = model.to(device)
+    save_dir = Path(result.save_dir)
+    print(f"Training finished. Best weights: {save_dir / 'weights' / 'best.pt'}")
+    return result
 
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=config.LR)
 
-    model.train()
-    for epoch in range(config.EPOCHS):
-        epoch_loss = 0.0
+def main() -> int:
+    args = parse_args()
+    try:
+        train(args)
+    except DatasetConfigError as err:
+        print(f"Dataset config error: {err}")
+        return 2
+    return 0
 
-        for images, labels in loader:
-            images = images.to(device)
-            labels = labels.to(device)
-
-            optimizer.zero_grad()
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-
-            epoch_loss += loss.item()
-
-        print(f"Epoch {epoch+1}/{config.EPOCHS}, loss={epoch_loss / len(loader):.4f}")
-
-    torch.save(model.state_dict(), "models/model_dummy.pth")
-    print("Model saved.")
 
 if __name__ == "__main__":
-    train()
+    raise SystemExit(main())
