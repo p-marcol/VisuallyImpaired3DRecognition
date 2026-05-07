@@ -16,6 +16,7 @@ class CaptureServer:
         preview_enabled: bool = True,
         frame_callback=None,
         session_event_callback=None,
+        session_metrics_callback=None,
     ):
         self.host = host
         self.port = port
@@ -23,6 +24,7 @@ class CaptureServer:
         self.preview_enabled = preview_enabled
         self.frame_callback = frame_callback
         self.session_event_callback = session_event_callback
+        self.session_metrics_callback = session_metrics_callback
         self._session_active = False
         self._server = None
 
@@ -71,6 +73,7 @@ class CaptureServer:
                 preview=preview,
                 frame_callback=self.frame_callback,
                 session_event_callback=self.session_event_callback,
+                session_metrics_callback=self.session_metrics_callback,
             )
             await session.run()
         finally:

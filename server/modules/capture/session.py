@@ -12,20 +12,30 @@ MESSAGE_POLL_TIMEOUT_SECONDS = 0.05
 
 
 class CaptureSession:
-    def __init__(self, ws, preview: PreviewWindow | None = None, frame_callback=None, session_event_callback=None):
+    def __init__(
+        self,
+        ws,
+        preview: PreviewWindow | None = None,
+        frame_callback=None,
+        session_event_callback=None,
+        session_metrics_callback=None,
+    ):
         self.ws = ws
         self.preview = preview
         self.frame_callback = frame_callback
         self.session_event_callback = session_event_callback
+        self.session_metrics_callback = session_metrics_callback
         self.last_resolution = None
         self.last_fps_at = time.time()
         self.fps = 0
+        self.client_ip = self._extract_client_ip()
 
     async def run(self):
         print("Client connected")
         if self.preview is not None:
             self.preview.open()
         self._emit_session_event("connected", "Client connected")
+        self._emit_session_metrics(client_ip=self.client_ip)
 
         try:
             while True:
@@ -53,6 +63,7 @@ class CaptureSession:
             if self.preview is not None:
                 self.preview.close()
             self._emit_session_event("disconnected", "Session closed")
+            self._emit_session_metrics(client_ip="-", reset_values=True)
 
     async def _handle_message(self, message) -> bool:
         if isinstance(message, str):
@@ -124,6 +135,11 @@ class CaptureSession:
             f"FPS: {self.fps} | image: {width}x{height} | payload: {frame_size_kb:.1f} KB"
             f" | compression: {compression_text}"
         )
+        self._emit_session_metrics(
+            client_ip=None,
+            fps=self.fps,
+            compression=compression_text,
+        )
         self.fps = 0
         self.last_fps_at = now
 
@@ -142,3 +158,33 @@ class CaptureSession:
     def _emit_session_event(self, state: str, message: str):
         if self.session_event_callback is not None:
             self.session_event_callback(state, message)
+
+    def _emit_session_metrics(
+        self,
+        client_ip: str | None = None,
+        fps: int | None = None,
+        compression: str | None = None,
+        reset_values: bool = False,
+    ):
+        if self.session_metrics_callback is None:
+            return
+
+        self.session_metrics_callback(
+            client_ip,
+            None if reset_values else fps,
+            None if reset_values else compression,
+        )
+
+    def _extract_client_ip(self) -> str:
+        remote_address = getattr(self.ws, "remote_address", None)
+        if remote_address is None:
+            return "-"
+
+        if isinstance(remote_address, (tuple, list)) and remote_address:
+            return str(remote_address[0])
+
+        host = getattr(remote_address, "host", None)
+        if host is not None:
+            return str(host)
+
+        return str(remote_address)

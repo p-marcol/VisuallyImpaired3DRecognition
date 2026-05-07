@@ -14,6 +14,9 @@ window.VI3DR_TRANSLATIONS = {
       mdns_ip: "mDNS / LAN IP",
       next: "Next",
       language: "Language",
+      client_ip: "Client IP",
+      fps: "FPS",
+      compression: "Compression",
     },
     messages: {
       no_frame: "No frame",
@@ -64,6 +67,9 @@ window.VI3DR_TRANSLATIONS = {
       mdns_ip: "mDNS / LAN IP",
       next: "Dalej",
       language: "Język",
+      client_ip: "IP klienta",
+      fps: "FPS",
+      compression: "Kompresja",
     },
     messages: {
       no_frame: "Brak klatki",

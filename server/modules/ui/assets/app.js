@@ -1,6 +1,9 @@
 const backendStatus = document.getElementById("backend-status");
 const captureStatus = document.getElementById("capture-status");
 const captureDetail = document.getElementById("capture-detail");
+const clientIpValue = document.getElementById("client-ip-value");
+const fpsValue = document.getElementById("fps-value");
+const compressionValue = document.getElementById("compression-value");
 const portValue = document.getElementById("port-value");
 const mdnsValue = document.getElementById("mdns-value");
 const frameMeta = document.getElementById("frame-meta");
@@ -36,6 +39,12 @@ function updateCaptureStatus(state, message) {
 function updateServer(host, port, mdnsIp) {
   portValue.textContent = port || "-";
   mdnsValue.textContent = mdnsIp || "-";
+}
+
+function updateCaptureMetrics(clientIp, fps, compression) {
+  clientIpValue.textContent = clientIp || "-";
+  fpsValue.textContent = fps || "-";
+  compressionValue.textContent = compression || "-";
 }
 
 function updatePreviewFrame(frameDataUrl, width, height) {
@@ -100,6 +109,7 @@ function attachBridge() {
     bridge.backendStatusChanged.connect(updateBackendStatus);
     bridge.serverDetailsChanged.connect(updateServer);
     bridge.captureSessionChanged.connect(updateCaptureStatus);
+    bridge.captureMetricsChanged.connect(updateCaptureMetrics);
     bridge.previewFrameChanged.connect(updatePreviewFrame);
     bridge.backendErrorChanged.connect((message) => {
       updateBackendStatus("error");

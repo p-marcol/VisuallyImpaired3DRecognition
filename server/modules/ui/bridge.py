@@ -7,6 +7,7 @@ class DesktopBridge(QObject):
     serverDetailsChanged = Signal(str, int, str)
     backendErrorChanged = Signal(str)
     captureSessionChanged = Signal(str, str)
+    captureMetricsChanged = Signal(str, str, str)
     previewFrameChanged = Signal(str, int, int)
 
     def __init__(self, backend_controller):
@@ -16,6 +17,7 @@ class DesktopBridge(QObject):
         self.backend_controller.serverDetailsChanged.connect(self.serverDetailsChanged.emit)
         self.backend_controller.backendErrorChanged.connect(self.backendErrorChanged.emit)
         self.backend_controller.captureSessionChanged.connect(self.captureSessionChanged.emit)
+        self.backend_controller.captureMetricsChanged.connect(self.captureMetricsChanged.emit)
         self.backend_controller.previewFrameChanged.connect(self.previewFrameChanged.emit)
 
     @Slot()
@@ -24,6 +26,11 @@ class DesktopBridge(QObject):
         self.backendStatusChanged.emit(state["status"])
         self.serverDetailsChanged.emit(state["host"], state["port"], state["mdns_ip"])
         self.captureSessionChanged.emit(state["capture_state"], state["capture_message"])
+        self.captureMetricsChanged.emit(
+            state["capture_client_ip"],
+            state["capture_fps"],
+            state["capture_compression"],
+        )
         self.previewFrameChanged.emit(
             state["preview_frame"],
             state["frame_width"],
@@ -32,7 +39,7 @@ class DesktopBridge(QObject):
 
     @Slot()
     def shutdownApplication(self):
-        self.backend_controller.stop()
+        self.backend_controller.stop(wait=True)
         app = QGuiApplication.instance()
         if app is not None:
             app.quit()

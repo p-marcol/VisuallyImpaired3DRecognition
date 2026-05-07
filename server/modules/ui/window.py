@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QMainWindow
 
 WINDOW_TITLE = "VI3DR Control Room"
 WINDOW_WIDTH = 1360
-WINDOW_HEIGHT = 860
+WINDOW_HEIGHT = 900
 
 
 class MainWindow(QMainWindow):

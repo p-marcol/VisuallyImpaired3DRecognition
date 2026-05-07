@@ -14,6 +14,7 @@ class ApplicationRuntime:
         status_callback=None,
         frame_callback=None,
         capture_event_callback=None,
+        capture_metrics_callback=None,
         preview_enabled: bool = True,
     ):
         self.host = host
@@ -26,6 +27,7 @@ class ApplicationRuntime:
             preview_enabled=preview_enabled,
             frame_callback=frame_callback,
             session_event_callback=capture_event_callback,
+            session_metrics_callback=capture_metrics_callback,
         )
         self._running = False
 

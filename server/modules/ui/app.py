@@ -14,7 +14,7 @@ def run_desktop_app():
     window = MainWindow(bridge)
 
     backend_controller.start()
-    qt_app.aboutToQuit.connect(backend_controller.stop)
+    qt_app.aboutToQuit.connect(lambda: backend_controller.stop(wait=True))
 
     window.show()
     return qt_app.exec()
