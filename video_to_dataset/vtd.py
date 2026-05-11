@@ -124,25 +124,43 @@ def extract_frames(
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="python3 vtd.py",
-        description="Extract every Nth video frame into a dataset directory.",
+        description="Wycina klatki z filmu do katalogu datasetu.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Przyklady:\n"
+            "  python3 vtd.py --video film.mp4 --dataset dataset --every 10\n"
+            "  python3 vtd.py --video ./input/film.mov --dataset ./frames --every 1\n"
+            "\n"
+            "Nazwy plikow:\n"
+            "  Obrazy sa zapisywane jako frame_<numer>.jpeg.\n"
+            "  Jesli w katalogu datasetu istnieja juz np. frame_1.jpeg i frame_2.jpeg,\n"
+            "  nowe pliki zaczna sie od frame_3.jpeg.\n"
+            "\n"
+            "Klatki:\n"
+            "  --every 1 zapisuje kazda klatke.\n"
+            "  --every 10 zapisuje klatki 0, 10, 20 itd."
+        ),
     )
     parser.add_argument(
         "--video",
         required=True,
         type=Path,
-        help="Path to the source video file.",
+        metavar="SCIEZKA",
+        help="sciezka do pliku wideo, np. film.mp4",
     )
     parser.add_argument(
         "--dataset",
         required=True,
         type=Path,
-        help="Directory where extracted frames will be written.",
+        metavar="KATALOG",
+        help="katalog, do ktorego zostana zapisane klatki",
     )
     parser.add_argument(
         "--every",
         required=True,
         type=int,
-        help="Extract every Nth frame. Use 1 to extract all frames.",
+        metavar="N",
+        help="zapisz co N-ta klatke; 1 oznacza wszystkie klatki",
     )
     return parser
 

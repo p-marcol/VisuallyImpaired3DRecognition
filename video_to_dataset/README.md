@@ -10,6 +10,12 @@ From this directory:
 python3 vtd.py --video path/to/video.mp4 --dataset path/to/dataset --every 10
 ```
 
+Help:
+
+```bash
+python3 vtd.py --help
+```
+
 This writes `frame_<number>.jpeg` files. If the dataset directory already contains files such as
 `frame_1.jpeg` and `frame_2.jpeg`, new frames continue from `frame_3.jpeg`.
 
