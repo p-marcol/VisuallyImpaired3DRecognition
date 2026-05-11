@@ -7,7 +7,7 @@ Extract frames from a video into a dataset directory.
 From this directory:
 
 ```bash
-python3 cli.py --video path/to/video.mp4 --dataset path/to/dataset --every 10
+python3 vtd.py --video path/to/video.mp4 --dataset path/to/dataset --every 10
 ```
 
 This writes `frame_<number>.jpeg` files. If the dataset directory already contains files such as

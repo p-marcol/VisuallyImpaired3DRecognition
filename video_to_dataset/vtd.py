@@ -123,7 +123,7 @@ def extract_frames(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="python3 cli.py",
+        prog="python3 vtd.py",
         description="Extract every Nth video frame into a dataset directory.",
     )
     parser.add_argument(

@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from video_to_dataset.cli import extract_frames, find_next_frame_number
+from video_to_dataset.vtd import extract_frames, find_next_frame_number
 
 
 class FakeCapture:
@@ -52,7 +52,7 @@ class FrameExtractionTests(unittest.TestCase):
 
             fake_cv2 = type("FakeCV2", (), {"imwrite": staticmethod(fake_imwrite)})
 
-            with patch("video_to_dataset.cli.require_cv2", return_value=fake_cv2):
+            with patch("video_to_dataset.vtd.require_cv2", return_value=fake_cv2):
                 result = extract_frames(video_path, dataset_dir, 2, capture=capture)
 
             self.assertTrue(capture.released)
