@@ -29,6 +29,20 @@ datasets/vi3dr/
 
 ## Train
 
+Install the base dependencies for CPU/MPS environments:
+
+```bash
+./.venv/bin/python -m pip install -r requirements.txt
+```
+
+For NVIDIA CUDA environments, install the CUDA PyTorch stack first, then the
+base requirements:
+
+```bash
+./.venv/bin/python -m pip install -r requirements-cuda.txt
+./.venv/bin/python -m pip install -r requirements.txt
+```
+
 ```bash
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --dry-run
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset
@@ -41,14 +55,34 @@ You can also point directly to the YAML file:
 ```
 
 The default model source is configured in `config.py` as `yolov8n.pt`.
-Use `--model` to train from a different Ultralytics model definition or an
-existing checkpoint:
+Use `--model` to pick a different pretrained Ultralytics model or to fine-tune
+from an existing checkpoint:
 
 ```bash
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --model yolov8s.pt
-./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --model /path/to/custom-model.yaml
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --model /path/to/best.pt
 ```
+
+Use `--from-scratch` to train from random initialization instead of pretrained
+weights. By default this uses `yolov8n.yaml`; pass `--scratch-model` to choose a
+different YOLO architecture YAML:
+
+```bash
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --from-scratch
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --from-scratch --scratch-model yolov8s.yaml
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --from-scratch --scratch-model /path/to/custom-model.yaml
+```
+
+Runs are saved under `runs/vi3dr-yolo` by default. Choose the output location
+with `--runs-dir` and the run folder name with `--name`:
+
+```bash
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --runs-dir /Volumes/Data/vi3dr-runs --name experiment-001
+```
+
+Before training, `train.py` writes a normalized Ultralytics dataset config under
+`<runs-dir>/_dataset_configs/`. This keeps datasets on external disks working
+when `dataset.yaml` or `train.txt`/`val.txt` use relative paths.
 
 ## Epochs, Early Stopping And Resume
 
@@ -66,6 +100,15 @@ Recommended default workflow:
 
 ```bash
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --epochs 300 --patience 25
+```
+
+The default `--device` is detected from PyTorch in this order: CUDA, MPS, CPU.
+You can also force a device explicitly:
+
+```bash
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --device cuda
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --device cuda:0
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --device cpu
 ```
 
 There is no true unlimited epoch mode. Use a high `--epochs` ceiling with
