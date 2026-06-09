@@ -21,7 +21,7 @@
 *.engine
 
 # Training outputs
-runs/
+# runs/
 logs/
 wandb/
 lightning_logs/
@@ -103,3 +103,6 @@ server/models/
 
 # CODEX NOTES
 **/CODEX_NOTES.md
+
+# Dataset artifacts
+**/_dataset_configs/
