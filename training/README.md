@@ -85,21 +85,22 @@ with `--name`:
 ```
 
 Images are loaded by Ultralytics dataloaders. By default this project uses
-`--image-cache auto`: it estimates the selected split after resize and caches
-decoded images in RAM only when there is enough available memory with a safety
-margin. If the split is too large, images are read lazily from disk batch by
-batch. You can override this explicitly:
+`--image-cache none`, so images are read lazily from disk batch by batch. You
+can override this explicitly:
 
 ```bash
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --image-cache auto
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --image-cache none
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --image-cache ram
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --image-cache disk
 ```
 
+`auto` estimates the selected split after resize and caches decoded images in
+RAM only when there is enough available memory with a safety margin.
 `ram` is fastest for small datasets but uses memory for decoded/resized images.
 `disk` writes Ultralytics `.npy` cache files next to the dataset images and is a
-deterministic alternative when disk space is available. `none` keeps the old
-behavior and avoids whole-split caching.
+deterministic alternative when disk space is available. `none` avoids
+whole-split caching.
 
 Before training, `train.py` writes a normalized Ultralytics dataset config under
 `<runs-dir>/_dataset_configs/`. This keeps datasets on external disks working
