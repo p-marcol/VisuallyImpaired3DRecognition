@@ -8,7 +8,19 @@ import yaml
 from ultralytics import YOLO
 
 import config
-from dataset import DatasetConfigError, ResolvedDatasetConfig, validate_yolo_dataset_config
+from dataset import (
+    DatasetConfigError,
+    ResolvedDatasetConfig,
+    resolve_image_list_entry,
+    resolve_ultralytics_cache_mode,
+    validate_yolo_dataset_config,
+)
+from scores import (
+    ScoreError,
+    f1_score_from_training_results,
+    write_f1_score,
+    write_training_run_stats,
+)
 
 
 class TrainingConfigError(ValueError):
@@ -53,6 +65,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--epochs", type=int, default=config.EPOCHS)
     parser.add_argument("--imgsz", type=int, default=config.IMG_SIZE)
     parser.add_argument("--batch", type=int, default=config.BATCH_SIZE)
+    parser.add_argument(
+        "--image-cache",
+        choices=config.IMAGE_CACHE_MODE_CHOICES,
+        default=config.IMAGE_CACHE_MODE,
+        help=(
+            "Image cache mode for Ultralytics dataloaders: auto uses RAM only "
+            "when the training split fits with safety margin; none reads lazily "
+            "from disk; ram caches decoded/resized images in RAM; disk writes "
+            ".npy image cache files next to the dataset images. "
+            f"default: {config.IMAGE_CACHE_MODE}"
+        ),
+    )
     parser.add_argument(
         "--device",
         default=config.DEVICE,
@@ -172,10 +196,7 @@ def _normalize_split_for_ultralytics(
 
 
 def _resolve_image_list_entry(entry: str, root_path: Path) -> Path:
-    image_path = Path(entry.strip()).expanduser()
-    if image_path.is_absolute():
-        return image_path.resolve()
-    return (root_path / image_path).resolve()
+    return resolve_image_list_entry(entry, root_path)
 
 
 def _safe_name(value: str) -> str:
@@ -188,6 +209,12 @@ def train(args: argparse.Namespace):
     model_source = resolve_model_source(args)
     runs_dir = resolve_runs_dir(args)
     ultralytics_dataset_path = prepare_ultralytics_dataset_config(dataset_config, runs_dir)
+    image_cache, image_cache_description = resolve_ultralytics_cache_mode(
+        args.image_cache,
+        dataset_config.train_path,
+        dataset_config.root_path,
+        args.imgsz,
+    )
     try:
         device = config.resolve_device(args.device)
     except ValueError as err:
@@ -210,6 +237,7 @@ def train(args: argparse.Namespace):
         print(f"Device availability: {config.describe_device_availability()}")
         print(f"Epoch limit: {args.epochs}")
         print(f"Early stopping patience: {args.patience}")
+        print(f"Image cache: {image_cache_description}")
         print(f"Runs directory: {runs_dir}")
         print(f"Run name: {args.name}")
         return None
@@ -229,9 +257,38 @@ def train(args: argparse.Namespace):
         save_period=args.save_period,
         resume=bool(args.resume),
         seed=config.SEED,
+        cache=image_cache,
     )
 
     save_dir = Path(result.save_dir)
+    try:
+        f1_score, precision, recall = f1_score_from_training_results(save_dir / "results.csv")
+    except ScoreError as err:
+        print(f"Could not generate F1 score: {err}")
+    else:
+        f1_path = write_f1_score(
+            save_dir,
+            f1_score,
+            precision,
+            recall,
+            source="final validation metrics from results.csv",
+        )
+        print(
+            f"F1 score: {f1_score:.4f} "
+            f"(precision={precision:.4f}, recall={recall:.4f}). Saved: {f1_path}"
+        )
+    try:
+        stats_path, stats = write_training_run_stats(save_dir)
+    except ScoreError as err:
+        print(f"Could not generate run stats: {err}")
+    else:
+        best_metrics = stats["best"]
+        print(
+            f"Run stats: best_epoch={stats['best_epoch']}, "
+            f"mAP={best_metrics['mAP']:.4f}, "
+            f"precision={best_metrics['precision']:.4f}, "
+            f"recall={best_metrics['recall']:.4f}. Saved: {stats_path}"
+        )
     print(f"Training finished. Best weights: {save_dir / 'weights' / 'best.pt'}")
     return result
 

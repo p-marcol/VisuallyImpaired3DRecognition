@@ -108,3 +108,6 @@ server/models/
 
 # Dataset artifacts
 **/_dataset_configs/
+
+# ExFat MacOS metadata
+**/._*

@@ -80,9 +80,31 @@ with `--runs-dir` and the run folder name with `--name`:
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --runs-dir /Volumes/Data/vi3dr-runs --name experiment-001
 ```
 
+Images are loaded by Ultralytics dataloaders. By default this project uses
+`--image-cache auto`: it estimates the selected split after resize and caches
+decoded images in RAM only when there is enough available memory with a safety
+margin. If the split is too large, images are read lazily from disk batch by
+batch. You can override this explicitly:
+
+```bash
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --image-cache none
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --image-cache ram
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --image-cache disk
+```
+
+`ram` is fastest for small datasets but uses memory for decoded/resized images.
+`disk` writes Ultralytics `.npy` cache files next to the dataset images and is a
+deterministic alternative when disk space is available. `none` keeps the old
+behavior and avoids whole-split caching.
+
 Before training, `train.py` writes a normalized Ultralytics dataset config under
 `<runs-dir>/_dataset_configs/`. This keeps datasets on external disks working
 when `dataset.yaml` or `train.txt`/`val.txt` use relative paths.
+
+At the end of training, `train.py` computes F1 from the final validation
+precision and recall in `results.csv`, prints it, and writes `f1_score.json` in
+the run directory. It also writes a short `run_stats.json` with `best_epoch`,
+best/final precision, recall, F1, `mAP`, `mAP50`, and `mAP50_95`.
 
 ## Test
 
@@ -94,12 +116,18 @@ Evaluate a trained checkpoint on the `test` split:
   --model runs/vi3dr-yolo/weights/best.pt
 ```
 
+`test.py` accepts the same `--image-cache auto|none|ram|disk` option. In `auto`
+mode it bases the decision on the `test` split.
+
 `test.py` loads and normalizes `dataset.yaml` the same way as `train.py`, then
 runs Ultralytics validation with `split=test`. Results are written to
 `<run-dir>/test`, where `<run-dir>` is inferred from
 `<run-dir>/weights/best.pt`. If that directory already contains the expected
-test plots and `labels.jpg`, the script exits without running evaluation again.
-The generated `labels.jpg` describes the `test` split label distribution.
+test plots, `labels.jpg`, and `f1_score.json`, the script exits without running
+evaluation again. The generated `labels.jpg` describes the `test` split label
+distribution.
+After a fresh evaluation, `test.py` also writes `<run-dir>/test/f1_score.json`
+from the test precision and recall.
 
 ## Epochs, Early Stopping And Resume
 

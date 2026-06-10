@@ -1,8 +1,16 @@
 from __future__ import annotations
 
 import argparse
-import csv
 from pathlib import Path
+
+import config
+from dataset import (
+    DatasetConfigError,
+    read_split_image_paths,
+    resolve_ultralytics_cache_mode,
+    validate_yolo_dataset_config,
+)
+from scores import ScoreError, f1_score_from_metrics, write_f1_score
 
 
 class TestConfigError(ValueError):
@@ -22,6 +30,7 @@ REQUIRED_TEST_OUTPUTS = (
     "BoxP_curve.png",
     "BoxPR_curve.png",
     "BoxR_curve.png",
+    "f1_score.json",
 )
 
 
@@ -43,6 +52,18 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--imgsz", type=int, default=DEFAULT_IMG_SIZE)
     parser.add_argument("--batch", type=int, default=DEFAULT_BATCH_SIZE)
+    parser.add_argument(
+        "--image-cache",
+        choices=config.IMAGE_CACHE_MODE_CHOICES,
+        default=config.IMAGE_CACHE_MODE,
+        help=(
+            "Image cache mode for Ultralytics dataloaders: auto uses RAM only "
+            "when the test split fits with safety margin; none reads lazily "
+            "from disk; ram caches decoded/resized images in RAM; disk writes "
+            ".npy image cache files next to the dataset images. "
+            f"default: {config.IMAGE_CACHE_MODE}"
+        ),
+    )
     parser.add_argument(
         "--device",
         default=DEFAULT_DEVICE,
@@ -100,37 +121,6 @@ def missing_required_outputs(test_dir: Path) -> list[str]:
         for filename in REQUIRED_TEST_OUTPUTS
         if not (test_dir / filename).is_file()
     ]
-
-
-def read_split_image_paths(split_path: Path, root_path: Path) -> list[Path]:
-    if split_path.is_dir():
-        image_suffixes = {".bmp", ".dng", ".jpeg", ".jpg", ".mpo", ".png", ".tif", ".tiff", ".webp"}
-        return sorted(
-            path
-            for path in split_path.rglob("*")
-            if path.is_file() and path.suffix.lower() in image_suffixes
-        )
-
-    if split_path.suffix.lower() == ".csv":
-        entries: list[str] = []
-        with split_path.open("r", encoding="utf-8", newline="") as file:
-            for row in csv.reader(file):
-                entries.extend(value for value in row if value.strip())
-    else:
-        entries = split_path.read_text(encoding="utf-8").splitlines()
-
-    return [
-        resolve_image_list_entry(entry, root_path)
-        for entry in entries
-        if entry.strip()
-    ]
-
-
-def resolve_image_list_entry(entry: str, root_path: Path) -> Path:
-    image_path = Path(entry.strip()).expanduser()
-    if image_path.is_absolute():
-        return image_path.resolve()
-    return (root_path / image_path).resolve()
 
 
 def label_path_for_image(image_path: Path) -> Path:
@@ -261,8 +251,6 @@ def generate_labels_plot(dataset_config, output_path: Path) -> None:
 
 
 def test(args: argparse.Namespace):
-    import config
-    from dataset import validate_yolo_dataset_config
     from train import prepare_ultralytics_dataset_config, resolve_dataset_yaml
 
     dataset_path = resolve_dataset_yaml(args)
@@ -291,6 +279,13 @@ def test(args: argparse.Namespace):
     except ValueError as err:
         raise TestConfigError(str(err)) from err
 
+    image_cache, image_cache_description = resolve_ultralytics_cache_mode(
+        args.image_cache,
+        dataset_config.test_path,
+        dataset_config.root_path,
+        args.imgsz,
+    )
+
     ultralytics_dataset_path = prepare_ultralytics_dataset_config(dataset_config, run_dir.parent)
     from ultralytics import YOLO
 
@@ -309,13 +304,31 @@ def test(args: argparse.Namespace):
         "save_json": args.save_json,
         "save_txt": args.save_txt,
         "save_conf": args.save_conf,
+        "cache": image_cache,
     }
     if args.conf is not None:
         val_kwargs["conf"] = args.conf
 
+    print(f"Image cache: {image_cache_description}")
     result = model.val(**val_kwargs)
     save_dir = Path(result.save_dir)
     generate_labels_plot(dataset_config, save_dir / "labels.jpg")
+    try:
+        f1_score, precision, recall = f1_score_from_metrics(result.results_dict)
+    except ScoreError as err:
+        print(f"Could not generate F1 score: {err}")
+    else:
+        f1_path = write_f1_score(
+            save_dir,
+            f1_score,
+            precision,
+            recall,
+            source="test metrics from Ultralytics validation",
+        )
+        print(
+            f"F1 score: {f1_score:.4f} "
+            f"(precision={precision:.4f}, recall={recall:.4f}). Saved: {f1_path}"
+        )
     print(f"Test evaluation finished. Results: {save_dir}")
     return result
 
@@ -327,13 +340,11 @@ def main() -> int:
     except TestConfigError as err:
         print(f"Test config error: {err}")
         return 2
+    except DatasetConfigError as err:
+        print(f"Dataset config error: {err}")
+        return 2
     except ImportError as err:
         print(f"Dependency error: {err}")
-        return 2
-    except Exception as err:
-        if err.__class__.__name__ != "DatasetConfigError":
-            raise
-        print(f"Dataset config error: {err}")
         return 2
     return 0
 
