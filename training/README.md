@@ -73,8 +73,12 @@ different YOLO architecture YAML:
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --from-scratch --scratch-model /path/to/custom-model.yaml
 ```
 
-Runs are saved under `runs/vi3dr-yolo` by default. Choose the output location
-with `--runs-dir` and the run folder name with `--name`:
+Runs are saved under `runs/` by default. If `--name` is omitted, `train.py`
+generates a timestamped run folder name from the model, dataset, device, and key
+training settings, for example
+`yolo26n_vi3dr-dataset_cuda_imgsz640_b8_e300_p25_cacheauto_spm1_w4_lr0.01_seed42_09_06_2026_T_14_15`.
+Choose the output location with `--runs-dir` and override the run folder name
+with `--name`:
 
 ```bash
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --runs-dir /Volumes/Data/vi3dr-runs --name experiment-001

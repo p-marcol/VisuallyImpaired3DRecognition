@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import re
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -105,7 +106,14 @@ def parse_args() -> argparse.Namespace:
         default=str(config.PROJECT_DIR),
         help="Directory where training runs are saved",
     )
-    parser.add_argument("--name", default=config.RUN_NAME, help="Run name inside the runs directory")
+    parser.add_argument(
+        "--name",
+        default=config.RUN_NAME,
+        help=(
+            "Run name inside the runs directory. If omitted, a descriptive "
+            "timestamped name is generated automatically."
+        ),
+    )
     parser.add_argument("--dry-run", action="store_true", help="Validate config without training")
     args = parser.parse_args()
     if args.resume and (args.model or args.from_scratch or args.scratch_model):
@@ -134,6 +142,56 @@ def resolve_model_source(args: argparse.Namespace) -> str:
 
 def resolve_runs_dir(args: argparse.Namespace) -> Path:
     return Path(args.project).expanduser().resolve()
+
+
+def resolve_run_name(
+    args: argparse.Namespace,
+    dataset_config: ResolvedDatasetConfig,
+    model_source: str,
+    device: str,
+) -> str:
+    if args.name:
+        return args.name
+
+    if args.resume:
+        checkpoint_path = Path(args.resume).expanduser().resolve()
+        if checkpoint_path.parent.name == "weights":
+            return checkpoint_path.parent.parent.name
+
+    components = [
+        _safe_name(_model_name_for_run(model_source)),
+        _safe_name(dataset_config.config_path.parent.name),
+    ]
+    if args.from_scratch:
+        components.append("scratch")
+
+    components.extend(
+        [
+            _safe_name(device.replace(":", "")),
+            f"imgsz{args.imgsz}",
+            f"b{args.batch}",
+            f"e{args.epochs}",
+            f"p{args.patience}",
+            f"cache{_safe_name(args.image_cache)}",
+            f"sp{_compact_value(args.save_period)}",
+            f"w{config.WORKERS}",
+            f"lr{_safe_name(str(config.LR0))}",
+            f"seed{config.SEED}",
+        ]
+    )
+    timestamp = datetime.now().strftime("%d_%m_%Y_T_%H_%M")
+    components.append(timestamp)
+    return "_".join(components)
+
+
+def _model_name_for_run(model_source: str) -> str:
+    normalized_source = str(model_source).replace("\\", "/")
+    filename = Path(normalized_source).name
+    return Path(filename).stem or "model"
+
+
+def _compact_value(value: object) -> str:
+    return _safe_name(str(value).replace("-", "m"))
 
 
 def prepare_ultralytics_dataset_config(
@@ -219,6 +277,7 @@ def train(args: argparse.Namespace):
         device = config.resolve_device(args.device)
     except ValueError as err:
         raise TrainingConfigError(str(err)) from err
+    run_name = resolve_run_name(args, dataset_config, model_source, device)
 
     if args.dry_run:
         print(f"Dataset config OK: {dataset_config.config_path}")
@@ -239,7 +298,7 @@ def train(args: argparse.Namespace):
         print(f"Early stopping patience: {args.patience}")
         print(f"Image cache: {image_cache_description}")
         print(f"Runs directory: {runs_dir}")
-        print(f"Run name: {args.name}")
+        print(f"Run name: {run_name}")
         return None
 
     model = YOLO(model_source)
@@ -250,7 +309,7 @@ def train(args: argparse.Namespace):
         batch=args.batch,
         device=device,
         project=str(runs_dir),
-        name=args.name,
+        name=run_name,
         workers=config.WORKERS,
         lr0=config.LR0,
         patience=args.patience,

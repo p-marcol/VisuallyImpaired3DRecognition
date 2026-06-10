@@ -11,7 +11,7 @@ DATASET_EXAMPLE_YAML = ROOT_DIR / "examples" / "dataset.example.yaml"
 MODEL_SOURCE = "yolov8n.pt"
 SCRATCH_MODEL_SOURCE = "yolov8n.yaml"
 PROJECT_DIR = ROOT_DIR / "runs"
-RUN_NAME = "vi3dr-yolo"
+RUN_NAME = None
 
 IMG_SIZE = 640
 BATCH_SIZE = 8
