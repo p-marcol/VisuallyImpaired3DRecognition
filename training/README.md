@@ -84,6 +84,23 @@ Before training, `train.py` writes a normalized Ultralytics dataset config under
 `<runs-dir>/_dataset_configs/`. This keeps datasets on external disks working
 when `dataset.yaml` or `train.txt`/`val.txt` use relative paths.
 
+## Test
+
+Evaluate a trained checkpoint on the `test` split:
+
+```bash
+./.venv/bin/python test.py \
+  --dataset-dir /Volumes/Data/vi3dr-dataset \
+  --model runs/vi3dr-yolo/weights/best.pt
+```
+
+`test.py` loads and normalizes `dataset.yaml` the same way as `train.py`, then
+runs Ultralytics validation with `split=test`. Results are written to
+`<run-dir>/test`, where `<run-dir>` is inferred from
+`<run-dir>/weights/best.pt`. If that directory already contains the expected
+test plots and `labels.jpg`, the script exits without running evaluation again.
+The generated `labels.jpg` describes the `test` split label distribution.
+
 ## Epochs, Early Stopping And Resume
 
 YOLO training uses `--epochs` as an upper limit, not as a guarantee that all
