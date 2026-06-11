@@ -19,6 +19,7 @@ class BackendController(QObject):
     captureSessionChanged = Signal(str, str)
     captureMetricsChanged = Signal(str, str, str)
     previewFrameChanged = Signal(str, int, int)
+    detectionModelChanged = Signal(str, str, str)
 
     def __init__(self):
         super().__init__()
@@ -35,6 +36,9 @@ class BackendController(QObject):
         self._capture_client_ip = "-"
         self._capture_fps = "-"
         self._capture_compression = "-"
+        self._detection_model_path = ""
+        self._detection_status = "booting"
+        self._detection_message = "Detection is starting."
         self._preview_frame = ""
         self._frame_width = 0
         self._frame_height = 0
@@ -78,10 +82,25 @@ class BackendController(QObject):
                 "capture_client_ip": self._capture_client_ip,
                 "capture_fps": self._capture_fps,
                 "capture_compression": self._capture_compression,
+                "detection_model_path": self._detection_model_path,
+                "detection_status": self._detection_status,
+                "detection_message": self._detection_message,
                 "preview_frame": self._preview_frame,
                 "frame_width": self._frame_width,
                 "frame_height": self._frame_height,
             }
+
+    def load_detection_model(self, model_path: str):
+        if self._loop is None or self._runtime is None:
+            self._set_detection_state(model_path, "error", "Backend is not running.")
+            return
+
+        self._set_detection_state(model_path, "loading", "Loading detection model.")
+        future = asyncio.run_coroutine_threadsafe(
+            self._runtime.load_detection_model(model_path),
+            self._loop,
+        )
+        future.add_done_callback(self._handle_detection_model_loaded)
 
     def _run_backend(self):
         self._loop = asyncio.new_event_loop()
@@ -128,6 +147,30 @@ class BackendController(QObject):
             details["mdns_ip"],
         )
 
+        if self._runtime is not None:
+            detection_details = self._runtime.get_detection_details()
+            if not detection_details["enabled"]:
+                detection_status = "disabled"
+                detection_message = "Detection is disabled."
+            elif status == "starting":
+                detection_status = "loading"
+                detection_message = "Loading detection model."
+            elif status == "running":
+                detection_status = "ready"
+                detection_message = "Detection model is ready."
+            elif status == "error":
+                detection_status = "error"
+                detection_message = "Detection model error."
+            else:
+                detection_status = self._detection_status
+                detection_message = self._detection_message
+
+            self._set_detection_state(
+                detection_details["model_path"],
+                detection_status,
+                detection_message,
+            )
+
     def _handle_capture_event(self, state: str, message: str):
         with self._state_lock:
             self._capture_state = state
@@ -170,6 +213,39 @@ class BackendController(QObject):
             self._last_frame_push_at = now
 
         self._safe_emit(self.previewFrameChanged, data_url, width, height)
+
+    def _handle_detection_model_loaded(self, future):
+        try:
+            details = future.result()
+        except Exception as err:
+            self._set_detection_state(
+                self._detection_model_path,
+                "error",
+                str(err),
+            )
+            self._safe_emit(self.backendErrorChanged, str(err))
+            return
+
+        self._set_detection_state(
+            details["model_path"],
+            "ready" if details["enabled"] else "disabled",
+            "Detection model is ready."
+            if details["enabled"]
+            else "Detection is disabled.",
+        )
+
+    def _set_detection_state(self, model_path: str, status: str, message: str):
+        with self._state_lock:
+            self._detection_model_path = model_path or ""
+            self._detection_status = status
+            self._detection_message = message
+
+        self._safe_emit(
+            self.detectionModelChanged,
+            self._detection_model_path,
+            status,
+            message,
+        )
 
     @staticmethod
     def _safe_emit(signal, *args):

@@ -4,17 +4,24 @@ const captureDetail = document.getElementById("capture-detail");
 const clientIpValue = document.getElementById("client-ip-value");
 const fpsValue = document.getElementById("fps-value");
 const compressionValue = document.getElementById("compression-value");
+const modelValue = document.getElementById("model-value");
+const modelStatusValue = document.getElementById("model-status-value");
+const modelDetail = document.getElementById("model-detail");
 const portValue = document.getElementById("port-value");
 const mdnsValue = document.getElementById("mdns-value");
 const frameMeta = document.getElementById("frame-meta");
 const previewImage = document.getElementById("preview-image");
 const previewPlaceholder = document.getElementById("preview-placeholder");
+const chooseModelButton = document.getElementById("choose-model-button");
 const shutdownButton = document.getElementById("shutdown-button");
 const languageSelect = document.getElementById("language-select");
 const i18n = window.VI3DR_I18N;
 const LOCALE_STORAGE_KEY = "vi3dr.locale";
 let currentCaptureState = "idle";
 let currentCaptureMessage = "";
+let currentModelPath = "";
+let currentModelStatus = "unknown";
+let currentModelMessage = "";
 
 function translate(key, params) {
   return i18n.t(key, params);
@@ -47,6 +54,16 @@ function updateCaptureMetrics(clientIp, fps, compression) {
   compressionValue.textContent = compression || "-";
 }
 
+function updateDetectionModel(modelPath, status, message) {
+  currentModelPath = modelPath || "";
+  currentModelStatus = status || "unknown";
+  currentModelMessage = message || "";
+  modelValue.textContent = formatModelName(currentModelPath);
+  modelStatusValue.textContent = translate(`model_status.${currentModelStatus}`);
+  modelDetail.textContent = translateModelMessage(currentModelStatus, currentModelMessage);
+  chooseModelButton.disabled = currentModelStatus === "loading";
+}
+
 function updatePreviewFrame(frameDataUrl, width, height) {
   if (!frameDataUrl) {
     previewImage.style.display = "none";
@@ -70,6 +87,22 @@ function translateCaptureMessage(state, message) {
     : translated;
 }
 
+function translateModelMessage(status, message) {
+  const statusKey = `model_message.${status}`;
+  const translated = translate(statusKey);
+  return translated === statusKey
+    ? message || translate("messages.model_waiting")
+    : translated;
+}
+
+function formatModelName(modelPath) {
+  if (!modelPath) {
+    return "-";
+  }
+
+  return modelPath.split(/[\\/]/).pop() || modelPath;
+}
+
 function getInitialLocale() {
   const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
   if (storedLocale && i18n.supportedLocales.includes(storedLocale)) {
@@ -90,6 +123,7 @@ function setLocale(locale) {
       currentCaptureMessage,
     );
   }
+  updateDetectionModel(currentModelPath, currentModelStatus, currentModelMessage);
 
   window.localStorage.setItem(LOCALE_STORAGE_KEY, i18n.getLocale());
 }
@@ -111,9 +145,14 @@ function attachBridge() {
     bridge.captureSessionChanged.connect(updateCaptureStatus);
     bridge.captureMetricsChanged.connect(updateCaptureMetrics);
     bridge.previewFrameChanged.connect(updatePreviewFrame);
+    bridge.detectionModelChanged.connect(updateDetectionModel);
     bridge.backendErrorChanged.connect((message) => {
       updateBackendStatus("error");
       updateCaptureStatus("error", message || translate("errors.backend_error"));
+    });
+
+    chooseModelButton.addEventListener("click", () => {
+      bridge.chooseDetectionModel();
     });
 
     shutdownButton.addEventListener("click", () => {

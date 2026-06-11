@@ -40,9 +40,29 @@ This mode starts only the backend without the desktop UI. In this variant, previ
 
 - listens for phone connections over WebSocket,
 - accepts JPEG frames,
+- loads a YOLO detector through Ultralytics/PyTorch,
+- draws YOLO detection boxes into the preview frame,
 - shows live preview in the desktop UI,
 - closes the current session after the `stop` command,
 - sends `client_stop` when the server initiates connection shutdown.
+
+## Detection configuration
+
+Detection is enabled by default. The server uses Ultralytics YOLO and can load either a named pretrained model or a local `.pt` file.
+
+In desktop mode, use the Detection panel and the `Choose model` button to load a `.pt` model without restarting the app.
+
+```bash
+VI3DR_YOLO_MODEL=path/to/model.pt ./.venv/bin/python app.py
+```
+
+Useful environment variables:
+
+- `VI3DR_DETECTION_ENABLED=0` - disable YOLO processing
+- `VI3DR_YOLO_MODEL=yolo11n.pt` - model name or local model path
+- `VI3DR_YOLO_CONFIDENCE=0.25` - confidence threshold
+- `VI3DR_YOLO_IMAGE_SIZE=640` - inference image size
+- `VI3DR_YOLO_DEVICE=cpu` - optional device override, for example `cpu`, `cuda:0`, `mps`
 
 ## Important files
 
@@ -54,6 +74,5 @@ This mode starts only the backend without the desktop UI. In this variant, previ
 
 ## Next steps
 
-- wire YOLO results into the UI,
 - add an overlay layer on top of preview,
 - support editing colors of shape walls.

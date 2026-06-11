@@ -1,6 +1,11 @@
 import websockets
 
-from settings import WINDOW_NAME, WS_MAX_SIZE
+from settings import (
+    PREVIEW_FRAME_PUSH_INTERVAL_SECONDS,
+    WINDOW_NAME,
+    WS_MAX_QUEUE,
+    WS_MAX_SIZE,
+)
 from .protocol import CLIENT_STOP_COMMAND
 
 from .preview import PreviewWindow
@@ -15,6 +20,8 @@ class CaptureServer:
         window_name: str = WINDOW_NAME,
         preview_enabled: bool = True,
         frame_callback=None,
+        frame_callback_interval_seconds: float = PREVIEW_FRAME_PUSH_INTERVAL_SECONDS,
+        frame_processor=None,
         session_event_callback=None,
         session_metrics_callback=None,
     ):
@@ -23,6 +30,8 @@ class CaptureServer:
         self.window_name = window_name
         self.preview_enabled = preview_enabled
         self.frame_callback = frame_callback
+        self.frame_callback_interval_seconds = frame_callback_interval_seconds
+        self.frame_processor = frame_processor
         self.session_event_callback = session_event_callback
         self.session_metrics_callback = session_metrics_callback
         self._session_active = False
@@ -37,6 +46,7 @@ class CaptureServer:
             self.host,
             self.port,
             max_size=WS_MAX_SIZE,
+            max_queue=WS_MAX_QUEUE,
         )
 
     async def stop(self):
@@ -72,6 +82,8 @@ class CaptureServer:
                 ws=ws,
                 preview=preview,
                 frame_callback=self.frame_callback,
+                frame_callback_interval_seconds=self.frame_callback_interval_seconds,
+                frame_processor=self.frame_processor,
                 session_event_callback=self.session_event_callback,
                 session_metrics_callback=self.session_metrics_callback,
             )

@@ -3,6 +3,7 @@ window.VI3DR_TRANSLATIONS = {
     title: "VI3DR Control Room",
     actions: {
       close: "Close",
+      choose_model: "Choose model",
     },
     labels: {
       backend: "Backend",
@@ -17,6 +18,9 @@ window.VI3DR_TRANSLATIONS = {
       client_ip: "Client IP",
       fps: "FPS",
       compression: "Compression",
+      detection: "Detection",
+      model: "Model",
+      model_status: "Status",
     },
     messages: {
       no_frame: "No frame",
@@ -25,6 +29,7 @@ window.VI3DR_TRANSLATIONS = {
       next_step: "The next step is a YOLO overlay and shape material controls.",
       no_session_details: "No session details available.",
       backend_waiting: "Waiting for desktop runtime data.",
+      model_waiting: "Waiting for model status.",
     },
     status: {
       booting: "BOOTING",
@@ -37,6 +42,22 @@ window.VI3DR_TRANSLATIONS = {
       idle: "IDLE",
       connected: "CONNECTED",
       disconnected: "DISCONNECTED",
+    },
+    model_status: {
+      booting: "BOOTING",
+      loading: "LOADING",
+      ready: "READY",
+      disabled: "DISABLED",
+      error: "ERROR",
+      unknown: "UNKNOWN",
+    },
+    model_message: {
+      booting: "Detection is starting.",
+      loading: "Loading detection model.",
+      ready: "Detection model is ready.",
+      disabled: "Detection is disabled.",
+      error: "Detection model error.",
+      unknown: "No model status available.",
     },
     capture: {
       connected: "Phone connected.",
@@ -56,6 +77,7 @@ window.VI3DR_TRANSLATIONS = {
     title: "VI3DR Control Room",
     actions: {
       close: "Zamknij",
+      choose_model: "Wybierz model",
     },
     labels: {
       backend: "Backend",
@@ -70,6 +92,9 @@ window.VI3DR_TRANSLATIONS = {
       client_ip: "IP klienta",
       fps: "FPS",
       compression: "Kompresja",
+      detection: "Detekcja",
+      model: "Model",
+      model_status: "Status",
     },
     messages: {
       no_frame: "Brak klatki",
@@ -78,6 +103,7 @@ window.VI3DR_TRANSLATIONS = {
       next_step: "Kolejny etap to overlay detekcji YOLO i sterowanie materiałami brył.",
       no_session_details: "Brak szczegółów sesji.",
       backend_waiting: "Oczekiwanie na dane z warstwy desktopowej.",
+      model_waiting: "Oczekiwanie na status modelu.",
     },
     status: {
       booting: "URUCHAMIANIE",
@@ -90,6 +116,22 @@ window.VI3DR_TRANSLATIONS = {
       idle: "BEZCZYNNA",
       connected: "POŁĄCZONA",
       disconnected: "ROZŁĄCZONA",
+    },
+    model_status: {
+      booting: "URUCHAMIANIE",
+      loading: "WCZYTYWANIE",
+      ready: "GOTOWY",
+      disabled: "WYŁĄCZONY",
+      error: "BŁĄD",
+      unknown: "NIEZNANY",
+    },
+    model_message: {
+      booting: "Detekcja się uruchamia.",
+      loading: "Wczytywanie modelu detekcji.",
+      ready: "Model detekcji jest gotowy.",
+      disabled: "Detekcja jest wyłączona.",
+      error: "Błąd modelu detekcji.",
+      unknown: "Brak statusu modelu.",
     },
     capture: {
       connected: "Telefon połączony.",

@@ -99,6 +99,30 @@
           </section>
 
           <section class="info-card">
+            <span class="eyebrow" data-i18n="labels.detection">Detection</span>
+            <dl class="kv-list">
+              <div>
+                <dt data-i18n="labels.model">Model</dt>
+                <dd id="model-value">-</dd>
+              </div>
+              <div>
+                <dt data-i18n="labels.model_status">Status</dt>
+                <dd id="model-status-value">-</dd>
+              </div>
+            </dl>
+            <p
+              id="model-detail"
+              class="detail-text"
+              data-i18n="messages.model_waiting"
+            >Waiting for model status.</p>
+            <button
+              id="choose-model-button"
+              class="action-button action-button--secondary action-button--block"
+              data-i18n="actions.choose_model"
+            >Choose model</button>
+          </section>
+
+          <section class="info-card">
             <span class="eyebrow" data-i18n="labels.next">Next</span>
             <p class="detail-text" data-i18n="messages.next_step">
               The next step is a YOLO overlay and shape material controls.

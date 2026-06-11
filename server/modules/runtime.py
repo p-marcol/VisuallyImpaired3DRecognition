@@ -1,5 +1,6 @@
 import asyncio
 
+from model_loader import load_model
 from mdns_publisher import MDNSPublisher
 from settings import HOST, PORT
 
@@ -29,6 +30,7 @@ class ApplicationRuntime:
             session_event_callback=capture_event_callback,
             session_metrics_callback=capture_metrics_callback,
         )
+        self.detector = load_model()
         self._running = False
 
     async def start(self):
@@ -36,6 +38,8 @@ class ApplicationRuntime:
             return
 
         self._emit_status("starting")
+        await self.detector.start()
+        self.capture_server.frame_processor = self.detector.annotate
         await self.mdns.start()
         try:
             await self.capture_server.start()
@@ -74,6 +78,16 @@ class ApplicationRuntime:
             "port": self.port,
             "mdns_ip": self.mdns.ip,
         }
+
+    def get_detection_details(self):
+        return {
+            "enabled": self.detector.enabled,
+            "model_path": self.detector.model_path,
+        }
+
+    async def load_detection_model(self, model_path: str):
+        await self.detector.load_model(model_path)
+        return self.get_detection_details()
 
     def _emit_status(self, status: str):
         if self.status_callback is not None:

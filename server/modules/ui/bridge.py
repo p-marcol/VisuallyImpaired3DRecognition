@@ -1,5 +1,6 @@
 from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtGui import QGuiApplication
+from PySide6.QtWidgets import QFileDialog
 
 
 class DesktopBridge(QObject):
@@ -9,6 +10,7 @@ class DesktopBridge(QObject):
     captureSessionChanged = Signal(str, str)
     captureMetricsChanged = Signal(str, str, str)
     previewFrameChanged = Signal(str, int, int)
+    detectionModelChanged = Signal(str, str, str)
 
     def __init__(self, backend_controller):
         super().__init__()
@@ -19,6 +21,7 @@ class DesktopBridge(QObject):
         self.backend_controller.captureSessionChanged.connect(self.captureSessionChanged.emit)
         self.backend_controller.captureMetricsChanged.connect(self.captureMetricsChanged.emit)
         self.backend_controller.previewFrameChanged.connect(self.previewFrameChanged.emit)
+        self.backend_controller.detectionModelChanged.connect(self.detectionModelChanged.emit)
 
     @Slot()
     def requestInitialState(self):
@@ -36,6 +39,22 @@ class DesktopBridge(QObject):
             state["frame_width"],
             state["frame_height"],
         )
+        self.detectionModelChanged.emit(
+            state["detection_model_path"],
+            state["detection_status"],
+            state["detection_message"],
+        )
+
+    @Slot()
+    def chooseDetectionModel(self):
+        model_path, _ = QFileDialog.getOpenFileName(
+            None,
+            "Choose YOLO model",
+            "",
+            "YOLO models (*.pt);;All files (*)",
+        )
+        if model_path:
+            self.backend_controller.load_detection_model(model_path)
 
     @Slot()
     def shutdownApplication(self):
