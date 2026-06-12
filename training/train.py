@@ -161,24 +161,11 @@ def resolve_run_name(
     components = [
         _safe_name(_model_name_for_run(model_source)),
         _safe_name(dataset_config.config_path.parent.name),
+        _safe_name(device.replace(":", "")),
+        f"imgsz{args.imgsz}",
+        f"lr{_safe_name(str(config.LR0))}",
+        f"seed{config.SEED}",
     ]
-    if args.from_scratch:
-        components.append("scratch")
-
-    components.extend(
-        [
-            _safe_name(device.replace(":", "")),
-            f"imgsz{args.imgsz}",
-            f"b{args.batch}",
-            f"e{args.epochs}",
-            f"p{args.patience}",
-            f"cache{_safe_name(args.image_cache)}",
-            f"sp{_compact_value(args.save_period)}",
-            f"w{config.WORKERS}",
-            f"lr{_safe_name(str(config.LR0))}",
-            f"seed{config.SEED}",
-        ]
-    )
     timestamp = datetime.now().strftime("%d_%m_%Y_T_%H_%M")
     components.append(timestamp)
     return "_".join(components)
@@ -188,10 +175,6 @@ def _model_name_for_run(model_source: str) -> str:
     normalized_source = str(model_source).replace("\\", "/")
     filename = Path(normalized_source).name
     return Path(filename).stem or "model"
-
-
-def _compact_value(value: object) -> str:
-    return _safe_name(str(value).replace("-", "m"))
 
 
 def prepare_ultralytics_dataset_config(

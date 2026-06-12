@@ -74,9 +74,9 @@ different YOLO architecture YAML:
 ```
 
 Runs are saved under `runs/` by default. If `--name` is omitted, `train.py`
-generates a timestamped run folder name from the model, dataset, device, and key
-training settings, for example
-`yolo26n_vi3dr-dataset_cuda_imgsz640_b8_e300_p25_cacheauto_spm1_w4_lr0.01_seed42_09_06_2026_T_14_15`.
+generates a timestamped run folder name from the model, dataset, device, image
+size, learning rate, and seed, for example
+`yolo26s_dataset1_cuda_imgsz1024_lr0.01_seed42_11_06_2026_T_13_06`.
 Choose the output location with `--runs-dir` and override the run folder name
 with `--name`:
 
