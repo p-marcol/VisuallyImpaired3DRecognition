@@ -84,6 +84,29 @@ with `--name`:
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --runs-dir /Volumes/Data/vi3dr-runs --name experiment-001
 ```
 
+By default, new models attach an `identity` input filter before the first YOLO
+layer, so existing RGB behavior is unchanged. Filter implementations live under
+`filters/`. Pass a filter module path to `--input-filter`; the run name uses the
+module's `name` value, falling back to `__name__` when `name` is not provided.
+Use `filters/grayscale.py` to train a model that accepts RGB images but converts
+them to 3-channel grayscale inside the model, or `filters/sobel.py` to train on
+Sobel edge magnitude:
+
+```bash
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --input-filter filters/grayscale.py
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --input-filter filters/sobel.py
+```
+
+Preview input filters on random images from all dataset splits without writing
+files:
+
+```bash
+./.venv/bin/python preview_input_filter.py --dataset-dir /Volumes/Data/vi3dr-dataset --input-filter filters/grayscale.py
+```
+
+Press space to show another random image. Press `q` or Escape to close the
+preview.
+
 Images are loaded by Ultralytics dataloaders. By default this project uses
 `--image-cache none`, so images are read lazily from disk batch by batch. You
 can override this explicitly:

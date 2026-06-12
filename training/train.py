@@ -16,6 +16,7 @@ from dataset import (
     resolve_ultralytics_cache_mode,
     validate_yolo_dataset_config,
 )
+from input_filters import attach_input_filter, resolve_input_filter_name
 from scores import (
     ScoreError,
     f1_score_from_training_results,
@@ -100,6 +101,15 @@ def parse_args() -> argparse.Namespace:
         help="Save epoch checkpoints every N epochs; disabled if < 1",
     )
     parser.add_argument(
+        "--input-filter",
+        help=(
+            "Path or dotted import path to a Python input filter module attached "
+            "before the first YOLO layer, for example filters/grayscale.py. "
+            f"If omitted, new models use {config.INPUT_FILTER!r}; checkpoints "
+            "keep their saved filter when present."
+        ),
+    )
+    parser.add_argument(
         "--project",
         "--runs-dir",
         dest="project",
@@ -149,6 +159,7 @@ def resolve_run_name(
     dataset_config: ResolvedDatasetConfig,
     model_source: str,
     device: str,
+    input_filter_name: str,
 ) -> str:
     if args.name:
         return args.name
@@ -166,6 +177,8 @@ def resolve_run_name(
         f"lr{_safe_name(str(config.LR0))}",
         f"seed{config.SEED}",
     ]
+    if input_filter_name != config.INPUT_FILTER:
+        components.append(f"filter{_safe_name(input_filter_name)}")
     timestamp = datetime.now().strftime("%d_%m_%Y_T_%H_%M")
     components.append(timestamp)
     return "_".join(components)
@@ -260,7 +273,17 @@ def train(args: argparse.Namespace):
         device = config.resolve_device(args.device)
     except ValueError as err:
         raise TrainingConfigError(str(err)) from err
-    run_name = resolve_run_name(args, dataset_config, model_source, device)
+    try:
+        input_filter_name = resolve_input_filter_name(args.input_filter or config.INPUT_FILTER)
+    except (FileNotFoundError, ImportError, TypeError, ValueError) as err:
+        raise TrainingConfigError(str(err)) from err
+    run_name = resolve_run_name(
+        args,
+        dataset_config,
+        model_source,
+        device,
+        input_filter_name,
+    )
 
     if args.dry_run:
         print(f"Dataset config OK: {dataset_config.config_path}")
@@ -280,11 +303,17 @@ def train(args: argparse.Namespace):
         print(f"Epoch limit: {args.epochs}")
         print(f"Early stopping patience: {args.patience}")
         print(f"Image cache: {image_cache_description}")
+        print(f"Input filter: {input_filter_name}")
         print(f"Runs directory: {runs_dir}")
         print(f"Run name: {run_name}")
         return None
 
     model = YOLO(model_source)
+    try:
+        input_filter_name = attach_input_filter(model, args.input_filter)
+    except (FileNotFoundError, ImportError, TypeError, ValueError) as err:
+        raise TrainingConfigError(str(err)) from err
+    print(f"Input filter: {input_filter_name}")
     result = model.train(
         data=str(ultralytics_dataset_path),
         epochs=args.epochs,

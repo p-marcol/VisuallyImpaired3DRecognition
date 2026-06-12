@@ -23,6 +23,7 @@ SAVE_PERIOD = -1
 SEED = 42
 IMAGE_CACHE_MODE = "none"
 IMAGE_CACHE_MODE_CHOICES = ("auto", "none", "ram", "disk")
+INPUT_FILTER = "identity"
 
 CONFIDENCE_THRESHOLD = 0.25
 IOU_THRESHOLD = 0.7
