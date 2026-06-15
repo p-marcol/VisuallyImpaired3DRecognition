@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import argparse
 import re
+import shutil
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
 import yaml
 from ultralytics import YOLO
+from ultralytics.nn.tasks import load_checkpoint
 
 import config
 from dataset import (
@@ -19,8 +22,12 @@ from dataset import (
 from filtered_dataset import FilteredDatasetError, prepare_filtered_dataset
 from input_filters import attach_input_filter, resolve_input_filter_name
 from scores import (
+    BOX_MAP_KEY,
     ScoreError,
     f1_score_from_training_results,
+    read_epoch,
+    read_float_metric,
+    read_training_results_rows,
     write_f1_score,
     write_training_run_stats,
 )
@@ -28,6 +35,24 @@ from scores import (
 
 class TrainingConfigError(ValueError):
     pass
+
+
+@dataclass(frozen=True)
+class ResumeTrainingState:
+    checkpoint_path: Path
+    run_dir: Path
+    output_run_dir: Path
+    results_csv: Path
+    output_results_csv: Path
+    append_in_place: bool
+    checkpoint_epoch: int
+    completed_epoch: int
+    next_epoch: int
+    target_epochs: int | None
+    results_rows: int
+    last_results_epoch: int | None
+    best_results_epoch: int | None
+    best_results_fitness: float | None
 
 
 def parse_args() -> argparse.Namespace:
@@ -64,6 +89,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--resume",
         help="Resume an interrupted run from a last.pt checkpoint",
+    )
+    parser.add_argument(
+        "--resume-in-place",
+        action="store_true",
+        help=(
+            "When resuming, append new checkpoints and metrics directly to the "
+            "run that owns --resume. By default resume writes to a timestamped "
+            "subdirectory under that run."
+        ),
     )
     parser.add_argument("--epochs", type=int, default=config.EPOCHS)
     parser.add_argument("--imgsz", type=int, default=config.IMG_SIZE)
@@ -152,6 +186,8 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     if args.resume and (args.model or args.from_scratch or args.scratch_model):
         parser.error("--resume cannot be combined with --model, --from-scratch, or --scratch-model")
+    if args.resume_in_place and not args.resume:
+        parser.error("--resume-in-place requires --resume")
     if args.scratch_model and not args.from_scratch:
         parser.error("--scratch-model requires --from-scratch")
     return args
@@ -178,6 +214,144 @@ def resolve_runs_dir(args: argparse.Namespace) -> Path:
     return Path(args.project).expanduser().resolve()
 
 
+def resolve_resume_run_dir(checkpoint_path: Path) -> Path:
+    if checkpoint_path.parent.name == "weights":
+        return checkpoint_path.parent.parent
+
+    raise TrainingConfigError(
+        "cannot infer resume run directory from checkpoint path; expected <run>/weights/last.pt"
+    )
+
+
+def load_resume_training_state(args: argparse.Namespace) -> ResumeTrainingState:
+    checkpoint_path = Path(args.resume).expanduser().resolve()
+    if not checkpoint_path.is_file():
+        raise TrainingConfigError(f"resume checkpoint does not exist: {checkpoint_path}")
+
+    _, checkpoint = load_checkpoint(str(checkpoint_path), device="cpu")
+    checkpoint_epoch = int(checkpoint.get("epoch", -1))
+    if checkpoint_epoch < 0 or checkpoint.get("optimizer") is None:
+        raise TrainingConfigError(
+            f"resume checkpoint is not resumable: {checkpoint_path}. "
+            "Use an interrupted training checkpoint with epoch and optimizer state, "
+            "usually <run>/weights/last.pt before final optimizer stripping."
+        )
+
+    completed_epoch = max(checkpoint_epoch + 1, 0)
+    next_epoch = completed_epoch + 1
+    train_args = checkpoint.get("train_args") or {}
+    target_epochs_value = train_args.get("epochs")
+    target_epochs = int(target_epochs_value) if target_epochs_value is not None else None
+
+    run_dir = resolve_resume_run_dir(checkpoint_path)
+    output_run_dir = resolve_resume_output_run_dir(args, run_dir)
+    results_csv = run_dir / "results.csv"
+    output_results_csv = output_run_dir / "results.csv"
+    results_rows = 0
+    last_results_epoch = None
+    best_results_epoch = None
+    best_results_fitness = None
+    if results_csv.exists():
+        try:
+            rows = read_training_results_rows(results_csv)
+        except ScoreError:
+            rows = []
+        results_rows = len(rows)
+        if rows:
+            last_results_epoch = read_epoch(rows[-1])
+            try:
+                best_row = max(rows, key=lambda row: read_float_metric(row, BOX_MAP_KEY))
+            except ScoreError:
+                best_row = None
+            if best_row is not None:
+                best_results_epoch = read_epoch(best_row)
+                best_results_fitness = read_float_metric(best_row, BOX_MAP_KEY)
+
+    return ResumeTrainingState(
+        checkpoint_path=checkpoint_path,
+        run_dir=run_dir,
+        output_run_dir=output_run_dir,
+        results_csv=results_csv,
+        output_results_csv=output_results_csv,
+        append_in_place=args.resume_in_place,
+        checkpoint_epoch=checkpoint_epoch,
+        completed_epoch=completed_epoch,
+        next_epoch=next_epoch,
+        target_epochs=target_epochs,
+        results_rows=results_rows,
+        last_results_epoch=last_results_epoch,
+        best_results_epoch=best_results_epoch,
+        best_results_fitness=best_results_fitness,
+    )
+
+
+def resolve_resume_output_run_dir(args: argparse.Namespace, run_dir: Path) -> Path:
+    if args.resume_in_place:
+        return run_dir
+
+    name = args.name or f"resume_{datetime.now().strftime('%d_%m_%Y_T_%H_%M_%S')}"
+    return run_dir / _safe_name(name)
+
+
+def prepare_resume_output_dir(state: ResumeTrainingState) -> None:
+    state.output_run_dir.mkdir(parents=True, exist_ok=True)
+    (state.output_run_dir / "weights").mkdir(parents=True, exist_ok=True)
+    if state.append_in_place or not state.results_csv.exists():
+        return
+
+    if state.output_results_csv.exists():
+        return
+
+    shutil.copy2(state.results_csv, state.output_results_csv)
+
+
+def print_resume_training_state(state: ResumeTrainingState) -> None:
+    target = state.target_epochs if state.target_epochs is not None else "unknown"
+    print(f"Resume checkpoint: {state.checkpoint_path}")
+    print(f"Resume run directory: {state.run_dir}")
+    print(f"Resume output directory: {state.output_run_dir}")
+    print(
+        f"Resume epoch state: completed={state.completed_epoch}, "
+        f"next={state.next_epoch}, target={target}"
+    )
+    if state.results_csv.exists():
+        parts = [
+            f"rows={state.results_rows}",
+            f"last_epoch={state.last_results_epoch}",
+        ]
+        if state.best_results_epoch is not None and state.best_results_fitness is not None:
+            parts.append(
+                f"best_epoch={state.best_results_epoch} ({BOX_MAP_KEY}={state.best_results_fitness:.4f})"
+            )
+        print(f"Resume source results.csv: {state.results_csv} ({', '.join(parts)})")
+    else:
+        print(f"Resume source results.csv: {state.results_csv} does not exist.")
+
+    if state.append_in_place:
+        print("Resume mode: in-place. New epoch metrics will be appended to the source results.csv.")
+    elif state.results_csv.exists():
+        print(
+            "Resume mode: subdirectory. Source results.csv will be copied first; "
+            f"new epoch metrics will be appended to {state.output_results_csv}."
+        )
+    else:
+        print(
+            "Resume mode: subdirectory. "
+            f"A new results.csv will be created at {state.output_results_csv}."
+        )
+
+    if (
+        state.last_results_epoch is not None
+        and state.completed_epoch > 0
+        and state.last_results_epoch != state.completed_epoch
+    ):
+        print(
+            "WARNING: last.pt and results.csv disagree: "
+            f"checkpoint completed epoch {state.completed_epoch}, "
+            f"results.csv last epoch {state.last_results_epoch}."
+        )
+
+
 def resolve_run_name(
     args: argparse.Namespace,
     dataset_config: ResolvedDatasetConfig,
@@ -189,9 +363,13 @@ def resolve_run_name(
         return args.name
 
     if args.resume:
-        checkpoint_path = Path(args.resume).expanduser().resolve()
-        if checkpoint_path.parent.name == "weights":
-            return checkpoint_path.parent.parent.name
+        if args.resume_in_place:
+            checkpoint_path = Path(args.resume).expanduser().resolve()
+            if checkpoint_path.parent.name == "weights":
+                return checkpoint_path.parent.parent.name
+        if args.name:
+            return args.name
+        return f"resume_{datetime.now().strftime('%d_%m_%Y_T_%H_%M_%S')}"
 
     components = [
         _safe_name(_model_name_for_run(model_source)),
@@ -405,11 +583,34 @@ def add_new_best_epoch_callback(model: YOLO) -> None:
     model.add_callback("on_fit_epoch_end", on_fit_epoch_end)
 
 
+def add_resume_run_dir_callback(model: YOLO, run_dir: Path) -> None:
+    resolved_run_dir = run_dir.resolve()
+
+    def on_pretrain_routine_start(trainer) -> None:
+        if not getattr(trainer.args, "resume", False):
+            return
+
+        trainer.save_dir = resolved_run_dir
+        trainer.wdir = resolved_run_dir / "weights"
+        trainer.wdir.mkdir(parents=True, exist_ok=True)
+        trainer.last = trainer.wdir / "last.pt"
+        trainer.best = trainer.wdir / "best.pt"
+        trainer.csv = resolved_run_dir / "results.csv"
+        trainer.args.save_dir = str(resolved_run_dir)
+        trainer.args.project = str(resolved_run_dir.parent)
+        trainer.args.name = resolved_run_dir.name
+        with (resolved_run_dir / "args.yaml").open("w", encoding="utf-8") as file:
+            yaml.safe_dump(vars(trainer.args), file, sort_keys=False)
+
+    model.add_callback("on_pretrain_routine_start", on_pretrain_routine_start)
+
+
 def train(args: argparse.Namespace):
     dataset_path = resolve_dataset_yaml(args)
     dataset_config = validate_yolo_dataset_config(dataset_path)
     model_source = resolve_model_source(args)
     runs_dir = resolve_runs_dir(args)
+    resume_state = load_resume_training_state(args.resume) if args.resume else None
     try:
         validate_filter_args(args, dataset_config)
         if args.dry_run:
@@ -437,13 +638,16 @@ def train(args: argparse.Namespace):
         device = config.resolve_device(args.device)
     except ValueError as err:
         raise TrainingConfigError(str(err)) from err
-    run_name = resolve_run_name(
-        args,
-        dataset_config,
-        model_source,
-        device,
-        input_filter_name,
-    )
+    if resume_state is not None:
+        run_name = resume_state.output_run_dir.name
+    else:
+        run_name = resolve_run_name(
+            args,
+            dataset_config,
+            model_source,
+            device,
+            input_filter_name,
+        )
 
     if args.dry_run:
         print(f"Dataset config OK: {dataset_config.config_path}")
@@ -459,8 +663,8 @@ def train(args: argparse.Namespace):
         print(f"Ultralytics dataset config: {ultralytics_dataset_path}")
         print(f"Model source: {model_source}")
         print(f"Training from scratch: {args.from_scratch}")
-        if args.resume:
-            print(f"Resume checkpoint: {Path(args.resume).expanduser().resolve()}")
+        if resume_state is not None:
+            print_resume_training_state(resume_state)
         print(f"Requested device: {args.device}")
         print(f"Resolved device: {device}")
         print(f"Device availability: {config.describe_device_availability()}")
@@ -476,7 +680,12 @@ def train(args: argparse.Namespace):
         return None
 
     model = YOLO(model_source)
+    if resume_state is not None:
+        prepare_resume_output_dir(resume_state)
+        add_resume_run_dir_callback(model, resume_state.output_run_dir)
     add_new_best_epoch_callback(model)
+    if resume_state is not None:
+        print_resume_training_state(resume_state)
     print(f"Dataset filter: {input_filter_name}")
     result = model.train(
         data=str(ultralytics_dataset_path),
@@ -495,7 +704,7 @@ def train(args: argparse.Namespace):
         cache=image_cache,
     )
 
-    save_dir = Path(result.save_dir)
+    save_dir = resume_state.output_run_dir if resume_state is not None else Path(result.save_dir)
     try:
         f1_score, precision, recall = f1_score_from_training_results(save_dir / "results.csv")
     except ScoreError as err:

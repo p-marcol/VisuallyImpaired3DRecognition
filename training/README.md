@@ -242,6 +242,13 @@ Resume an interrupted run from `last.pt`:
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --resume runs/vi3dr-yolo/weights/last.pt
 ```
 
+On resume, `train.py` prints the completed epoch from `last.pt`, the next epoch,
+the target epoch count, and the current `results.csv` status. By default, resume
+writes a new run subdirectory under the resumed run and copies the existing
+`results.csv` there before appending new epoch metrics. Use `--resume-in-place`
+to append directly to the original run. A checkpoint without epoch and optimizer
+state is rejected because it cannot continue training safely.
+
 Fine-tune from an existing trained model by using it as `--model`:
 
 ```bash
