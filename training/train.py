@@ -373,6 +373,38 @@ def create_best_with_filter_checkpoint(
     return output_path, filter_name
 
 
+def add_new_best_epoch_callback(model: YOLO) -> None:
+    announced_best_epochs: set[int] = set()
+
+    def on_fit_epoch_end(trainer) -> None:
+        patience = int(getattr(trainer.args, "patience", 0) or 0)
+        if patience <= 0:
+            return
+
+        fitness = getattr(trainer, "fitness", None)
+        best_fitness = getattr(trainer, "best_fitness", None)
+        if fitness is None or best_fitness is None or fitness != best_fitness:
+            return
+
+        epoch = getattr(trainer, "epoch", None)
+        if epoch is None:
+            return
+
+        epoch_number = int(epoch) + 1
+        if epoch_number in announced_best_epochs:
+            return
+        announced_best_epochs.add(epoch_number)
+
+        epochs = int(getattr(trainer, "epochs", getattr(trainer.args, "epochs", epoch_number)))
+        learning_until_epoch = min(epoch_number + patience, epochs)
+        print(
+            f"New best epoch: {epoch_number}. "
+            f"Learning till epoch {learning_until_epoch} unless a better epoch appears."
+        )
+
+    model.add_callback("on_fit_epoch_end", on_fit_epoch_end)
+
+
 def train(args: argparse.Namespace):
     dataset_path = resolve_dataset_yaml(args)
     dataset_config = validate_yolo_dataset_config(dataset_path)
@@ -444,6 +476,7 @@ def train(args: argparse.Namespace):
         return None
 
     model = YOLO(model_source)
+    add_new_best_epoch_callback(model)
     print(f"Dataset filter: {input_filter_name}")
     result = model.train(
         data=str(ultralytics_dataset_path),
