@@ -14,6 +14,7 @@ class ApplicationRuntime:
         port: int = PORT,
         status_callback=None,
         frame_callback=None,
+        detection_result_callback=None,
         capture_event_callback=None,
         capture_metrics_callback=None,
         preview_enabled: bool = True,
@@ -31,6 +32,7 @@ class ApplicationRuntime:
             session_metrics_callback=capture_metrics_callback,
         )
         self.detector = load_model()
+        self.detector.result_callback = detection_result_callback
         self._running = False
 
     async def start(self):

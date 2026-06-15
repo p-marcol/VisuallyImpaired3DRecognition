@@ -11,6 +11,7 @@ class DesktopBridge(QObject):
     captureMetricsChanged = Signal(str, str, str)
     previewFrameChanged = Signal(str, int, int)
     detectionModelChanged = Signal(str, str, str)
+    detectionResultChanged = Signal(str, float)
 
     def __init__(self, backend_controller):
         super().__init__()
@@ -22,6 +23,7 @@ class DesktopBridge(QObject):
         self.backend_controller.captureMetricsChanged.connect(self.captureMetricsChanged.emit)
         self.backend_controller.previewFrameChanged.connect(self.previewFrameChanged.emit)
         self.backend_controller.detectionModelChanged.connect(self.detectionModelChanged.emit)
+        self.backend_controller.detectionResultChanged.connect(self.detectionResultChanged.emit)
 
     @Slot()
     def requestInitialState(self):
@@ -43,6 +45,10 @@ class DesktopBridge(QObject):
             state["detection_model_path"],
             state["detection_status"],
             state["detection_message"],
+        )
+        self.detectionResultChanged.emit(
+            state["detection_label"],
+            state["detection_confidence"],
         )
 
     @Slot()

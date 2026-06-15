@@ -122,6 +122,22 @@
             >Choose model</button>
           </section>
 
+          <section class="info-card detected-object-card">
+            <span class="eyebrow" data-i18n="labels.detected_object">Detected Object</span>
+            <strong
+              id="detected-object-value"
+              class="detected-object-card__value"
+              data-i18n="messages.no_detection"
+            >No detection</strong>
+            <div class="detected-object-card__confidence">
+              <span data-i18n="labels.probability">Probability</span>
+              <strong id="detected-object-confidence-value">-</strong>
+            </div>
+            <div class="confidence-meter" aria-hidden="true">
+              <span id="detected-object-confidence-bar"></span>
+            </div>
+          </section>
+
           <section class="info-card">
             <span class="eyebrow" data-i18n="labels.next">Next</span>
             <p class="detail-text" data-i18n="messages.next_step">

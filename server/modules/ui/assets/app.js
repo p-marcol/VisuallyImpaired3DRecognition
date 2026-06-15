@@ -7,6 +7,9 @@ const compressionValue = document.getElementById("compression-value");
 const modelValue = document.getElementById("model-value");
 const modelStatusValue = document.getElementById("model-status-value");
 const modelDetail = document.getElementById("model-detail");
+const detectedObjectValue = document.getElementById("detected-object-value");
+const detectedObjectConfidenceValue = document.getElementById("detected-object-confidence-value");
+const detectedObjectConfidenceBar = document.getElementById("detected-object-confidence-bar");
 const portValue = document.getElementById("port-value");
 const mdnsValue = document.getElementById("mdns-value");
 const frameMeta = document.getElementById("frame-meta");
@@ -22,6 +25,8 @@ let currentCaptureMessage = "";
 let currentModelPath = "";
 let currentModelStatus = "unknown";
 let currentModelMessage = "";
+let currentDetectionLabel = "";
+let currentDetectionConfidence = 0;
 
 function translate(key, params) {
   return i18n.t(key, params);
@@ -62,6 +67,25 @@ function updateDetectionModel(modelPath, status, message) {
   modelStatusValue.textContent = translate(`model_status.${currentModelStatus}`);
   modelDetail.textContent = translateModelMessage(currentModelStatus, currentModelMessage);
   chooseModelButton.disabled = currentModelStatus === "loading";
+}
+
+function updateDetectionResult(label, confidence) {
+  const parsedConfidence = Number(confidence);
+  currentDetectionLabel = label || "";
+  currentDetectionConfidence = Number.isFinite(parsedConfidence) ? parsedConfidence : 0;
+
+  if (!currentDetectionLabel) {
+    detectedObjectValue.textContent = translate("messages.no_detection");
+    detectedObjectConfidenceValue.textContent = "-";
+    detectedObjectConfidenceBar.style.width = "0%";
+    return;
+  }
+
+  const probability = Math.max(0, Math.min(currentDetectionConfidence, 1));
+  const percent = Math.round(probability * 100);
+  detectedObjectValue.textContent = currentDetectionLabel;
+  detectedObjectConfidenceValue.textContent = `${percent}%`;
+  detectedObjectConfidenceBar.style.width = `${percent}%`;
 }
 
 function updatePreviewFrame(frameDataUrl, width, height) {
@@ -124,6 +148,7 @@ function setLocale(locale) {
     );
   }
   updateDetectionModel(currentModelPath, currentModelStatus, currentModelMessage);
+  updateDetectionResult(currentDetectionLabel, currentDetectionConfidence);
 
   window.localStorage.setItem(LOCALE_STORAGE_KEY, i18n.getLocale());
 }
@@ -146,6 +171,7 @@ function attachBridge() {
     bridge.captureMetricsChanged.connect(updateCaptureMetrics);
     bridge.previewFrameChanged.connect(updatePreviewFrame);
     bridge.detectionModelChanged.connect(updateDetectionModel);
+    bridge.detectionResultChanged.connect(updateDetectionResult);
     bridge.backendErrorChanged.connect((message) => {
       updateBackendStatus("error");
       updateCaptureStatus("error", message || translate("errors.backend_error"));
