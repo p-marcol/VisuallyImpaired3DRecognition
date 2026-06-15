@@ -1,11 +1,10 @@
 # Install the CUDA-enabled PyTorch stack before the base requirements:
 #
-#   python -m pip install -r requirements-cuda.txt
+#   python -m pip install -r requirements.cuda.txt
 #   python -m pip install -r requirements.txt
 #
 # Pick a different PyTorch CUDA index URL if your NVIDIA driver requires a
 # different CUDA wheel family.
---index-url https://download.pytorch.org/whl/cu124
+--index-url https://download.pytorch.org/whl/cu132
 torch
 torchvision
-torchaudio
