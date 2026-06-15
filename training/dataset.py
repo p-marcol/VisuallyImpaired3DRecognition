@@ -34,6 +34,7 @@ class ResolvedDatasetConfig:
     val_path: Path
     test_path: Path | None
     config: dict[str, Any]
+    filter_path: Path | None = None
 
 
 def load_dataset_config(path: str | Path) -> dict[str, Any]:
@@ -82,6 +83,7 @@ def validate_yolo_dataset_config(path: str | Path) -> ResolvedDatasetConfig:
         if config.get("test")
         else None
     )
+    filter_path = _resolve_filter_path(config.get("filter"), root_path)
 
     for split, split_path in (
         ("train", train_path),
@@ -93,6 +95,9 @@ def validate_yolo_dataset_config(path: str | Path) -> ResolvedDatasetConfig:
                 f"dataset split '{split}' does not exist: {split_path}"
             )
 
+    if filter_path is not None and not filter_path.is_file():
+        raise DatasetConfigError(f"dataset filter file does not exist: {filter_path}")
+
     return ResolvedDatasetConfig(
         config_path=config_path,
         root_path=root_path,
@@ -100,6 +105,7 @@ def validate_yolo_dataset_config(path: str | Path) -> ResolvedDatasetConfig:
         val_path=val_path,
         test_path=test_path,
         config=config,
+        filter_path=filter_path,
     )
 
 
@@ -123,6 +129,20 @@ def _resolve_split_path(split_value: Any, root_path: Path) -> Path:
     return (root_path / split_path).resolve()
 
 
+def _resolve_filter_path(filter_value: Any, root_path: Path) -> Path | None:
+    if filter_value is None:
+        return None
+    if not isinstance(filter_value, str) or not filter_value.strip():
+        raise DatasetConfigError("dataset.yaml field 'filter' must be a Python file path")
+
+    filter_path = Path(filter_value).expanduser()
+    if filter_path.suffix != ".py":
+        raise DatasetConfigError("dataset.yaml field 'filter' must point to a .py file")
+    if filter_path.is_absolute():
+        return filter_path.resolve()
+    return (root_path / filter_path).resolve()
+
+
 def read_split_image_paths(split_path: Path, root_path: Path) -> list[Path]:
     if split_path.is_dir():
         return sorted(
@@ -131,19 +151,22 @@ def read_split_image_paths(split_path: Path, root_path: Path) -> list[Path]:
             if path.is_file() and path.suffix.lower() in IMAGE_SUFFIXES
         )
 
+    return [
+        resolve_image_list_entry(entry, root_path)
+        for entry in read_split_entries(split_path)
+        if entry.strip()
+    ]
+
+
+def read_split_entries(split_path: Path) -> list[str]:
     if split_path.suffix.lower() == ".csv":
         entries: list[str] = []
         with split_path.open("r", encoding="utf-8", newline="") as file:
             for row in csv.reader(file):
                 entries.extend(value for value in row if value.strip())
-    else:
-        entries = split_path.read_text(encoding="utf-8").splitlines()
+        return entries
 
-    return [
-        resolve_image_list_entry(entry, root_path)
-        for entry in entries
-        if entry.strip()
-    ]
+    return split_path.read_text(encoding="utf-8").splitlines()
 
 
 def resolve_image_list_entry(entry: str, root_path: Path) -> Path:

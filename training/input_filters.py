@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib
 import importlib.util
 import sys
@@ -9,17 +10,8 @@ import torch
 from torch import nn
 from ultralytics.nn.modules.conv import Conv
 
-from filters.grayscale import GrayscaleInputFilter
-from filters.sobel import SobelInputFilter
-
 
 INPUT_FILTER_IDENTITY = "identity"
-INPUT_FILTER_GRAYSCALE = "grayscale"
-INPUT_FILTER_SOBEL = "sobel"
-BUILTIN_FILTER_MODULES = {
-    INPUT_FILTER_GRAYSCALE: "filters.grayscale",
-    INPUT_FILTER_SOBEL: "filters.sobel",
-}
 PROJECT_ROOT = Path(__file__).resolve().parent
 
 
@@ -68,27 +60,31 @@ def load_input_filter(filter_path: str | None) -> tuple[nn.Module, str]:
 
 
 def load_filter_module(filter_path: str):
-    if filter_path in BUILTIN_FILTER_MODULES:
-        return importlib.import_module(BUILTIN_FILTER_MODULES[filter_path])
+    path = resolve_filter_source_path(filter_path)
+    return load_filter_module_from_file(path)
 
+
+def resolve_filter_source_path(filter_path: str | Path) -> Path:
     path = Path(filter_path).expanduser()
-    looks_like_file_path = path.suffix == ".py" or "/" in filter_path or "\\" in filter_path
-    if looks_like_file_path:
-        return load_filter_module_from_file(path)
+    if path.suffix != ".py":
+        raise ValueError(f"input filter must be a Python file: {filter_path}")
 
-    return importlib.import_module(filter_path)
-
-
-def load_filter_module_from_file(path: Path):
     resolved_path = path if path.is_absolute() else (PROJECT_ROOT / path)
     resolved_path = resolved_path.resolve()
     if not resolved_path.is_file():
         raise FileNotFoundError(f"input filter module does not exist: {resolved_path}")
 
+    return resolved_path
+
+
+def load_filter_module_from_file(path: Path):
+    resolved_path = resolve_filter_source_path(path)
+
     try:
         relative_path = resolved_path.relative_to(PROJECT_ROOT)
     except ValueError:
-        module_name = f"_vi3dr_filter_{resolved_path.stem}"
+        path_hash = hashlib.sha1(str(resolved_path).encode("utf-8")).hexdigest()[:12]
+        module_name = f"_vi3dr_filter_{resolved_path.stem}_{path_hash}"
     else:
         module_name = ".".join(relative_path.with_suffix("").parts)
 

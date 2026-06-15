@@ -33,7 +33,7 @@ def parse_args() -> argparse.Namespace:
         "--input-filter",
         default=config.INPUT_FILTER,
         help=(
-            "Path or dotted import path to a Python input filter module, "
+            "Path to a Python input filter file, "
             "for example filters/sobel.py; default: %(default)s"
         ),
     )

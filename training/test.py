@@ -6,10 +6,12 @@ from pathlib import Path
 import config
 from dataset import (
     DatasetConfigError,
+    ResolvedDatasetConfig,
     read_split_image_paths,
     resolve_ultralytics_cache_mode,
     validate_yolo_dataset_config,
 )
+from input_filters import get_input_filter_name
 from scores import ScoreError, f1_score_from_metrics, write_f1_score
 
 
@@ -250,6 +252,48 @@ def generate_labels_plot(dataset_config, output_path: Path) -> None:
     plt.close(fig)
 
 
+def filter_dataset_mismatch_warning(
+    model_path: Path,
+    dataset_config: ResolvedDatasetConfig,
+    model_filter_name: str | None,
+) -> str | None:
+    dataset_is_filtered = dataset_config.filter_path is not None
+    if model_filter_name and dataset_is_filtered:
+        return (
+            "The selected model already has an input filter attached, and the "
+            "selected dataset is also marked as filtered. This can apply the "
+            "filter twice and make the evaluation invalid."
+        )
+
+    filtered_run_plain_best = (
+        model_path.name == "best.pt"
+        and (model_path.parent / "best_with_filter.pt").is_file()
+    )
+    if not model_filter_name and not dataset_is_filtered and filtered_run_plain_best:
+        return (
+            "The selected model is the plain best.pt from a run that also has "
+            "best_with_filter.pt, but the selected dataset is not marked as "
+            "filtered. Plain best.pt from filtered training expects already "
+            "filtered images."
+        )
+
+    return None
+
+
+def confirm_filter_dataset_mismatch(warning: str) -> None:
+    print("WARNING: possible model/dataset filter mismatch.")
+    print(warning)
+    try:
+        answer = input("Type 'continue' to run evaluation anyway: ")
+    except EOFError as err:
+        raise TestConfigError(
+            "filter mismatch confirmation is required, but stdin is not interactive"
+        ) from err
+
+    if answer.strip() != "continue":
+        raise TestConfigError("evaluation aborted because filter mismatch was not confirmed")
+
+
 def test(args: argparse.Namespace):
     from train import prepare_ultralytics_dataset_config, resolve_dataset_yaml
 
@@ -286,10 +330,19 @@ def test(args: argparse.Namespace):
         args.imgsz,
     )
 
-    ultralytics_dataset_path = prepare_ultralytics_dataset_config(dataset_config, run_dir.parent)
     from ultralytics import YOLO
 
     model = YOLO(str(model_path))
+    model_filter_name = get_input_filter_name(model)
+    warning = filter_dataset_mismatch_warning(
+        model_path,
+        dataset_config,
+        model_filter_name,
+    )
+    if warning is not None:
+        confirm_filter_dataset_mismatch(warning)
+
+    ultralytics_dataset_path = prepare_ultralytics_dataset_config(dataset_config, run_dir.parent)
     val_kwargs = {
         "data": str(ultralytics_dataset_path),
         "split": "test",

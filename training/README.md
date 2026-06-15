@@ -10,21 +10,29 @@ repository only keeps an example in `examples/dataset.example.yaml`.
 
 ```yaml
 path: .
-train: images/train
-val: images/val
-test: images/test
+train: train.txt
+val: val.txt
+test: test.txt
 nc: <number-of-classes>
 names: [...]
 ```
 
-Expected labels live next to the images:
+The split text files contain image paths relative to `path` or absolute image
+paths. Expected labels are resolved by replacing the `images` path component
+with `labels`:
 
 ```text
 datasets/vi3dr/
+  dataset.yaml
+  train.txt
+  val.txt
+  test.txt
   images/train/
   images/val/
+  images/test/
   labels/train/
   labels/val/
+  labels/test/
 ```
 
 ## Train
@@ -84,18 +92,46 @@ with `--name`:
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --runs-dir /Volumes/Data/vi3dr-runs --name experiment-001
 ```
 
-By default, new models attach an `identity` input filter before the first YOLO
-layer, so existing RGB behavior is unchanged. Filter implementations live under
-`filters/`. Pass a filter module path to `--input-filter`; the run name uses the
-module's `name` value, falling back to `__name__` when `name` is not provided.
-Use `filters/grayscale.py` to train a model that accepts RGB images but converts
-them to 3-channel grayscale inside the model, or `filters/sobel.py` to train on
-Sobel edge magnitude:
+By default, training uses the dataset as-is. Pass a Python filter file to
+`--input-filter` to create a filtered dataset before training. The filter is not
+attached to the model during training. Instead, `train.py` writes the filtered
+images under `<dataset>/filters/<filter-name>/`, copies matching labels there,
+copies the filter source as `filter.py`, and trains on the generated
+`dataset.yaml`.
 
 ```bash
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --input-filter filters/grayscale.py
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --input-filter filters/sobel.py
 ```
+
+Generated filtered datasets use the same split-file layout:
+
+```yaml
+path: .
+train: train.txt
+val: val.txt
+test: test.txt
+nc: 6
+names: ["cube", "sphere", "cylinder", "cuboid", "tetrahedron", "cone"]
+filter: filter.py
+```
+
+Re-run with `--rebuild-filtered-dataset` to recompute existing filtered images
+or replace a different copied `filter.py`. If you point `--data` or
+`--dataset-dir` directly at a dataset whose YAML contains `filter: filter.py`,
+the run name automatically includes the filter name and no extra
+`--input-filter` argument is needed.
+
+After filtered training, the run contains two checkpoint forms:
+
+```text
+weights/best.pt
+weights/best_with_filter.pt
+```
+
+`best.pt` is the plain YOLO model and expects already filtered images.
+`best_with_filter.pt` has the filter attached to the first layer and expects
+original RGB images.
 
 Preview input filters on random images from all dataset splits without writing
 files:
@@ -156,6 +192,11 @@ evaluation again. The generated `labels.jpg` describes the `test` split label
 distribution.
 After a fresh evaluation, `test.py` also writes `<run-dir>/test/f1_score.json`
 from the test precision and recall.
+
+For filtered runs, evaluate `weights/best.pt` with the filtered dataset and
+`weights/best_with_filter.pt` with the original dataset. If `test.py` detects a
+likely mismatch, it prints a warning and asks you to type `continue` before it
+runs evaluation anyway.
 
 ## Epochs, Early Stopping And Resume
 

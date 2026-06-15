@@ -16,6 +16,7 @@ from dataset import (
     resolve_ultralytics_cache_mode,
     validate_yolo_dataset_config,
 )
+from filtered_dataset import FilteredDatasetError, prepare_filtered_dataset
 from input_filters import attach_input_filter, resolve_input_filter_name
 from scores import (
     ScoreError,
@@ -103,11 +104,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--input-filter",
         help=(
-            "Path or dotted import path to a Python input filter module attached "
-            "before the first YOLO layer, for example filters/grayscale.py. "
-            f"If omitted, new models use {config.INPUT_FILTER!r}; checkpoints "
-            "keep their saved filter when present."
+            "Path to a Python input filter file used to build a filtered dataset "
+            "before training, for example filters/grayscale.py. The filter is "
+            "not attached to the model during training; a separate "
+            "best_with_filter.pt checkpoint is created after training."
         ),
+    )
+    parser.add_argument(
+        "--rebuild-filtered-dataset",
+        action="store_true",
+        help="Recompute filtered images and overwrite the copied filter.py",
     )
     parser.add_argument(
         "--project",
@@ -171,7 +177,7 @@ def resolve_run_name(
 
     components = [
         _safe_name(_model_name_for_run(model_source)),
-        _safe_name(dataset_config.config_path.parent.name),
+        _safe_name(_dataset_name_for_run(dataset_config)),
         _safe_name(device.replace(":", "")),
         f"imgsz{args.imgsz}",
         f"lr{_safe_name(str(config.LR0))}",
@@ -190,14 +196,33 @@ def _model_name_for_run(model_source: str) -> str:
     return Path(filename).stem or "model"
 
 
+def _dataset_name_for_run(dataset_config: ResolvedDatasetConfig) -> str:
+    dataset_dir = dataset_config.config_path.parent
+    if dataset_config.filter_path is not None and dataset_dir.parent.name == "filters":
+        return dataset_dir.parent.parent.name
+    return dataset_dir.name
+
+
+def _dataset_config_output_name(dataset_config: ResolvedDatasetConfig) -> str:
+    dataset_name = _dataset_name_for_run(dataset_config)
+    if dataset_config.filter_path is None:
+        return dataset_name
+
+    filter_name = dataset_config.config_path.parent.name
+    return f"{dataset_name}_{filter_name}"
+
+
 def prepare_ultralytics_dataset_config(
     dataset_config: ResolvedDatasetConfig,
     runs_dir: Path,
 ) -> Path:
-    output_dir = runs_dir / "_dataset_configs" / _safe_name(dataset_config.config_path.parent.name)
+    output_dir = runs_dir / "_dataset_configs" / _safe_name(
+        _dataset_config_output_name(dataset_config)
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
 
     normalized_config = dict(dataset_config.config)
+    normalized_config.pop("filter", None)
     normalized_config["path"] = str(dataset_config.root_path)
     normalized_config["train"] = _normalize_split_for_ultralytics(
         split_name="train",
@@ -257,11 +282,93 @@ def _safe_name(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]+", "-", value).strip("-") or "dataset"
 
 
+def resolve_dataset_filter_name(dataset_config: ResolvedDatasetConfig) -> str:
+    if dataset_config.filter_path is None:
+        return config.INPUT_FILTER
+    return resolve_input_filter_name(str(dataset_config.filter_path))
+
+
+def resolve_requested_filter_name(args: argparse.Namespace) -> str:
+    requested_filter = args.input_filter or config.INPUT_FILTER
+    return resolve_input_filter_name(requested_filter)
+
+
+def has_requested_filter(args: argparse.Namespace) -> bool:
+    requested_filter = args.input_filter or config.INPUT_FILTER
+    return requested_filter != config.INPUT_FILTER
+
+
+def validate_filter_args(
+    args: argparse.Namespace,
+    dataset_config: ResolvedDatasetConfig,
+) -> None:
+    if args.input_filter and dataset_config.filter_path is not None:
+        raise TrainingConfigError(
+            "dataset.yaml already defines a filter; omit --input-filter to train on it"
+        )
+
+    if args.rebuild_filtered_dataset and not has_requested_filter(args):
+        raise TrainingConfigError("--rebuild-filtered-dataset requires --input-filter")
+
+
+def prepare_training_dataset_config(
+    args: argparse.Namespace,
+    dataset_config: ResolvedDatasetConfig,
+) -> tuple[ResolvedDatasetConfig, str]:
+    validate_filter_args(args, dataset_config)
+
+    if has_requested_filter(args):
+        result = prepare_filtered_dataset(
+            dataset_config,
+            args.input_filter or config.INPUT_FILTER,
+            rebuild=args.rebuild_filtered_dataset,
+        )
+        print(
+            f"Filtered dataset: {result.config_path} "
+            f"(written={result.images_written}, skipped={result.images_skipped}, "
+            f"labels={result.labels_copied})"
+        )
+        return validate_yolo_dataset_config(result.config_path), result.filter_name
+
+    return dataset_config, resolve_dataset_filter_name(dataset_config)
+
+
+def create_best_with_filter_checkpoint(
+    save_dir: Path,
+    filter_path: Path,
+) -> tuple[Path, str]:
+    best_path = save_dir / "weights" / "best.pt"
+    if not best_path.is_file():
+        raise TrainingConfigError(f"best checkpoint does not exist: {best_path}")
+
+    output_path = save_dir / "weights" / "best_with_filter.pt"
+    model = YOLO(str(best_path))
+    filter_name = attach_input_filter(model, str(filter_path))
+    model.save(str(output_path))
+    return output_path, filter_name
+
+
 def train(args: argparse.Namespace):
     dataset_path = resolve_dataset_yaml(args)
     dataset_config = validate_yolo_dataset_config(dataset_path)
     model_source = resolve_model_source(args)
     runs_dir = resolve_runs_dir(args)
+    try:
+        validate_filter_args(args, dataset_config)
+        if args.dry_run:
+            input_filter_name = (
+                resolve_requested_filter_name(args)
+                if has_requested_filter(args)
+                else resolve_dataset_filter_name(dataset_config)
+            )
+        else:
+            dataset_config, input_filter_name = prepare_training_dataset_config(
+                args,
+                dataset_config,
+            )
+    except (FileNotFoundError, ImportError, TypeError, ValueError, FilteredDatasetError) as err:
+        raise TrainingConfigError(str(err)) from err
+
     ultralytics_dataset_path = prepare_ultralytics_dataset_config(dataset_config, runs_dir)
     image_cache, image_cache_description = resolve_ultralytics_cache_mode(
         args.image_cache,
@@ -272,10 +379,6 @@ def train(args: argparse.Namespace):
     try:
         device = config.resolve_device(args.device)
     except ValueError as err:
-        raise TrainingConfigError(str(err)) from err
-    try:
-        input_filter_name = resolve_input_filter_name(args.input_filter or config.INPUT_FILTER)
-    except (FileNotFoundError, ImportError, TypeError, ValueError) as err:
         raise TrainingConfigError(str(err)) from err
     run_name = resolve_run_name(
         args,
@@ -292,6 +395,10 @@ def train(args: argparse.Namespace):
         print(f"Val split: {dataset_config.val_path}")
         if dataset_config.test_path is not None:
             print(f"Test split: {dataset_config.test_path}")
+        if dataset_config.filter_path is not None:
+            print(f"Dataset filter file: {dataset_config.filter_path}")
+        elif has_requested_filter(args):
+            print("Filtered dataset: will be generated before training")
         print(f"Ultralytics dataset config: {ultralytics_dataset_path}")
         print(f"Model source: {model_source}")
         print(f"Training from scratch: {args.from_scratch}")
@@ -303,17 +410,13 @@ def train(args: argparse.Namespace):
         print(f"Epoch limit: {args.epochs}")
         print(f"Early stopping patience: {args.patience}")
         print(f"Image cache: {image_cache_description}")
-        print(f"Input filter: {input_filter_name}")
+        print(f"Dataset filter: {input_filter_name}")
         print(f"Runs directory: {runs_dir}")
         print(f"Run name: {run_name}")
         return None
 
     model = YOLO(model_source)
-    try:
-        input_filter_name = attach_input_filter(model, args.input_filter)
-    except (FileNotFoundError, ImportError, TypeError, ValueError) as err:
-        raise TrainingConfigError(str(err)) from err
-    print(f"Input filter: {input_filter_name}")
+    print(f"Dataset filter: {input_filter_name}")
     result = model.train(
         data=str(ultralytics_dataset_path),
         epochs=args.epochs,
@@ -359,6 +462,20 @@ def train(args: argparse.Namespace):
             f"mAP={best_metrics['mAP']:.4f}, "
             f"precision={best_metrics['precision']:.4f}, "
             f"recall={best_metrics['recall']:.4f}. Saved: {stats_path}"
+        )
+    if dataset_config.filter_path is not None:
+        try:
+            filtered_checkpoint_path, checkpoint_filter_name = create_best_with_filter_checkpoint(
+                save_dir,
+                dataset_config.filter_path,
+            )
+        except (FileNotFoundError, ImportError, TypeError, ValueError) as err:
+            raise TrainingConfigError(
+                f"could not create best_with_filter.pt: {err}"
+            ) from err
+        print(
+            f"Filter-attached checkpoint: {filtered_checkpoint_path} "
+            f"(filter={checkpoint_filter_name})"
         )
     print(f"Training finished. Best weights: {save_dir / 'weights' / 'best.pt'}")
     return result
