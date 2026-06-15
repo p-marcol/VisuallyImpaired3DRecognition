@@ -55,6 +55,14 @@ def prepare_filtered_dataset(
     output_root = dataset_config.root_path / "filters" / _safe_name(filter_name)
     output_root.mkdir(parents=True, exist_ok=True)
     copied_filter_path = copy_filter_source(source_filter_path, output_root, rebuild)
+    print(
+        f"Preparing filtered dataset '{filter_name}' from {dataset_config.root_path} "
+        f"into {output_root}."
+    )
+    if rebuild:
+        print("Existing filtered images will be overwritten.")
+    else:
+        print("Existing filtered images will be reused; pass --rebuild-filtered-dataset to overwrite.")
 
     input_filter.eval()
     split_specs = [
@@ -98,6 +106,8 @@ def prepare_filtered_dataset(
 
 @dataclass(frozen=True)
 class SplitWriteResult:
+    split_name: str
+    images_total: int
     images_written: int
     images_skipped: int
     labels_copied: int
@@ -126,6 +136,9 @@ def write_filtered_split(
     rebuild: bool,
 ) -> SplitWriteResult:
     image_paths = split_image_paths(split_path, source_root)
+    print(
+        f"Filtered dataset split '{split_name}': {len(image_paths)} image file(s) to process."
+    )
     output_entries: list[str] = []
     used_relative_paths: set[Path] = set()
     images_written = 0
@@ -157,7 +170,13 @@ def write_filtered_split(
 
     split_list_path = output_root / f"{split_name}.txt"
     split_list_path.write_text("\n".join(output_entries) + "\n", encoding="utf-8")
+    print(
+        f"Filtered dataset split '{split_name}' done: "
+        f"written={images_written}, skipped={images_skipped}, labels={labels_copied}."
+    )
     return SplitWriteResult(
+        split_name=split_name,
+        images_total=len(image_paths),
         images_written=images_written,
         images_skipped=images_skipped,
         labels_copied=labels_copied,
