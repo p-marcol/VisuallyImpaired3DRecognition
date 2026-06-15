@@ -122,6 +122,10 @@ or replace a different copied `filter.py`. If you point `--data` or
 the run name automatically includes the filter name and no extra
 `--input-filter` argument is needed.
 
+Filtered image generation runs in parallel with `--filter-workers`, defaulting
+to the training worker count from `config.py`. Use `--filter-workers 1` for
+sequential processing if a custom filter keeps mutable state.
+
 After filtered training, the run contains two checkpoint forms:
 
 ```text
@@ -145,13 +149,15 @@ preview.
 
 Images are loaded by Ultralytics dataloaders. By default this project uses
 `--image-cache none`, so images are read lazily from disk batch by batch. You
-can override this explicitly:
+can override this explicitly. Training dataloader workers default to 4 and can
+be changed with `--workers`:
 
 ```bash
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --image-cache auto
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --image-cache none
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --image-cache ram
 ./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --image-cache disk
+./.venv/bin/python train.py --dataset-dir /Volumes/Data/vi3dr-dataset --workers 8
 ```
 
 `auto` estimates the selected split after resize and caches decoded images in

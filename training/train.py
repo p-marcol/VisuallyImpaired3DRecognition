@@ -69,6 +69,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--imgsz", type=int, default=config.IMG_SIZE)
     parser.add_argument("--batch", type=int, default=config.BATCH_SIZE)
     parser.add_argument(
+        "--workers",
+        type=int,
+        default=config.WORKERS,
+        help=(
+            "Number of dataloader worker processes used by Ultralytics during "
+            "training; use 0 to load data in the main process. Default: %(default)s"
+        ),
+    )
+    parser.add_argument(
         "--image-cache",
         choices=config.IMAGE_CACHE_MODE_CHOICES,
         default=config.IMAGE_CACHE_MODE,
@@ -114,6 +123,15 @@ def parse_args() -> argparse.Namespace:
         "--rebuild-filtered-dataset",
         action="store_true",
         help="Recompute filtered images and overwrite the copied filter.py",
+    )
+    parser.add_argument(
+        "--filter-workers",
+        type=int,
+        default=config.WORKERS,
+        help=(
+            "Number of worker threads used while generating filtered datasets; "
+            "use 1 for sequential processing. Default: %(default)s"
+        ),
     )
     parser.add_argument(
         "--project",
@@ -310,6 +328,12 @@ def validate_filter_args(
     if args.rebuild_filtered_dataset and not has_requested_filter(args):
         raise TrainingConfigError("--rebuild-filtered-dataset requires --input-filter")
 
+    if args.filter_workers < 1:
+        raise TrainingConfigError("--filter-workers must be at least 1")
+
+    if args.workers < 0:
+        raise TrainingConfigError("--workers must be at least 0")
+
 
 def prepare_training_dataset_config(
     args: argparse.Namespace,
@@ -322,6 +346,7 @@ def prepare_training_dataset_config(
             dataset_config,
             args.input_filter or config.INPUT_FILTER,
             rebuild=args.rebuild_filtered_dataset,
+            workers=args.filter_workers,
         )
         print(
             f"Filtered dataset: {result.config_path} "
@@ -409,7 +434,10 @@ def train(args: argparse.Namespace):
         print(f"Device availability: {config.describe_device_availability()}")
         print(f"Epoch limit: {args.epochs}")
         print(f"Early stopping patience: {args.patience}")
+        print(f"Dataloader workers: {args.workers}")
         print(f"Image cache: {image_cache_description}")
+        if has_requested_filter(args):
+            print(f"Filter workers: {args.filter_workers}")
         print(f"Dataset filter: {input_filter_name}")
         print(f"Runs directory: {runs_dir}")
         print(f"Run name: {run_name}")
@@ -425,7 +453,7 @@ def train(args: argparse.Namespace):
         device=device,
         project=str(runs_dir),
         name=run_name,
-        workers=config.WORKERS,
+        workers=args.workers,
         lr0=config.LR0,
         patience=args.patience,
         save_period=args.save_period,

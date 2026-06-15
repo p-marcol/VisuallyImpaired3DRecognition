@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import shutil
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -41,6 +42,7 @@ def prepare_filtered_dataset(
     dataset_config: ResolvedDatasetConfig,
     filter_path: str | Path,
     rebuild: bool = False,
+    workers: int = 1,
 ) -> FilteredDatasetResult:
     if dataset_config.filter_path is not None:
         raise FilteredDatasetError(
@@ -63,6 +65,7 @@ def prepare_filtered_dataset(
         print("Existing filtered images will be overwritten.")
     else:
         print("Existing filtered images will be reused; pass --rebuild-filtered-dataset to overwrite.")
+    print(f"Filtering workers: {workers}.")
 
     input_filter.eval()
     split_specs = [
@@ -83,6 +86,7 @@ def prepare_filtered_dataset(
             output_root,
             input_filter,
             rebuild,
+            workers,
         )
         images_written += split_result.images_written
         images_skipped += split_result.images_skipped
@@ -113,6 +117,22 @@ class SplitWriteResult:
     labels_copied: int
 
 
+@dataclass(frozen=True)
+class ImageFilterJob:
+    image_path: Path
+    output_image_path: Path
+    source_label_path: Path
+    output_label_path: Path
+    should_write_image: bool
+
+
+@dataclass(frozen=True)
+class ImageFilterResult:
+    image_written: bool
+    image_skipped: bool
+    label_copied: bool
+
+
 def copy_filter_source(source_filter_path: Path, output_root: Path, rebuild: bool) -> Path:
     target_filter_path = output_root / "filter.py"
     if target_filter_path.exists():
@@ -134,6 +154,7 @@ def write_filtered_split(
     output_root: Path,
     input_filter: torch.nn.Module,
     rebuild: bool,
+    workers: int,
 ) -> SplitWriteResult:
     image_paths = split_image_paths(split_path, source_root)
     print(
@@ -141,9 +162,7 @@ def write_filtered_split(
     )
     output_entries: list[str] = []
     used_relative_paths: set[Path] = set()
-    images_written = 0
-    images_skipped = 0
-    labels_copied = 0
+    jobs: list[ImageFilterJob] = []
 
     for image_path in image_paths:
         image_rel = filtered_image_relative_path(
@@ -155,18 +174,23 @@ def write_filtered_split(
         output_image_path = output_root / image_rel
         output_entries.append(image_rel.as_posix())
 
-        if output_image_path.exists() and not rebuild:
-            images_skipped += 1
-        else:
-            apply_filter_to_image_file(image_path, output_image_path, input_filter)
-            images_written += 1
-
         source_label_path = label_path_for_image(image_path)
-        if source_label_path.exists():
-            output_label_path = output_root / label_relative_path_for_image(image_rel)
-            output_label_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source_label_path, output_label_path)
-            labels_copied += 1
+        output_label_path = output_root / label_relative_path_for_image(image_rel)
+        jobs.append(
+            ImageFilterJob(
+                image_path=image_path,
+                output_image_path=output_image_path,
+                source_label_path=source_label_path,
+                output_label_path=output_label_path,
+                should_write_image=rebuild or not output_image_path.exists(),
+            )
+        )
+
+    images_written, images_skipped, labels_copied = process_filter_jobs(
+        jobs,
+        input_filter,
+        workers,
+    )
 
     split_list_path = output_root / f"{split_name}.txt"
     split_list_path.write_text("\n".join(output_entries) + "\n", encoding="utf-8")
@@ -180,6 +204,52 @@ def write_filtered_split(
         images_written=images_written,
         images_skipped=images_skipped,
         labels_copied=labels_copied,
+    )
+
+
+def process_filter_jobs(
+    jobs: list[ImageFilterJob],
+    input_filter: torch.nn.Module,
+    workers: int,
+) -> tuple[int, int, int]:
+    if workers < 1:
+        raise FilteredDatasetError("--filter-workers must be at least 1")
+
+    if workers == 1 or len(jobs) <= 1:
+        results = [run_filter_job(job, input_filter) for job in jobs]
+    else:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = [executor.submit(run_filter_job, job, input_filter) for job in jobs]
+            results = [future.result() for future in as_completed(futures)]
+
+    images_written = sum(1 for result in results if result.image_written)
+    images_skipped = sum(1 for result in results if result.image_skipped)
+    labels_copied = sum(1 for result in results if result.label_copied)
+    return images_written, images_skipped, labels_copied
+
+
+def run_filter_job(
+    job: ImageFilterJob,
+    input_filter: torch.nn.Module,
+) -> ImageFilterResult:
+    image_written = False
+    image_skipped = False
+    if job.should_write_image:
+        apply_filter_to_image_file(job.image_path, job.output_image_path, input_filter)
+        image_written = True
+    else:
+        image_skipped = True
+
+    label_copied = False
+    if job.source_label_path.exists():
+        job.output_label_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(job.source_label_path, job.output_label_path)
+        label_copied = True
+
+    return ImageFilterResult(
+        image_written=image_written,
+        image_skipped=image_skipped,
+        label_copied=label_copied,
     )
 
 
