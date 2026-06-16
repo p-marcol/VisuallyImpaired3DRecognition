@@ -1,0 +1,29 @@
+{
+  "source": "results.csv",
+  "best_selection": "highest metrics/mAP50-95(B)",
+  "epochs_completed": 203,
+  "best_epoch": 153,
+  "best": {
+    "precision": 0.8474,
+    "recall": 0.78525,
+    "f1_score": 0.8151420696413807,
+    "mAP": 0.72145,
+    "mAP50": 0.86096,
+    "mAP50_95": 0.72145,
+    "fitness": 0.72145
+  },
+  "final_epoch": 203,
+  "final": {
+    "precision": 0.84257,
+    "recall": 0.73189,
+    "f1_score": 0.7833397575041601,
+    "mAP": 0.70295,
+    "mAP50": 0.83797,
+    "mAP50_95": 0.70295,
+    "fitness": 0.70295
+  },
+  "weights": {
+    "best": "weights/best.pt",
+    "last": "weights/last.pt"
+  }
+}
