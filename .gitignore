@@ -16,6 +16,7 @@
 # Model weights and checkpoints
 *.pt
 !best.pt
+!best*.pt
 *.pth
 *.onnx
 *.tflite
