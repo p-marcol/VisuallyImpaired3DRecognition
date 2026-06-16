@@ -610,7 +610,7 @@ def train(args: argparse.Namespace):
     dataset_config = validate_yolo_dataset_config(dataset_path)
     model_source = resolve_model_source(args)
     runs_dir = resolve_runs_dir(args)
-    resume_state = load_resume_training_state(args.resume) if args.resume else None
+    resume_state = load_resume_training_state(args) if args.resume else None
     try:
         validate_filter_args(args, dataset_config)
         if args.dry_run:
