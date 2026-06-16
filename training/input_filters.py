@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib
 import importlib.util
+import re
 import sys
 from pathlib import Path
 
@@ -94,6 +95,14 @@ def load_filter_module_from_file(path: Path):
     if not module_name.startswith("_vi3dr_filter_"):
         return importlib.import_module(module_name)
 
+    return load_filter_module_from_file_as(resolved_path, module_name)
+
+
+def load_filter_module_from_file_as(path: str | Path, module_name: str):
+    resolved_path = resolve_filter_source_path(path)
+    if module_name in sys.modules:
+        return sys.modules[module_name]
+
     spec = importlib.util.spec_from_file_location(module_name, resolved_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"cannot load input filter module: {resolved_path}")
@@ -102,6 +111,15 @@ def load_filter_module_from_file(path: Path):
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def checkpoint_filter_module_names(checkpoint_path: str | Path) -> list[str]:
+    data = Path(checkpoint_path).expanduser().resolve().read_bytes()
+    names = {
+        match.decode("utf-8")
+        for match in re.findall(rb"_vi3dr_filter_[A-Za-z0-9_]+", data)
+    }
+    return sorted(names)
 
 
 def find_filter_class(module) -> type[nn.Module]:

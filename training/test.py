@@ -11,7 +11,11 @@ from dataset import (
     resolve_ultralytics_cache_mode,
     validate_yolo_dataset_config,
 )
-from input_filters import get_input_filter_name
+from input_filters import (
+    checkpoint_filter_module_names,
+    get_input_filter_name,
+    load_filter_module_from_file_as,
+)
 from scores import ScoreError, f1_score_from_metrics, write_f1_score
 
 
@@ -19,6 +23,7 @@ class TestConfigError(ValueError):
     pass
 
 
+PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_IMG_SIZE = 640
 DEFAULT_BATCH_SIZE = 8
 DEFAULT_DEVICE = "auto"
@@ -294,6 +299,58 @@ def confirm_filter_dataset_mismatch(warning: str) -> None:
         raise TestConfigError("evaluation aborted because filter mismatch was not confirmed")
 
 
+def register_checkpoint_filter_modules(
+    model_path: Path,
+    run_dir: Path,
+    dataset_config: ResolvedDatasetConfig,
+) -> None:
+    module_names = checkpoint_filter_module_names(model_path)
+    if not module_names:
+        return
+
+    filter_path = resolve_checkpoint_filter_path(run_dir, dataset_config)
+    if filter_path is None:
+        raise TestConfigError(
+            "model checkpoint contains a serialized input filter, but no matching "
+            "filter.py could be found. Pass a filtered dataset YAML or keep "
+            "filter.py next to the model/run."
+        )
+
+    for module_name in module_names:
+        load_filter_module_from_file_as(filter_path, module_name)
+
+
+def resolve_checkpoint_filter_path(
+    run_dir: Path,
+    dataset_config: ResolvedDatasetConfig,
+) -> Path | None:
+    if dataset_config.filter_path is not None:
+        return dataset_config.filter_path
+
+    colocated_filter = run_dir / "filter.py"
+    if colocated_filter.is_file():
+        return colocated_filter
+
+    candidates = sorted((dataset_config.root_path / "filters").glob("*/filter.py"))
+    if len(candidates) == 1:
+        return candidates[0]
+
+    if candidates:
+        run_name = run_dir.name.lower()
+        for candidate in candidates:
+            if f"filter{candidate.parent.name.lower()}" in run_name:
+                return candidate
+
+    run_name = run_dir.name.lower()
+    for project_filter in sorted((PROJECT_ROOT / "filters").glob("*.py")):
+        if project_filter.name == "__init__.py":
+            continue
+        if f"filter{project_filter.stem.lower()}" in run_name:
+            return project_filter
+
+    return None
+
+
 def test(args: argparse.Namespace):
     from train import prepare_ultralytics_dataset_config, resolve_dataset_yaml
 
@@ -332,6 +389,7 @@ def test(args: argparse.Namespace):
 
     from ultralytics import YOLO
 
+    register_checkpoint_filter_modules(model_path, run_dir, dataset_config)
     model = YOLO(str(model_path))
     model_filter_name = get_input_filter_name(model)
     warning = filter_dataset_mismatch_warning(

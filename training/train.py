@@ -548,6 +548,7 @@ def create_best_with_filter_checkpoint(
     model = YOLO(str(best_path))
     filter_name = attach_input_filter(model, str(filter_path))
     model.save(str(output_path))
+    shutil.copy2(filter_path, save_dir / "filter.py")
     return output_path, filter_name
 
 
