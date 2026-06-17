@@ -1,7 +1,44 @@
-\chapter{Badania}
-%
-% 
-%
+\chapter{Zbiór danych i metodyka badań}
+
+\note{
+    To jest bardzo ważny rozdział, bo wymagania kładą nacisk na metodykę, dane, powtarzalność i naukową analizę wyników. Badania powinny być przeprowadzone „tak jak jest przyjęte w ujęciu naukowym”, np. z zapewnieniem powtarzalności testów.
+}
+
+\section{Charakterystyka zbioru danych}
+\note{
+    Liczba klas, liczba obrazów, rozdzielczość, źródło danych, przykładowe obrazy.
+}
+
+\section{Proces pozyskiwania i oznaczania danych}
+\note{
+    Nagrania, ekstrakcja klatek, anotacje, negatywne próbki, puste etykiety.
+}
+
+\section{Podział danych na zbiory treningowy, walidacyjny i testowy}
+\note{
+    Train/val/test. Tu trzeba bardzo jasno wyjaśnić, jak dzielę dane, żeby recenzent nie zarzucił przecieku danych.
+}
+
+\section{Warianty danych wejściowych}
+\note{
+    Kolor, grayscale, ewentualne filtry/normalizacja. To będzie dobre miejsce na porównanie „kolor vs grayscale”.
+}
+
+\section{Konfiguracja treningu modeli}
+\note{
+    Modele, rozmiar obrazu, batch, liczba epok, patience, pretrained/from scratch, sprzęt GPU.
+}
+
+\section{Metryki oceny}
+\note{
+    Precision, recall, mAP50, mAP50-95, macierz pomyłek, czas inferencji/FPS, zużycie pamięci.
+}
+
+\section{Procedura eksperymentalna}
+\note{
+    Czyli dokładnie: jakie modele trenowano, na jakich danych, jakie wyniki zbierano, jak porównywano.
+}
+
 %Rozdział przedstawia przeprowadzone badania. Jest to zasadnicza część i~musi wyraźnie dominować w~pracy.
 %Badania i analizę wyników należy przeprowadzić, tak jak jest przyjęte w środowisku naukowym (na przykład korzystanie z danych benchmarkowych, walidacja krzyżowa, zapewnienie powtarzalności testów itd). 
 %

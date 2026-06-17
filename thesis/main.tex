@@ -83,7 +83,7 @@
 \newcommand{\IdCoauthor}{}  % Jeżeli praca ma tylko jednego autora, to dane drugiego autora zostają puste.
 %%%%%%%%%%
 
-\newcommand{\Supervisor}{Dr hab. inż. Michał Maćkowski}     % dane promotora (bez $\langle$ i $\rangle$)
+\newcommand{\Supervisor}{Dr hab. inż., prof. PŚ Michał Maćkowski}     % dane promotora (bez $\langle$ i $\rangle$)
 \newcommand{\Title}{System przeznaczony dla osób niewidomych do rozpoznawania dotykanych obiektów 3D}           % tytuł pracy po polsku
 \newcommand{\TitleAlt}{A system designed for the blind to recognize touched 3D objects}                     % thesis title in English
 \newcommand{\Program}{Informatyka}            % kierunek studiów  (bez $\langle$ i $\rangle$)
@@ -149,19 +149,25 @@
 %%%%%%%%%%%%%% wlasciwa tresc pracy %%%%%%%%%%%%%%%%%
 
 % TODO
-\input{chapters/01.tex}  % wstęp
+\input{chapters/01wstep.tex}  % Wstęp
 
 % TODO
-\input{chapters/02.tex} % [Analiza tematu]
+\input{chapters/02analiza.tex} % Analiza problemu i przegląd literatury
 
 % TODO
-\input{chapters/03.tex} % [Przedmiot pracy]
+\input{chapters/03koncepcja.tex} % Koncepcja zaproponowanego systemu
 
 % TODO
-\input{chapters/04.tex} % Badania
+\input{chapters/04implementacja.tex} % Implementacja systemu
 
 % TODO
-\input{chapters/05.tex} % Podsumowanie
+\input{chapters/05zbior.tex} % Zbiór danych i metodyka badań
+
+% TODO
+\input{chapters/06wyniki.tex} % Wyniki badań i ich analiza
+
+% TODO
+\input{chapters/07podsumowanie.tex} % Podsumowanie i wnioski końcowe
 
 \backmatter
 
@@ -173,13 +179,13 @@
 \begin{appendices}
 
     % TODO
-    \input{chapters/06.tex} % dokumentacja techniczna
+    \input{chapters/08docs.tex} % dokumentacja techniczna
 
     % TODO
-    \input{chapters/07.tex} % Spis skrótów i symboli
+    \input{chapters/09skroty.tex} % Spis skrótów i symboli
 
     % TODO
-    \input{chapters/08.tex} % Lista dodatkowych plików, uzupełniających tekst pracy – jeżeli dotyczny, w przecinym razie – zakomentuj!
+    \input{chapters/10dodatki.tex} % Lista dodatkowych plików, uzupełniających tekst pracy – jeżeli dotyczny, w przecinym razie – zakomentuj!
 
     \listoffigures
     \addcontentsline{toc}{chapter}{Spis rysunków}

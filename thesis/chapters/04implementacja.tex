@@ -1,0 +1,36 @@
+\chapter{Implementacja systemu} % Implementacja systemu
+
+\note{
+    Tu opisuję konkretną robotę inżynierską. Nie za dużo kodu w głównym tekście — raczej architektura, moduły, decyzje. Opis interfejsów aplikacji i środowisk projektowania lepiej dawać jako załącznik, bo wymagania sugerują, że takie rzeczy powinny iść do załącznika.
+}
+
+
+\section{Środowisko programistyczne i wykorzystane narzędzia}
+\note{
+    Python, PyTorch/Ultralytics, OpenCV, Swift/iOS, ARKit, WebSocket, CVAT/Roboflow/HF — tylko te, które finalnie zostaną.
+}
+
+\section{Moduł akwizycji danych obrazowych}
+\note{
+    Jak pozyskuję obraz z telefonu / nagrań / streamu.
+}
+
+\section{Moduł komunikacji klient-serwer}
+\note{
+    WebSocket, przesyłanie klatek, format danych, obsługa połączenia.
+}
+
+\section{Moduł detekcji obiektów}
+\note{
+    Ładowanie modelu, inferencja, wynik detekcji, progi confidence.
+}
+
+\section{Moduł informacji zwrotnej dla użytkownika}
+\note{
+    Komunikaty audio / tekstowe / docelowe zachowanie aplikacji.
+}
+
+\section{Organizacja kodu i plików projektu}
+\note{
+    Krótko, bez robienia instrukcji obsługi. Dokładna dokumentacja może iść do załącznika albo plików dodatkowych.
+}
