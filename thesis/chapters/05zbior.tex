@@ -34,6 +34,11 @@
     Precision, recall, mAP50, mAP50-95, macierz pomyłek, czas inferencji/FPS, zużycie pamięci.
 }
 
+\draft{
+    Do oceny modeli wykorzystano metryki zwracane przez narzędzie Ultralytics YOLO: precision, recall, mAP50 oraz mAP50-95. Dodatkowo na podstawie wartości precision i recall obliczono F1-score. Wyniki zapisywano w pliku results.csv, natomiast przebiegi metryk oraz macierze pomyłek analizowano na podstawie plików generowanych po zakończeniu treningu i walidacji.
+    \cite{bib:ultralytics_yolo_metrics}
+}
+
 \section{Procedura eksperymentalna}
 \note{
     Czyli dokładnie: jakie modele trenowano, na jakich danych, jakie wyniki zbierano, jak porównywano.

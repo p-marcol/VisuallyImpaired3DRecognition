@@ -36,9 +36,45 @@
 
 \section{Metryki oceny detekcji obiektów}
 
-\note{
-    IoU, precision, recall, mAP50, mAP50-95, confusion matrix.
-}
+Ocena modeli detekcji obiektów wymaga zastosowania odpowiednich metryk, które pozwalają na porównanie uzyskanych wyników. Metryki te powinny uwzględniać zarówno poprawność klasyfikacji, jak i dokładność lokalizacji obiektu na obrazie. Przeciwnie do klasyfikacji obrazów, przy detekcji nie wystarczy, aby model poprawnie rozpoznał klasę obiektu. Równie istotne jest, aby poprawnie wyznaczył ramkę ograniczającą wokół wykrytego obiektu. Jedną z najczęściej stosowanych metryk jest IoU (ang. \textit{Intersection over Union}), określająca stopień pokrycia między ramką obiektu przewidywaną przez model a ramką rzeczywistą \cite{bib:detectionMetrics}. Wartość IoU obliczana jest jako stosunek pola części wspólnej obu ramek do pola ich części łącznej:
+
+\begin{equation}
+    IoU = \frac{|B_p \cap B_{gt}|}{|B_p \cup B_{gt}|},
+\end{equation}
+
+gdzie $B_p$ jest ramką przewidywaną przez model, a $B_{gt}$ jest ramką referencyjną (ang. \textit{ground truth}). Im większa wartość IoU, tym lepsze dopasowanie ramki przewidywanej do ramki rzeczywistej. W praktyce najczęściej stosuje się progi, np. $IoU \geq 0.5$, aby zdecydować, czy dana detekcja może być uznana za poprawną. Próg ten został wykorzystany w wielu klasycznych procedurach oceny detekcji, takich jak PASCAL VOC \cite{bib:PASCALVOCChallenge}, i jest nadal powszechnie stosowany w wielu benchmarkach. Na podstawie wartości IoU oraz zgodności klasy obiektu możliwe jest przypisanie wyników detekcji do jednej z kategorii: prawdziwych pozytywów (TP, ang. \textit{true positive}), fałszywych pozytywów (FP, ang. \textit{false positive}) i fałszywych negatywów (FN, ang. \textit{false negative}). Detekcja jest traktowana jako TP, jeżeli model poprawnie rozpoznał klasę obiektu, a przewidywana ramka spełnia zadany próg IoU względem ramki referencyjnej. FP to detekcja błędna w której model przewidział klasę obiektu, ale nie spełnił progu IoU lub przewidziana klasa była błędna. FN natomiast to sytuacja, w której model nie wykrył obiektu, który rzeczywiście był na obrazie.
+
+Jedną z podstawowych metryk oceny jest precyzja (ang. \textit{precision}), określająca udział poprawnych detekcji modelu wśród wszystkich detekcji, jakie zwrócił:
+
+\begin{equation}
+    Precision = \frac{TP}{TP + FP}.
+\end{equation}
+
+Wysoka precyzja oznacza, że model generuje niewiele fałszywych pozytywów. Drugą, powiązaną z nią metryką, jest czułość (ang. \textit{recall}), określająca, jaki jest udział poprawnych detekcji wśród wszystkich rzeczywistych obiektów:
+
+\begin{equation}
+    Recall = \frac{TP}{TP + FN}.
+\end{equation}
+
+Obie metryki pozostają ze sobą w relacji kompromisu, ponieważ zwiększenie progu pewności detekcji może ograniczyć liczbę fałszywych pozytywów, ale jednocześnie prowadzić do pominięcia części rzeczywistych obiektów. Z kolei obniżenie tego progu może zwiększyć liczbę detekcji, ale równocześnie powodować wzrost liczby fałszywych detekcji. Z tego względu, przy analizie detektorów często łączy się je w jedną metrykę -- krzywą PR (precyzja-czułość, ang. \textit{precision-recall curve}), przedstawiającą zależność pomiędzy nimi dla różnych wartości progu decyzyjnego. Na jej podstawie wyznacza się metrykę AP (ang. \textit{Average Precision}), odpowiadającą polu pod krzywą PR.
+
+W przypadku detekcji wieloklasowej używa się średniej wartości AP obliczonej dla wszystkich klas, określanej jako mAP (ang. \textit{mean Average Precision}):
+
+\begin{equation}
+    mAP = \frac{1}{N} \sum_{i=1}^{N} AP_i,
+\end{equation}
+
+gdzie $N$ jest liczbą klas, a $AP_i$ jest wartością AP dla $i$-tej klasy. W praktyce najczęściej wykorzystuje się dwie wersje tej metryki: $mAP50$, gdzie detekcję uznaje się za poprawną przy progu $IoU \geq 0.5$, oraz $mAP50-95$, gdzie wynik jest uśredniany dla progów $IoU$ z zakresu od $0.5$ do $0.95$. Pierwsza z nich jest bardziej liberalna i pozwala określić ogólną zdolność modelu do wykrycia obiektu. Druga natomiast jest bardziej rygorystyczna, ponieważ wymaga dokładniejszego dopasowania ramek ograniczających, dzięki czemu lepiej pokazuje zarówno skuteczność klasyfikacji, jak i lokalizacji obiektu. Uśrednianie wyników dla wielu progów zostało szeroko zastosowane m. in. w metodyce oceny detekcji zbioru Microsoft COCO \cite{bib:microsoftCOCO} i jest obecnie standardem w wielu benchmarkach detekcji obiektów.
+
+Dodatkowo, w pracy wykorzystano metrykę $F1$-score, będącą średnią harmoniczną precyzji i czułości:
+
+\begin{equation}
+    F1 = 2 \cdot \frac{P \cdot R}{P + R},
+\end{equation}
+
+gdzie $P$ jest precyzją, a $R$ jest czułością. Metryka ta umożliwia przedstawienie kompromisu pomiędzy liczbą fałszywych detekcji a liczbą pominiętych obiektów. Może być szczególnie przydatna, gdy sama precyzja lub czułość nie dają pełnego obrazu jakości modelu. W niniejszej pracy metrykę $F1$-score wykorzystano jako metrykę pomocniczą względem podstawowych metryk $mAP50$ i $mAP50-95$, aby lepiej zrozumieć kompromis pomiędzy precyzją a czułością w kontekście detekcji obiektów dotykanych przez użytkownika.
+
+Oprócz wartości liczbowych wykorzystano również macierze pomyłek (ang. \textit{confusion matrix}), pozwalające przeanalizować, które klasy obiektów są najczęściej mylone przez model. Są one przedstawiane w formie tabel, w których jedna oś odpowiada rzeczywistym klasom, a druga klasom przewidywanym przez model. Dla dobrze działającego modelu większość wartości powinna znajdować się na przekątnej macierzy, co wskazuje na poprawną klasyfikację obiektów. Macierze pomyłek są szczególnie istotne przy rozpoznawaniu brył geometrycznych o podobnych kształtach, np. sześcianu i prostopadłościanu, ponieważ sama wartość mAP nie wskazuje bezpośrednio, pomiędzy którymi klasami model popełnia najwięcej błędów. Analiza macierzy pomyłek może również pomóc w identyfikacji problemów z danymi treningowymi, np. niedostatecznej liczby przykładów dla wybranych klas lub błędów w oznaczeniach.
 
 \section{Podsumowanie analizy tematu}
 
