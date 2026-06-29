@@ -4,6 +4,98 @@
     To jest główny wstęp teoretyczny / state of the art. Wymagania mówią wprost, że analiza tematu ma zawierać wprowadzenie do dziedziny, sformułowanie problemu, poszerzone studia literaturowe, przegląd rozwiązań i algorytmów.
 }
 
+Zagadnienie rozpoznawania obiektów przez osoby niewidome wymaga uwzględnienia nie tylko aspektów technicznych, ale też społecznych i psychologicznych -- tego, jak użytkownik poznaje otoczenie i jakie informacje z niego wyciąga. Osoby widzące najczęściej nie mają problemów z rozpoznawaniem kształtów, kolorów, orientacji czy położenia obiektów w przestrzeni. Z drugiej strony, osoby niewidome i niedowidzące są zmuszone do korzystania z innych zmysłów, aby zgodnie z nimi móc budować reprezentację otoczenia. Wykorzystują do tego przede wszystkim zmysł dotyku, opis słowny, pamięć oraz wcześniejsze doświadczenia.
+
+Ze względu na to, projektowanie i wykonanie systemu rozpoznawania obiektów nie może skupiać się wyłącznie na aspektach technicznych, ale należy również uwzględnić perspektywę użytkownika docelowego. Należy zrozumieć, w jaki sposób informacja przekazywana przez komputer może wesprzeć proces poznawania otoczenia. W niniejszym rozdziale przedstawiono perspektywę osób niewidomych w kontekście rozpoznawania obiektów przestrzennych, a następnie omówiono wybrane technologie wspomagające osoby z niepełnosprawnością wzroku i metody komputerowej detekcji obiektów. Szczególną uwagę poświęcono rodzinie modeli YOLO, które są wykorzystywane w niniejszej pracy. W kolejnych podrozdziałach przedstawiono metryki wykorzystywane do oceny jakości detekcji obiektów oraz podsumowano analizę tematu.
+
+\section{Perspektywa osób niewidomych w rozpoznawaniu obiektów przestrzennych}
+
+Przy projektowaniu systemu przeznaczonego dla osób niewidomych należy wziąć pod uwagę różnice w percepcji przestrzennej pomiędzy osobami widzącymi a niewidomymi. W literaturze zagadnienie to jest analizowane zarówno z perspektywy technicznej, psychologicznej oraz pedagogicznej. Badania ukazują percepcję osób niewidomych, pozwalając lepiej zrozumieć ich sposób poznawania otoczenia. João Francisco Staffa da Costa et al. w swojej pracy pokazują na przykładzie badanego uczestnika, że rozpoznawanie obiektu jest całym procesem. W przypadku osób widzących spojrzenie zazwyczaj pozwala zrozumieć obiekt całościowo, natomiast w wypadku osób niewidomych poznanie odbywa się sekwencyjnie, etapami. Dlatego duże znaczenie mają cechy obiektu, które są wyraźnie dostępne w eksploracji dotykowej: prostota, regularność, krawędzie oraz faktura; cechy te wspierają budowę mentalnej reprezentacji przestrzennej obiektu. Osoba niewidoma może opierać ją nie tylko na aktualnej informacji dotykowej, ale również na wcześniejszych doświadczeniach, kontekście i wiedzy o świecie. Autorzy ukazują, że brak wzroku nie oznacza prostego zastąpienia go przez inne zmysły - dotyk, słuch, pamięć i doświadczenia dostarczają informacji innego rodzaju oraz są wykorzystywane w odmienny sposób. Wiedząc o tym, projektowany system powinien nie tylko poprawnie rozpoznawać obiekt, ale również wspierać użytkownika w jego zrozumieniu. \cite{bib:spacialPerception}
+
+\draft{
+    {\bf Spatial perception of a blind person: interactions and experiences}
+
+    Najważniejszy wniosek z artykułu jest taki, że rozpoznawanie przestrzenne przez osobę niewidomą ma charakter aktywny, etapowy i interpretacyjny. Osoba nie odbiera obiektu jako całości od razu, lecz poznaje go fragmentami przez dotyk, następnie tworzy hipotezy na podstawie wyczuwanych cech, wcześniejszych doświadczeń i kontekstu, a dopiero później buduje stabilny model mentalny obiektu lub przestrzeni. To dobrze uzasadnia, że w pracy nie powinno się traktować rozpoznawania obiektów wyłącznie jako prostego przypisania etykiety, np. „sześcian” albo „kula”, ale jako proces wspierania użytkownika w rozumieniu kształtu, relacji przestrzennych i charakterystycznych cech obiektu.
+
+    Drugi istotny wniosek dotyczy różnicy między percepcją wzrokową i dotykową. Wzrok pozwala zwykle na szybkie, globalne rozpoznanie obiektu, natomiast dotyk wymaga sekwencyjnego badania kolejnych części. Dlatego duże znaczenie mają prostota, regularność, wyraźne krawędzie, odróżnialność elementów, faktura oraz orientacja obiektu. Artykuł pokazuje też, że nie należy pisać o prostym „skompensowaniu” braku wzroku przez inne zmysły — trafniejsze jest wskazanie, że osoba niewidoma wykorzystuje dotyk, pamięć, uwagę i doświadczenie w inny, funkcjonalnie zorganizowany sposób. W kontekście projektowanego systemu oznacza to, że informacja zwrotna powinna być nie tylko poprawna technicznie, ale też wspierać naturalny sposób eksploracji obiektu przez użytkownika.
+}
+
+\draft{
+    {\bf Learning to See: The Viewpoint of the Blind}
+
+    Typ artykułu: bardziej dydaktyka matematyki / edukacja / refleksja teoretyczno-obserwacyjna. To nie jest artykuł techniczny ani klasyczne badanie empiryczne — autorzy sami zaznaczają, że nie budują teorii ani nie przedstawiają w pełni metodologicznie zaprojektowanego badania, tylko analizują obserwacje lekcji prowadzonych przez niewidomego nauczyciela matematyki oraz doświadczenia z nauczycielami pracującymi z zasłoniętymi oczami. Do Twojego podrozdziału jest jednak bardzo dobry, bo bezpośrednio dotyczy tego, że wizualizacja nie jest równoznaczna z widzeniem. Autorzy wskazują, że może ona opierać się także na dotyku, wcześniejszej wiedzy, doświadczeniu, werbalizacji i rozumowaniu przestrzennym.
+
+    Najważniejszy wniosek do Twojej pracy jest taki, że osoba niewidoma może budować wyobrażenie obiektu przestrzennego, ale wymaga to często bardziej jawnego, dokładnego i sekwencyjnego opisu relacji przestrzennych. W analizowanym przykładzie stożka rozmowa z osobą całkowicie niewidomą wymagała doprecyzowania położenia trójkąta, osi obrotu, ruchu oraz tego, że powstaje nie tylko powierzchnia, ale bryła wypełniona „materią”. To dobrze wzmacnia Twoją tezę, że w rozpoznawaniu brył 3D nie wystarczy sama nazwa obiektu. System powinien wspierać użytkownika w rozumieniu jakiego rodzaju cechy doprowadziły do rozpoznania: kształt, oś, zaokrąglenie, płaskie ściany, krawędzie, relacja części do całości albo orientacja obiektu.
+
+    Drugi ważny wniosek dotyczy tego, że wzrok często ukrywa wiele informacji, które osobom widzącym wydają się „oczywiste”. Autorzy zwracają uwagę, że przy braku wzroku rośnie znaczenie mowy, uważnego słuchania, dotyku i świadomego łączenia informacji lokalnych z globalnym kształtem. To pasuje do Twojego projektu, bo kamera i model detekcyjny mogą „widzieć” całość sceny natychmiast, ale użytkownik poznaje obiekt inaczej — przez kontakt, ruch dłoni i stopniowe składanie cech w całość. Możesz więc wykorzystać ten artykuł jako argument, że projektowany system powinien podawać informacje w sposób jednoznaczny, możliwie pozbawiony niedopowiedzeń i zgodny z naturalną eksploracją dotykową. Ograniczenie: tekst dotyczy matematyki i wizualizacji pojęć, a nie bezpośrednio rozpoznawania obiektów przez system komputerowy, więc najlepiej użyć go jako wsparcia dla części o mechanizmie tworzenia reprezentacji przestrzennej, a nie dla części technicznej.
+}
+\cite{bib:learningToSee}
+
+\draft{
+    {\bf Are we aware of the needs of students with visual impairment? A study on challenges and instructional needs in science lessons}
+
+    Typ artykułu: bardziej pedagogiczny / dydaktyka nauk przyrodniczych / accessibility w edukacji. To nie jest artykuł techniczny ani psychologiczny. Jest jednak dość przydatny do Twojego podrozdziału, bo dotyczy tego, jak uczniowie z niepełnosprawnością wzroku radzą sobie z pojęciami naukowymi, kształtami, reprezentacjami wizualnymi i materiałami przestrzennymi. Badanie jest jakościowe: 13 uczniów z niepełnosprawnością wzroku i 10 nauczycieli, wywiady oraz obserwacje lekcji przyrody/nauk ścisłych.
+
+    Najważniejszy wniosek w kontekście Twojej pracy jest taki, że jednym z głównych problemów uczniów z niepełnosprawnością wzroku było tworzenie w umyśle wyobrażeń kształtów i pojęć przestrzennych. W artykule uczniowie wskazywali trudności z wizualizacją kształtów, rozumieniem figur oraz pytaniami opartymi na kształtach. Jeden z cytowanych uczniów mówi wręcz, że gdy słyszy np. „drzewo” albo „piramida”, nie zawsze potrafi utworzyć w umyśle odpowiadający temu obraz. To mocno wspiera tezę, że dla osoby niewidomej samo słowne nazwanie obiektu może nie wystarczyć — potrzebne są konkretne, dotykowe lub wielomodalne reprezentacje, które pomagają zbudować model mentalny obiektu. W Twoim projekcie można to odnieść do brył 3D: system powinien nie tylko rozpoznawać klasę obiektu, ale też wspierać użytkownika w zrozumieniu jego cech przestrzennych, np. czy ma płaskie ściany, krawędzie, zaokrąglenia albo wydłużony kształt.
+
+    Drugi ważny wniosek dotyczy tego, że nauka oparta głównie na mówieniu, podręczniku i materiałach wizualnych jest dla takich uczniów niewystarczająca. Z obserwacji wynikało, że lekcje były często prowadzone metodą wykładową, z użyciem smartboardu, filmów lub podręcznika, a rzadko wykorzystywano eksperymenty, pracę z konkretnymi obiektami, materiały 3D czy aktywności angażujące uczniów. Jednocześnie uczniowie sami deklarowali, że chcieliby więcej eksperymentów, projektów i aktywności praktycznych. To można wykorzystać jako argument, że osoby niewidome potrzebują aktywnego, dotykowego kontaktu z obiektem, a technologie wspomagające powinny być projektowane tak, aby wspierały eksplorację, a nie zastępowały ją biernym opisem. Ograniczenie: artykuł dotyczy edukacji szkolnej i lekcji science, więc nie jest bezpośrednio o systemach rozpoznawania obiektów, ale bardzo dobrze uzasadnia potrzebę materialnych, przestrzennych i dotykowych reprezentacji w rozumieniu kształtów.
+}
+\cite{bib:avareNeeds}
+
+\draft{
+    {\bf Understanding Visual Arts Experiences of Blind People}
+
+    Typ artykułu: bardziej HCI / accessibility / UX, czyli empiryczno-projektowy. Nie jest to artykuł stricte techniczny od strony algorytmów ani czysto psychologiczny, ale mocno dotyka perspektywy użytkownika, sposobów odbioru informacji wizualnych bez wzroku oraz projektowania technologii wspomagających. Badanie opiera się na 15 wywiadach z osobami niewidomymi oraz ankiecie z 220 respondentami, więc jest bardzo przydatne do uzasadnienia potrzeb użytkownika, a mniej do opisu konkretnej metody rozpoznawania obiektów.
+
+    Najważniejszy wniosek do Twojej pracy jest taki, że osoby niewidome nie potrzebują wyłącznie samego „dostępu do obrazu”, ale dobrze dobranej formy informacji. Artykuł pokazuje, że różne modalności spełniają różne funkcje: dotyk lepiej wspiera rozumienie kształtu, formy, położenia i szczegółów przestrzennych, natomiast opis audio lepiej przekazuje tło, kontekst, historię albo znaczenie obiektu. To dobrze pasuje do Twojego systemu, bo sugeruje, że sama etykieta klasy, np. „sześcian” lub „stożek”, może być niewystarczająca. Informacja zwrotna powinna być raczej warstwowa: najpierw prosta identyfikacja obiektu, a potem ewentualnie dodatkowe cechy, takie jak krawędzie, powierzchnie, orientacja, podobieństwo do innych brył albo stopień pewności rozpoznania.
+
+    Drugi ważny wniosek dotyczy personalizacji i różnic między użytkownikami. Autorzy pokazują, że preferencje zależą m.in. od tego, czy dana osoba jest niewidoma od urodzenia, czy utraciła wzrok później. Osoby niewidome od urodzenia częściej preferowały dostęp dotykowy, natomiast osoby, które utraciły wzrok później, częściej korzystały z wyobrażeń opartych na wcześniejszej pamięci wzrokowej i były bardziej otwarte na dostęp zdalny lub cyfrowy. W kontekście Twojej pracy warto z tego wyciągnąć, że system nie powinien być projektowany według zasady „jeden sposób komunikacji dla wszystkich”. Lepiej uzasadnić potrzebę prostego, elastycznego feedbacku głosowego, możliwości dopasowania poziomu szczegółowości oraz unikania subiektywnych opisów. Artykuł mocno wspiera też myśl, że technologie wspomagające powinny zmniejszać zależność od osób widzących, ale jednocześnie nie ignorować społecznego aspektu poznawania — rozmowy, pytań, potwierdzania hipotez i komfortu użytkownika.
+}
+\cite{bib:blindVisualArts}
+
+\draft{
+    {\bf Visually Impaired Students’ and Their Teacher's Perceptions of the English Teaching and Learning Process}
+
+    Typ artykułu: bardziej pedagogiczny / edukacyjny, jakościowy. To nie jest tekst techniczny ani stricte psychologiczny. Bada doświadczenia dwóch uczniów z niepełnosprawnością wzroku i ich nauczycielki w procesie nauki języka angielskiego, więc do Twojej pracy nadaje się raczej jako źródło o potrzebach użytkowników, adaptacji materiałów i roli komunikacji, a nie bezpośrednio o rozpoznawaniu brył. Trzeba też uważać z uogólnianiem, bo próba jest bardzo mała: dwóch uczniów i jedna nauczycielka.
+
+    Najważniejsze, co można z tego wyciągnąć do podrozdziału o perspektywie osób niewidomych, to fakt, że skuteczność nauki i poznawania zależy nie tylko od samej obecności osoby niewidomej w danym środowisku, ale od realnego dostosowania metod, materiałów i komunikacji. W artykule pojawiają się problemy bardzo przydatne do Twojego kontekstu: brak specjalistycznych materiałów, ograniczona znajomość Braille’a przez nauczyciela, trudności komunikacyjne, większa czasochłonność wykonywania zadań oraz potrzeba wsparcia ze strony innych osób. W pracy możesz to wykorzystać jako argument, że system wspomagający osobę niewidomą powinien minimalizować zależność od otoczenia, dawać jasną informację zwrotną i brać pod uwagę, że użytkownik może potrzebować więcej czasu na eksplorację oraz zrozumienie obiektu.
+
+    Drugi przydatny wniosek dotyczy znaczenia dotyku i materiałów dostępnych sensorycznie. Autorzy wskazują na użycie wypukłych kart, dużego druku, Braille’a, dodatkowego czasu, pracy z rówieśnikami i materiałów przygotowanych specjalnie pod potrzeby ucznia. Dla Twojej pracy najbliższy tematowi jest fragment o pamięci dotykowej i materiałach w reliefie: dotyk może wspierać budowanie reprezentacji obiektu, ale wymaga odpowiednio przygotowanych bodźców i spójnego sposobu komunikacji. W kontekście systemu rozpoznawania obiektów 3D można więc ostrożnie wnioskować, że sama detekcja obiektu nie wystarcza — ważne jest, jak wynik zostanie przekazany użytkownikowi: prosto, konsekwentnie, najlepiej w sposób wspierający jego własną eksplorację dotykową, a nie zastępujący ją arbitralnym opisem.
+}
+\cite{bib:studentTeacherPerception}
+
+\note{
+    Jasne — ja bym ten podrozdział ułożył od najbardziej ogólnego mechanizmu poznawania przestrzennego do wniosków projektowych dla Twojego systemu. Nie zaczynałbym od technologii, tylko od tego, jak osoba niewidoma tworzy reprezentację obiektu.
+
+    Proponowana kolejność i rola artykułów:
+
+    1. Costa, Lima, Biembengut — Spatial perception of a blind person
+    To dałbym jako najważniejszy artykuł otwierający podrozdział. Najlepiej nadaje się do opisania samego mechanizmu: osoba niewidoma poznaje obiekt/przestrzeń etapowo, przez dotyk, hipotezy, wcześniejsze doświadczenia i budowanie modelu mentalnego. To może być fundament całego 2.1.
+
+    2. Figueiras, Arcavi — Learning to see: the viewpoint of the blind
+    Dałbym zaraz po pierwszym, jako teoretyczne wzmocnienie tezy, że wizualizacja nie oznacza wyłącznie widzenia. Ten tekst dobrze pokazuje, że osoba niewidoma może tworzyć reprezentacje przestrzenne, ale wymaga to większej jawności opisu, uwagi na relacje przestrzenne i łączenia informacji dotykowych z werbalnymi.
+
+    3. Güler, Ürey — Are we aware of the needs of students with visual impairment?
+    To wykorzystałbym jako mocne wsparcie praktyczne: uczniowie z niepełnosprawnością wzroku mają trudności z wyobrażaniem sobie kształtów, figur i pojęć przestrzennych, zwłaszcza gdy są one przekazywane głównie werbalnie albo przez materiały wizualne. Ten artykuł dobrze uzasadnia potrzebę obiektów 3D, modeli, dotyku i aktywnej eksploracji.
+
+    4. Li et al. — Understanding Visual Arts Experiences of Blind People
+    Ten artykuł dałbym później, jako pomost do projektowania systemu wspomagającego. Nie jest o bryłach ani edukacji science, ale bardzo dobrze pokazuje, że osoby niewidome potrzebują informacji wielomodalnej, kontekstowej i dopasowanej do użytkownika. Można go użyć przy wniosku, że sam komunikat „to jest sześcian” może być za ubogi — lepszy jest feedback warstwowy: nazwa, cechy, relacje, orientacja, możliwość doprecyzowania.
+
+    5. Cando Guanoluisa et al. — Visually Impaired Students’ and Their Teacher’s Perceptions...
+    Ten potraktowałbym jako artykuł pomocniczy, najmniej bezpośredni dla Twojego tematu. Przydaje się do pokazania, że skuteczne wsparcie osób niewidomych wymaga adaptacji materiałów, jasnej komunikacji, dodatkowego czasu, Braille’a, materiałów wypukłych i wsparcia środowiska. Nie robiłbym z niego głównego źródła do rozpoznawania obiektów, tylko użył jako dodatkowego argumentu o potrzebie dostosowania sposobu przekazywania informacji.
+
+    Ważność dla podrozdziału:
+    Najważniejsze źródła: Costa et al. i Figueiras \& Arcavi — one bezpośrednio wspierają opis percepcji, wizualizacji i budowania reprezentacji przestrzennej bez wzroku.
+
+    Bardzo przydatne źródło praktyczne: Güler \& Ürey — pokazuje konkretny problem z kształtami, pojęciami przestrzennymi i brakiem materiałów 3D.
+
+    Źródło projektowe/technologiczne: Li et al. — dobre do przejścia od analizy problemu do wymagań wobec systemu.
+
+    Źródło uzupełniające: Cando Guanoluisa et al. — użyć oszczędnie, jako potwierdzenie problemów z adaptacją materiałów i komunikacją.
+
+    W skrócie: najpierw mechanizm poznawania, potem trudności z kształtami, potem potrzeba materiałów dotykowych i wielomodalnych, na końcu wniosek projektowy dla systemu. Dzięki temu podrozdział nie będzie wyglądał jak przypadkowy przegląd artykułów, tylko jak logiczne dojście do tego, dlaczego Twój system ma sens.
+}
+
 \section{Technologie wspomagające osoby z niepełnosprawnością wzroku}
 
 \note{
