@@ -61,10 +61,19 @@
 % moje polecenia
 
 \usepackage{xcolor}
+\usepackage{ifthen}
 
-\newcommand{\note}[1]{{\color{red}{#1}}}
+\newcommand{\note}[2][]{%
+    \ifthenelse{\equal{#1}{hide}}%
+    {}%
+    {{\color{red}{#2}}}%
+}
 
-\newcommand{\draft}[1]{{\color{olive}{#1}}}
+\newcommand{\draft}[2][]{%
+    \ifthenelse{\equal{#1}{hide}}%
+    {}%
+    {{\color{olive}{#2}}}%
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                             %
