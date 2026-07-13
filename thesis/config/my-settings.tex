@@ -7,6 +7,21 @@
 
 % Tutaj proszę umieszczać swoje pakiety, makra, ustawienia itd.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Dodatkowe ustawienia typograficzne autora
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% % --- Polska typografia: sieroty jednoliterowe ---
+% \babelprovide[transforms = oneletter.nobreak]{polish}
+
+% --- Wdowy i sieroty akapitowe ---
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\brokenpenalty=10000
+\emergencystretch=2em
+% \raggedbottom
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,17 +78,25 @@
 \usepackage{xcolor}
 \usepackage{ifthen}
 
-\newcommand{\note}[2][]{%
+\newcommand{\note}[2][]{}
+
+\newcommand{\draft}[2][]{}
+
+% ! Comment next section to disable notes and drafts in the final version of the document
+
+\renewcommand{\note}[2][]{%
     \ifthenelse{\equal{#1}{hide}}%
     {}%
     {{\color{red}{#2}}}%
 }
 
-\newcommand{\draft}[2][]{%
+\renewcommand{\draft}[2][]{%
     \ifthenelse{\equal{#1}{hide}}%
     {}%
     {{\color{olive}{#2}}}%
 }
+
+% ! end of section to disable notes and drafts in the final version of the document
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                             %
