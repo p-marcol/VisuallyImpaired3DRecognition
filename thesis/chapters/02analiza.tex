@@ -6,9 +6,10 @@
 
 Zagadnienie rozpoznawania obiektów przez osoby niewidome wymaga uwzględnienia nie tylko aspektów technicznych, ale też społecznych i psychologicznych -- tego, jak użytkownik poznaje otoczenie i jakie informacje z niego wyciąga. Osoby widzące zazwyczaj nie mają problemów z rozpoznawaniem kształtów, kolorów, orientacji czy położenia obiektów w przestrzeni, natomiast osoby niewidome i słabowidzące w większym stopniu wykorzystują inne zmysły i technologie wspomagające, aby móc zbudować mentalną reprezentację otoczenia.
 
-Ze względu na to projektowanie i wykonanie systemu rozpoznawania obiektów nie może skupiać się wyłącznie na aspektach technicznych, ale należy również uwzględnić perspektywę użytkownika docelowego. Należy zrozumieć, w jaki sposób informacja przekazywana przez komputer może wesprzeć proces poznawania otoczenia. W niniejszym rozdziale przedstawiono perspektywę osób niewidomych w kontekście rozpoznawania obiektów przestrzennych, a następnie omówiono wybrane technologie wspomagające osoby z niepełnosprawnością wzroku i metody komputerowej detekcji obiektów z wykorzystaniem zróżnicowanych danych wejściowych, takich jak obrazy RGB, mapy głębi czy dane LiDAR. Szczególną uwagę poświęcono rodzinie modeli YOLO, wykorzystywanej w niniejszej pracy. W kolejnej części rozdziału przedstawiono metryki wykorzystywane do oceny jakości detekcji obiektów, a następnie podsumowano przeprowadzoną analizę.
+Ze względu na to, projektowanie i wykonanie systemu rozpoznawania obiektów nie może skupiać się wyłącznie na aspektach technicznych, ale należy również uwzględnić perspektywę użytkownika docelowego. Należy zrozumieć, w jaki sposób informacja przekazywana przez komputer może wesprzeć proces poznawania otoczenia. W niniejszym rozdziale przedstawiono perspektywę osób niewidomych w kontekście rozpoznawania obiektów przestrzennych, a następnie omówiono wybrane technologie wspomagające osoby z niepełnosprawnością wzroku i metody komputerowej detekcji obiektów z wykorzystaniem zróżnicowanych danych wejściowych, takich jak obrazy RGB, mapy głębi czy dane LiDAR. Szczególną uwagę poświęcono rodzinie modeli YOLO, wykorzystywanej w niniejszej pracy. W kolejnej części rozdziału przedstawiono metryki wykorzystywane do oceny jakości detekcji obiektów, a następnie podsumowano przeprowadzoną analizę.
 
 \section{Perspektywa osób niewidomych w rozpoznawaniu obiektów przestrzennych}
+\label{s:perspektywa}
 
 Przy projektowaniu systemu przeznaczonego dla osób niewidomych należy wziąć pod uwagę różnice w percepcji przestrzennej pomiędzy osobami widzącymi a niewidomymi. W literaturze zagadnienie to jest analizowane zarówno z perspektywy technicznej, psychologicznej, jak i pedagogicznej. Badania nad percepcją osób niewidomych pozwalają lepiej zrozumieć ich sposób poznawania otoczenia. Costa et al. w swojej pracy, na podstawie studium przypadku, pokazują, że rozpoznawanie obiektu jest całym procesem stopniowego pozyskiwania i integrowania informacji. Zaznaczają, że w przypadku osób widzących spojrzenie zazwyczaj pozwala zrozumieć obiekt całościowo, natomiast w przypadku osób niewidomych poznanie odbywa się sekwencyjnie, etapami. Duże znaczenie mają więc cechy obiektu, które są wyraźnie dostępne w eksploracji dotykowej: prostota, regularność, krawędzie oraz faktura. Wspierają one budowę mentalnej reprezentacji przestrzennej obiektu. Osoba niewidoma może opierać ją nie tylko na aktualnej informacji dotykową, ale również wcześniejszych doświadczeniach, kontekście i wiedzy o świecie. Autorzy ukazują, że brak wzroku nie oznacza prostego zastąpienia go przez inne zmysły -- dotyk, słuch, pamięć i doświadczenia dostarczają informacji innego rodzaju oraz są wykorzystywane w odmienny sposób \cite{bib:spacialPerception}.
 
@@ -30,100 +31,201 @@ Wynika z tego, że system wspomagający nie powinien ograniczać się jedynie do
     Aplikacje mobilne, systemy wearable, kamery, czujniki głębi, audio feedback.
 }
 
-Analiza perspektywy osób niewidomych pozwala zrozumieć, że wsparcie dla nich
+Analiza perspektywy osób niewidomych pozwala zauważyć nie tylko to, że wymagają oni jedynie odmiennych sposobów poznawania przestrzeni wokół nich, ale również wsparcia w wielu przypadkach codziennego życia. Takim wsparciem może zostać prosta laska, ale w bardziej skomplikowanym środowisku musi to być pies przewodnik lub drugi człowiek. Można jednak zastąpić ich technologią, która ciągle rozwijana daje coraz lepsze możliwości.
 
 \subsection{Rozwój technologii asystujących}
 
-Naukowcy od dawna widzieli w rozwoju techniki okazję do wsparcia osób z jakąkolwiek niepełnosprawnością. Jednym z pierwszych urządzeń wspomagających niesłyszących był aparat słuchowy opracowywany przez Millera Reese'a Hutchisona od około 1895 roku \cite{bib:hearingAidsHistory}. Rozwiązaniem, które zapowiadało późniejszy rozwój elektronicznych systemów wspomagających był system \nobreakdash{POSSUM} (ang. \textit{Patient Operated Selector Mechanism}) opracowany początkiem lat 60. XX wieku. Umożliwiał on osobom z poważną niepełnosprawnością ruchu sterowanie maszyną do pisania \cite{bib:possum}. Nie można jednak mówić o cyfrowych systemach wspomagających przed pojawieniem się elektronicznych komputerów. W latach 60. i 70. XX wieku zaczęły pojawiać się bardziej zaawansowane systemy wspomagające oparte o cyfrowe jednostki obliczeniowe. Przykładem jednego z nich może zostać Tufts Interactive Communicator, który umożliwiał niemym z ograniczeniami ruchowymi komunikację z otoczeniem poprzez wybieranie znaków za pomocą mechanizmu skanowania, a następnie prezentację pełnego komunikatu na wyświetlaczu w formie wydruku \cite{bib:augmentativeCommunication}. Późniejszy przykład podobnego systemu był wykorzystywany przez wybitnego fizyka Stephena Hawkinga który, pomimo swojej postępującej niepełnosprawności ruchowej, mógł sprawnie komunikować się z otoczeniem poprzez niewielkie ruchy policzka \cite{bib:intel2014hawking}.
+Naukowcy od dawna widzieli w rozwoju techniki okazję do wsparcia osób z jakąkolwiek niepełnosprawnością. Jednym z pierwszych urządzeń wspomagających niesłyszących był aparat słuchowy opracowywany przez Millera Reese'a Hutchisona od około 1895 roku \cite{bib:hearingAidsHistory}. Rozwiązaniem, które zapowiadało późniejszy rozwój elektronicznych systemów wspomagających był system \nobreakdash{POSSUM} (ang. \english{Patient Operated Selector Mechanism}) opracowany początkiem lat 60. XX wieku. Umożliwiał on osobom z poważną niepełnosprawnością ruchu sterowanie maszyną do pisania \cite{bib:possum}. Nie można jednak mówić o cyfrowych systemach wspomagających przed pojawieniem się elektronicznych komputerów. W latach 60. i 70. XX wieku zaczęły pojawiać się bardziej zaawansowane systemy wspomagające oparte o cyfrowe jednostki obliczeniowe. Przykładem jednego z nich może zostać Tufts Interactive Communicator, który umożliwiał niemym z ograniczeniami ruchowymi komunikację z otoczeniem poprzez wybieranie znaków za pomocą mechanizmu skanowania, a następnie prezentację pełnego komunikatu na wyświetlaczu w formie wydruku \cite{bib:augmentativeCommunication}. Późniejszy przykład podobnego systemu był wykorzystywany przez wybitnego fizyka Stephena Hawkinga który, pomimo swojej postępującej niepełnosprawności ruchowej, mógł sprawnie komunikować się z otoczeniem poprzez niewielkie ruchy policzka \cite{bib:intel2014hawking}.
 
-Równocześnie rozwijały się technologie wspomagające osoby z niepełnosprawnością wzroku, w którym dane przekształcano na formę możliwą do odbioru przez inne zmysły. Kamieniem milowym okazało się urządzenie \nobreakdash{Optacon} (ang. \textit{Optical to Tactile Converter}) opatentowane w 1966 roku przez Johna G. Linvilla. Umożliwiało ono przekształcenie obrazu na wibracje matrycy, które mogły być odczytane przez użytkownika za pomocą dotyku \cite{pat:Linvill1966ReadingAid}. W kolejnych dekadach rozwijano m. in. systemy rozpoznawania znaków, syntezatory mowy, czytniki ekranów i urządzenia mobilne, stopniowo zwiększając i umożliwiając osobom niewidomym dostęp do informacji cyfrowych.
+Równocześnie rozwijały się technologie wspomagające osoby z niepełnosprawnością wzroku, w którym dane przekształcano na formę możliwą do odbioru przez inne zmysły. Kamieniem milowym okazało się urządzenie \nobreakdash{Optacon} (ang. \english{Optical to Tactile Converter}) opatentowane w 1966 roku przez Johna G. Linvilla. Umożliwiało ono przekształcenie obrazu na wibracje matrycy, które mogły być odczytane przez użytkownika za pomocą dotyku \cite{pat:Linvill1966ReadingAid}. W kolejnych dekadach rozwijano m. in. systemy rozpoznawania znaków, syntezatory mowy, czytniki ekranów i urządzenia mobilne, stopniowo zwiększając i umożliwiając osobom niewidomym dostęp do informacji cyfrowych.
 
-Współczesny rozwój takich rozwiązań dokonuje się dzięki stopniowej miniaturyzacji elektroniki i popularyzacji urządzeń osobistych. Według prognozy MarketsandMarkets rynek urządzeń ubieralnych ma wzrosnąć z 87,19 mld dolarów w 2025 roku do 238,71 mld dolarów w 2032 przy wzroście średniorocznym o 14,7\% \cite{bib:marketsandmarkets}. Dane te są przesłanką do wniosku, że w najbliższych latach możemy spodziewać się dynamicznego rozwoju małych urządzeń wyposażonych w czujniki, układy umożliwiające komunikację i mikroprocesory zdolne do szybkiego, lokalnego przetwarzania danych. Te same podzespoły mogą umożliwiać również rozwój systemów wspomagających osoby niewidome. Dedykowane urządzenia, noszone na ciele użytkownika, będą mogły stale analizować otoczenie, a następnie przekazywać użytkownikowi informacje poprzez komunikaty dźwiękowe czy haptyczne. Dodatkowo wykorzystanie szybkich sieci bezprzewodowych i nagły rozwój uczenia maszynowego pozwoli na szybsze tworzenie i udoskonalanie działających w czasie rzeczywistym algorytmów.
+Współczesny rozwój takich rozwiązań dokonuje się dzięki stopniowej miniaturyzacji elektroniki i popularyzacji urządzeń osobistych. Według prognozy MarketsandMarkets rynek urządzeń ubieralnych ma wzrosnąć do 238,71 mld dolarów w 2032 \cite{bib:marketsandmarkets}. Dane te są przesłanką do wniosku, że w najbliższych latach możemy spodziewać się dynamicznego rozwoju małych urządzeń wyposażonych w czujniki, układy umożliwiające komunikację i mikroprocesory zdolne do szybkiego, lokalnego przetwarzania danych. Te same podzespoły mogą umożliwiać również rozwój systemów wspomagających osoby niewidome, a wykorzystanie szybkich sieci bezprzewodowych i nagły rozwój uczenia maszynowego pozwoli na szybsze tworzenie i udoskonalanie działających w czasie rzeczywistym algorytmów.
 
 \subsection{Standardy i regulacje prawne dotyczące dostępności}
 
-Rozwój technologiczny nie był jedynym czynnikiem, który pchnął do przodu upowszechnienie się systemów wspomagających. Istotną rolę odegrały również regulacje prawne i standardy, które nakładały obowiązek zapewnienia dostępności systemów informatycznych dla osób z niepełnosprawnością. Bardzo istotnym krokiem było opublikowanie w 1999 roku przez World Wide Web Consortium (W3C) pierwszej wersji wytycznych WCAG (ang. \textit{Web Content Accessibility Guidelines}) określających, w jaki sposób powinny być projektowane treści internetowe, by były one dostępne dla osób z różnymi rodzajami niepełnosprawności \cite{bib:wcag1}. Kolejne wersje wytycznych uporządkowały zasady wokół czterech głównych: postrzegalności, funkcjonalności, zrozumiałości i solidności. Najnowsza wersja standardu WCAG~2.2 została opublikowana 12 grudnia 2024 \cite{bib:wcag22}. Obecnie trwają prace nad kolejną wersją WCAG~3.0.
+Rozwój technologiczny nie był jedynym czynnikiem, który pchnął do przodu upowszechnienie się systemów wspomagających. Istotną rolę odegrały również regulacje prawne i standardy, które nakładały obowiązek zapewnienia dostępności systemów informatycznych dla osób z niepełnosprawnością. Bardzo istotnym krokiem było opublikowanie w 1999 roku przez World Wide Web Consortium (W3C) pierwszej wersji wytycznych WCAG (ang. \english{Web Content Accessibility Guidelines}) określających, w jaki sposób powinny być projektowane treści internetowe, by były one dostępne dla osób z różnymi rodzajami niepełnosprawności \cite{bib:wcag1}. Kolejne wersje wytycznych uporządkowały zasady wokół czterech głównych: postrzegalności, funkcjonalności, zrozumiałości i solidności. Najnowsza wersja standardu WCAG~2.2 została opublikowana 5 października 2023 \cite{bib:wcag22}. Obecnie trwają prace nad kolejną wersją WCAG~3.0.
 
-Znaczenie dostępności zostało następnie zwiększone dzięki wdrożeniu kroków prawnych. Artykuł 9 Konwencji ONZ o prawach osób z niepełnosprawnościami nakłada na państwa członkowskie obowiązek zapewnienia dostępu do informacji, komunikacji, infrastruktury i technologii do potrzeb osób z niepełnosprawnością \cite{bib:crpd}. Unia Europejska wprowadziła w 2016 roku dyrektywę 2016/2102, która określa wymagania dotyczące dostępności stron internetowych i aplikacji mobilnych podmiotów sektora publicznego \cite{bib:directive2016accessibility}. Polskie prawo wprowadziło te rozporządzenie w życie ustawą z dnia 4 kwietnia 2019 roku o dostępności cyfrowej stron internetowych i aplikacji mobilnych podmiotów publicznych \cite{bib:ustawaDostepnosc2019}. Od 28 czerwca 2025 roku w Polsce obowiązuje również Europejski Akt o Dostępności, który nakłada wymagania na wybrane usługi i produkty, takie jak urządzenia mobilne, komputery, czytniki książek, handel elektroniczny, bankowość i transport \cite{bib:eea2019, bib:polskiAktDostepnosci2024}. Szczegółowe wymagania techniczne dla produktów i usług ICT określa norma EN~301~549, która jest stosowana w całej Unii Europejskiej \cite{bib:en301549}.
+Znaczenie dostępności zostało następnie zwiększone dzięki wdrożeniu kroków prawnych. Artykuł 9 Konwencji ONZ o prawach osób z niepełnosprawnościami nakłada na państwa członkowskie obowiązek zapewnienia dostępu do informacji, komunikacji, infrastruktury i technologii do potrzeb osób z niepełnosprawnością \cite{bib:crpd}. Unia Europejska wprowadziła w 2016 roku dyrektywę 2016/2102, która określa wymagania dotyczące dostępności stron internetowych i aplikacji mobilnych podmiotów sektora publicznego \cite{bib:directive2016accessibility}. W Polsce wprowadzono te rozporządzenie ustawą z dnia 4 kwietnia 2019 roku o dostępności cyfrowej stron internetowych i aplikacji mobilnych podmiotów publicznych \cite{bib:ustawaDostepnosc2019}. Od 28 czerwca 2025 roku w Polsce obowiązuje również Europejski Akt o Dostępności, który nakłada wymagania na wybrane usługi i produkty, takie jak urządzenia mobilne, komputery, czytniki książek, handel elektroniczny, bankowość i transport \cite{bib:eaa2019, bib:polskiAktDostepnosci2024}. Szczegółowe wymagania techniczne dla produktów i usług ICT określa norma EN~301~549, która jest stosowana w całej Unii Europejskiej \cite{bib:en301549}.
 
 Dla osób niewidomych te regulacje mają szczególne znaczenie w kontekście współpracy czytników ekranowych z interfejsami, możliwości użycia bez użycia wzroku i jednoznacznego przekazywania informacji. Rozwój prawa sprawił więc, że dostępność cyfrowa nie pozostała w fazie teoretycznej, ale stała się wymogiem, a przez to istotnym czynnikiem technologii wspomagających.
 
 \subsection{Współczesne systemy wspomagające osoby niewidome}
 
-\note{
-    \begin{enumerate}
-        \item Potdar, Pai i Akolkar — A Convolutional Neural Network based Live Object Recognition System as Blind Aid \cite{bib:cnnBlindAid}\\
-              Dałbym go jako prosty punkt wyjścia. System wykorzystuje kamerę i sieć CNN do rozpoznawania obiektów w czasie rzeczywistym. Pokazuje klasyczne podejście:
+\note[hide]{
+    \textbf{Potdar, Pai i Akolkar — A Convolutional Neural Network based Live Object Recognition System as Blind Aid} \cite{bib:cnnBlindAid}
 
-              obraz z kamery → rozpoznanie obiektu → przekazanie informacji użytkownikowi.
+    Dałbym go jako prosty punkt wyjścia. System wykorzystuje kamerę i sieć CNN do rozpoznawania obiektów w czasie rzeczywistym. Pokazuje klasyczne podejście:
 
-              Artykuł jest starszy i technicznie prostszy od późniejszych rozwiązań, dzięki czemu nadaje się do pokazania, jak rozwijały się komputerowe technologie wspomagające. Nie trzeba szczegółowo opisywać ImageNet ani architektury Inception — to zostawiamy do przeglądu metod.
-        \item Sethuraman et al. — MagicEye: An Intelligent Wearable Towards Independent Living of Visually Impaired \cite{bib:magiceye}\\
-              To jeden z najbardziej bezpośrednio związanych z Twoją pracą artykułów. Przedstawia urządzenie ubieralne z kamerą, które wykorzystuje model oparty na YOLOv5 do rozpoznawania przedmiotów codziennego użytku w czasie rzeczywistym.
+    obraz z kamery → rozpoznanie obiektu → przekazanie informacji użytkownikowi.
 
-              Jego rola w 2.2:
+    Artykuł jest starszy i technicznie prostszy od późniejszych rozwiązań, dzięki czemu nadaje się do pokazania, jak rozwijały się komputerowe technologie wspomagające. Nie trzeba szczegółowo opisywać ImageNet ani architektury Inception — to zostawiamy do przeglądu metod.
+}
 
-              pokazanie przejścia od eksperymentalnego modelu do kompletnego systemu;
-              mobilność i urządzenie znajdujące się przy użytkowniku;
-              wymaganie działania w czasie rzeczywistym;
-              ograniczenia związane z liczbą rozpoznawanych klas i jakością obrazu.
+Wraz z rozwojem technologii informatycznej i postępującym zwiększaniem dostępności cyfrowej zaczęły powstawać kompletne systemy wspomagające osoby niewidome, których rozmiary i możliwości zazwyczaj nie krępowały codziennego funkcjonowania. Dziś, wiele z nich wykorzystuje uczenie maszynowe i kamery do analizy przestrzeni wokół użytkownika. Przykład ich użycia zaproponowali Potdar, Pai i Akolkar, którzy oparli swoją pracę na konwolucyjnych sieciach neuronowych (CNN) i kamerze. Zaznaczyli, że jednym z ich celów było, aby osoba niewidoma nie musiała wchodzić w bezpośredni kontakt z obiektem przed sobą, aby zminimalizować ryzyko uszczerbku na zdrowiu lub utraty życia. Sieć zastosowana przez autorów zawierała warstwy odpowiadające za wyodrębnianie cech, lokalizację i klasyfikację obiektów. System umożliwia rozpoznawanie 200 klas obiektów obejmujących ludzi, pojazdy, zwierzęta i elementy wyposażenia pomieszczeń. Sens działania systemu jest prosty: użytkownik naciska przycisk, kamera rejestruje obraz, a następnie model CNN rozpoznaje obiekty i przekazuje użytkownikowi informacje o nich. Niestety, założenie o naciśnięciu przycisku wyklucza możliwość ciągłego rozpoznawania obiektów, co może prowadzić np. do wypadków z szybko poruszającymi się pojazdami. Autorzy zaznaczają, że ich wyniki potwierdzają użyteczność systemu, ale jednocześnie mówią o utracie jakości przy małych obiektach. Sugerują, że zwiększenie ilości warstw konwolucyjnych może poprawić skuteczność, ale jednocześnie spowolni działanie systemu. Te wnioski pokazują, że należy zachować kompromis pomiędzy skutecznością, a prędkością działania systemu \cite{bib:cnnBlindAid}.
 
-              To dobre bezpośrednie odniesienie dla Twojego układu: urządzenie mobilne, obraz z kamery, model detekcji i informacja dla użytkownika.
-        \item Baig et al. — AI-based Wearable Vision Assistance System for the Visually Impaired \cite{bib:wearablevisionassistance}\\
-              Ten artykuł pokazuje kolejny etap rozwoju: system nie ogranicza się do samej etykiety obiektu. Łączy detekcję MobileNet-SSD, rozpoznawanie twarzy oraz model vision-language generujący kontekstowy opis sceny.
+\note[hide]{
+    \textbf{Sethuraman et al. — MagicEye: An Intelligent Wearable Towards Independent Living of Visually Impaired} \cite{bib:magiceye}\\
+    To jeden z najbardziej bezpośrednio związanych z Twoją pracą artykułów. Przedstawia urządzenie ubieralne z kamerą, które wykorzystuje model oparty na YOLOv5 do rozpoznawania przedmiotów codziennego użytku w czasie rzeczywistym.
 
-              Bardzo dobrze łączy się to z wnioskami z 2.1:
+    Jego rola w 2.2:
 
-              sama informacja „to jest obiekt X” może być niewystarczająca; użytkownik może potrzebować również informacji o kontekście, cechach i otoczeniu.
+    pokazanie przejścia od eksperymentalnego modelu do kompletnego systemu;
+    mobilność i urządzenie znajdujące się przy użytkowniku;
+    wymaganie działania w czasie rzeczywistym;
+    ograniczenia związane z liczbą rozpoznawanych klas i jakością obrazu.
 
-              Warto opisać też:
+    To dobre bezpośrednie odniesienie dla Twojego układu: urządzenie mobilne, obraz z kamery, model detekcji i informacja dla użytkownika.
+}
 
-              działanie na urządzeniu Raspberry Pi;
-              średni czas odpowiedzi;
-              pogorszenie skuteczności przy słabym oświetleniu;
-              możliwość dodawania nowych obiektów i osób.
+Rozszerzeniem idei wykorzystania sieci neuronowych do wsparcia osób niewidomych jest system \nobreakdash{MagicEye} opracowany przez zespół pod przewodnictwem Sethuramana. Tym razem twórcy oparli się na idei stworzenia urządzenia ubieralnego w formie inteligentnych okularów z kamerą. Podobnie jak w przypadku poprzedniego systemu, po wejściu w interakcję z urządzeniem obraz z kamery jest analizowany przez model sieci neuronowej, a następnie wyniki detekcji są przekazywane użytkownikowi w formie dźwiękowej. Model oparto o architekturę YOLOv5, wybranej ze względu na szybkość działania, dokładność i niewielkiego rozmiaru sieci. Trening oparty był o wybrany podzbiór Google Open Images liczący ponad 13~200 obrazów, obejmujący 35 klas obiektów. Dodatkowo, w systemie zaimplementowano mechanizmy rozpoznawania twarzy, nominałów banknotów, odbiornik GPS i czujnik zbliżeniowy \cite{bib:magiceye}.
 
-              Ponieważ jest to preprint, przedstawiałbym go jako przykład prototypowego rozwiązania, a nie jako ostateczne potwierdzenie skuteczności całej klasy systemów.
-        \item Wang et al. — YOLO-OD: Obstacle Detection for Visually Impaired Navigation Assistance \cite{bib:yolo_od}\\
-              Ten artykuł reprezentuje drugi duży obszar technologii wspomagających: nawigację i wykrywanie przeszkód. Nie dotyczy bezpośrednio rozpoznawania dotykanych brył, ale pokazuje, że detekcja obiektów jest wykorzystywana nie tylko do ich identyfikacji, lecz także do wspierania orientacji przestrzennej.
+\note[hide]{
+    \textbf{Baig et al. — AI-based Wearable Vision Assistance System for the Visually Impaired} \cite{bib:wearablevisionassistance}\\
+    Ten artykuł pokazuje kolejny etap rozwoju: system nie ogranicza się do samej etykiety obiektu. Łączy detekcję MobileNet-SSD, rozpoznawanie twarzy oraz model vision-language generujący kontekstowy opis sceny.
 
-              Wystarczy opisać:
+    Bardzo dobrze łączy się to z wnioskami z 2.1:
 
-              wykrywanie przeszkód w scenach zewnętrznych;
-              zastosowanie zmodyfikowanego modelu YOLO;
-              konieczność wykrywania obiektów o różnych rozmiarach;
-              znaczenie kompromisu między skutecznością a szybkością działania.
+    sama informacja „to jest obiekt X” może być niewystarczająca; użytkownik może potrzebować również informacji o kontekście, cechach i otoczeniu.
 
-              Nie wchodziłbym tutaj głęboko w bloki FWB, ABB czy EFAH. To podrozdział o technologiach wspomagających, nie o szczegółach architektury.
-        \item Dzierzgowska et al. — Alternative audio-graphic method for presenting structural information in mathematical graphs designed for low-vision users \cite{bib:Dzierzgowska2025}\\
-              Ten artykuł nie opisuje klasycznej detekcji obiektów, ale jest bardzo ważny ze względu na sposób przekazywania informacji użytkownikowi. Pokazuje rozwiązanie łączące grafikę z informacją dźwiękową i zawiera badanie użytkowników z wykorzystaniem czasu wykonania zadań, liczby błędów, NASA-TLX i SUS.
+    Warto opisać też:
 
-              Jego rola:
+    działanie na urządzeniu Raspberry Pi;
+    średni czas odpowiedzi;
+    pogorszenie skuteczności przy słabym oświetleniu;
+    możliwość dodawania nowych obiektów i osób.
 
-              pokazanie, że technologia wspomagająca to nie tylko model rozpoznający obiekt;
-              znaczenie dobrze zaprojektowanej informacji zwrotnej;
-              ocena obciążenia, frustracji i użyteczności;
-              uzasadnienie wykorzystania komunikatów dźwiękowych w Twoim systemie.
+    Ponieważ jest to preprint, przedstawiałbym go jako przykład prototypowego rozwiązania, a nie jako ostateczne potwierdzenie skuteczności całej klasy systemów.
+}
 
-              To źródło jest mocne, bo przedstawia nie tylko rozwiązanie techniczne, ale też jego ocenę z udziałem użytkowników.
-    \end{enumerate}
-    Dodatkowo: Kawulok i Maćkowski — YOLO-Type Neural Networks in the Process of Adapting Mathematical Graphs to the Needs of the Blind \cite{bib:yolo_adaptation}\\
+Kolejnym krokiem w rozwoju technologii asystujących jest już nie tylko rozpoznanie obiektów, ale przekazanie użytkownikowi informacji dotyczących kontekstu całej sceny. Takie rozwiązanie znajdujemy w pracy Baiga et al., którzy zaproponowali system oparty o Raspberry Pi 4 i model sztucznej inteligencji. Dzięki temu, nie byli ograniczeni do skończonego zbioru klas obiektów, ale dzięki użyciu dużego modelu vision-language mogli generować opisy całej sceny i przekazywać je użytkownikowi w formie audio. Dodatkowo, w systemie zaimplementowano rozpoznawanie twarzy i detekcję odległości od przeszkód. Zgodnie z założeniami, system działał w czasie rzeczywistym, ale radził sobie znacząco gorzej w złych warunkach oświetleniowych \cite{bib:wearablevisionassistance}. Ta praca rozwiązuje problem poruszony w podrozdziale \ref{s:perspektywa}, mówiący o tym, że sama informacja o obiekcie może być niewystarczająca. Tutaj twórcy skupili się na przekazaniu jak najpełniejszej informacji o przestrzeni w której znajduje się użytkownik. Warto jednak zauważyć, że skorzystanie z dużego modelu wymaga ciągłego połączenia z Internetem, a lokalne działanie systemu jest ograniczone do rozpoznawania twarzy i detekcji pobliskich przeszkód.
+
+\note[hide]{
+    \textbf{Wang et al. — YOLO-OD: Obstacle Detection for Visually Impaired Navigation Assistance} \cite{bib:yolo_od}\\
+    Ten artykuł reprezentuje drugi duży obszar technologii wspomagających: nawigację i wykrywanie przeszkód. Nie dotyczy bezpośrednio rozpoznawania dotykanych brył, ale pokazuje, że detekcja obiektów jest wykorzystywana nie tylko do ich identyfikacji, lecz także do wspierania orientacji przestrzennej.
+
+    Wystarczy opisać:
+
+    wykrywanie przeszkód w scenach zewnętrznych;
+    zastosowanie zmodyfikowanego modelu YOLO;
+    konieczność wykrywania obiektów o różnych rozmiarach;
+    znaczenie kompromisu między skutecznością a szybkością działania.
+
+    Nie wchodziłbym tutaj głęboko w bloki FWB, ABB czy EFAH. To podrozdział o technologiach wspomagających, nie o szczegółach architektury.
+}
+
+Poprzednio omawiane systemy skupiały się na rozpoznawaniu obiektów w określonej scenie, natomiast głównym celem systemu zaproponowanego przez Wang et al. jest pomoc użytkownikowi w omijaniu przeszkód w przestrzeni. Ponieważ rozwiązanie ma działać jako ciągła pomoc nawigacyjna, nie powinno być aktywowane przyciskami, a zamiast tego stale analizować obraz i -- w razie potrzeby -- informować użytkownika o potencjalnym zagrożeniu. Autorzy przedstawili metodę detekcji \nobreakdash{YOLO-OD} do której wykorzystali model o architekturze inspirowanej siecią \nobreakdash{YOLOv8} rozszerzoną o dodatkowe bloki odpowiedzialne za zwiększenie skuteczności detekcji w różnych warunkach. Sam model na publicznie dostępnym zbiorze danych osiągnął wartość średniej precyzji na poziomie 30.02\%, co zdaniem autorów wskazuje, że zaproponowane rozwiązanie może być wartościowe w kontekście wspomagania osób niewidomych \cite{bib:yolo_od}.
+
+\note[hide]{
+    \textbf{Dzierzgowska et al. — Alternative audio-graphic method for presenting structural information in mathematical graphs designed for low-vision users} \cite{bib:Dzierzgowska2025}\\
+    Ten artykuł nie opisuje klasycznej detekcji obiektów, ale jest bardzo ważny ze względu na sposób przekazywania informacji użytkownikowi. Pokazuje rozwiązanie łączące grafikę z informacją dźwiękową i zawiera badanie użytkowników z wykorzystaniem czasu wykonania zadań, liczby błędów, NASA-TLX i SUS.
+
+    Jego rola:
+
+    pokazanie, że technologia wspomagająca to nie tylko model rozpoznający obiekt;
+    znaczenie dobrze zaprojektowanej informacji zwrotnej;
+    ocena obciążenia, frustracji i użyteczności;
+    uzasadnienie wykorzystania komunikatów dźwiękowych w Twoim systemie.
+
+    To źródło jest mocne, bo przedstawia nie tylko rozwiązanie techniczne, ale też jego ocenę z udziałem użytkowników.
+}
+
+Odrębnym zagadnieniem, na jakie należy zwrócić uwagę przy tworzeniu systemów wspomagających, jest sposób przekazywania informacji. Wcześniej omawiane rozwiązania bazowały na prostym przekazie dźwiękowym, opartym o buzzer lub syntezator mowy. Dzierzgowska et al. zaproponowali metodę audio-graficzną, łączącą interaktywną prezentację wykresów funkcji matematycznych z opisami dźwiękowymi. Użytkownik, aby uzyskać kolejne informacje o wybranej części wykresu, musiał wykonać pojedyncze, podwójne lub potrójne stuknięcie na elemencie. Badanie przeprowadzone na grupie 54 osób wskazało, że zaproponowana metoda umożliwiła zmniejszenie obciążenia, frustracji, a w przypadku części zadań pozwoliło na skrócenie czasu ich wykonania. Wyniki wskazują, że skuteczność systemu wspomagającego nie zależy jedynie od stopnia możliwości rozpoznawania obiektów, ale również od poprawnego i odpowiedniego zaprojektowania przekazu informacji zwrotnej \cite{bib:Dzierzgowska2025}.
+
+\note[hide]{
+    \textbf{Dodatkowo:} Kawulok i Maćkowski — YOLO-Type Neural Networks in the Process of Adapting Mathematical Graphs to the Needs of the Blind \cite{bib:yolo_adaptation}\\
     Pokazuje zastosowanie modeli YOLO do automatycznej adaptacji materiałów graficznych dla osób niewidomych. Dobrze pasuje jako przykład technologii edukacyjnej i jako łącznik między 2.1 a techniczną częścią pracy.
 
     Nie poświęcałbym mu jednak całego dużego akapitu, ponieważ szczegółowe porównanie modeli YOLO będzie lepiej pasowało do 2.5.
 }
 
-\draft{
+\draft[hide]{
     WNIOSEK KOŃCOWY:
 
     Współczesne technologie wspomagające coraz częściej łączą mobilną akwizycję obrazu, detekcję działającą w czasie rzeczywistym oraz dźwiękową lub kontekstową informację zwrotną. Jednocześnie większość opisanych systemów koncentruje się na rozpoznawaniu obiektów znajdujących się w otoczeniu lub na wykrywaniu przeszkód. Mniej uwagi poświęca się rozpoznawaniu obiektu, który jest aktualnie eksplorowany dotykowo przez użytkownika.
 }
+
+Współczesne technologie wspomagające uzupełniają tradycyjne metody wsparcia osób niewidomych, oferując coraz bardziej złożone systemy i algorytmy. Wspólnym mianownikiem większości z nich jest wykorzystanie małych kamer do pozyskiwania obrazu, który następnie jest analizowany przez modele uczenia maszynowego, a wyniki są prezentowane użytkownikowi. Większość opisywanych systemów koncentruje się jednak na wsparciu w codziennym funkcjonowaniu -- poruszaniu się w przestrzeni, wykrywaniu przeszkód czy rozpoznawaniu twarzy i banknotów. Mało systemów skupia się jedynie na obiektach aktualnie eksplorowanych dotykowo przez użytkownika. W tym kontekście stworzenie systemu dedykowanemu nauce przestrzennej wydaje się być istotnym uzupełnieniem istniejących rozwiązań.
 
 \section{Problem rozpoznawania obiektów 3D w interakcji dotykowej}
 
 \note{
     Tutaj opisuję, że użytkownik nie tylko patrzy kamerą na scenę, ale dotyka obiektu, więc problem jest trochę inny niż klasyczna detekcja przedmiotów w pomieszczeniu.
 }
+
+\note{
+    \textbf{Shan et al. — Understanding Human Hands in Contact at Internet Scale} \cite{bib:Shan_2020_CVPR}\
+    Artykuł pokazuje, że w scenach zawierających interakcję człowieka z przedmiotem samo wykrycie dłoni i obiektów nie wystarcza. Zaproponowany model określa położenie dłoni, jej stronę, stan kontaktu oraz ramkę obiektu, którego dana dłoń dotyka. Pozwala to wyznaczyć relację pomiędzy dłonią a konkretnym przedmiotem, nawet jeżeli w obrazie znajduje się więcej obiektów.
+
+    ```
+    Autorzy przygotowali zbiór 100DOH zawierający 100~000 opisanych klatek, w których oznaczono niemal 190~000 dłoni i ponad 110~000 obiektów pozostających z nimi w kontakcie. Model nie rozpoznaje jednak klasy dotykanego przedmiotu, lecz jedynie wskazuje jego położenie i powiązanie z dłonią.
+
+    Jego rola w podrozdziale:
+
+    pokazanie różnicy pomiędzy klasyczną detekcją wszystkich obiektów w scenie a identyfikacją obiektu aktualnie dotykanego przez użytkownika;
+    znaczenie jawnego modelowania relacji dłoń--obiekt;
+    uzasadnienie obecności dłoni oraz różnych sposobów chwytu w danych treningowych.
+
+    Warto zaznaczyć, że metoda zakłada możliwość przypisania pojedynczej dłoni do jednego obiektu. Autorzy wskazują, że obsługa sytuacji, w której jedna dłoń dotyka wielu przedmiotów, pozostaje zagadnieniem do dalszych badań.
+    ```
+
+}
+
+\note{
+    \textbf{Zhang et al. — MOHO: Learning Single-view Hand-held Object Reconstruction with Multi-view Occlusion-Aware Supervision} \cite{bib:Zhang_2024_CVPR}\
+    Autorzy analizują rekonstrukcję przedmiotów trzymanych w dłoni na podstawie pojedynczego obrazu RGB. Wskazują dwa podstawowe źródła niepełnej informacji: zasłonięcie części przedmiotu przez dłoń oraz samozasłonięcie obiektu, wynikające z obserwowania go tylko z jednego kierunku. Oznacza to, że nawet dobrze widoczny przedmiot może nie ujawniać w pojedynczej klatce wszystkich cech koniecznych do określenia jego pełnego kształtu.
+
+    ```
+    Zaproponowana metoda wykorzystuje dane syntetyczne oraz nagrania przedstawiające interakcję dłoni z obiektami. Informacje pochodzące z wielu widoków są używane podczas uczenia, aby model mógł odtwarzać fragmenty kształtu niewidoczne w obrazie wejściowym. Metodę oceniono na zbiorach HO3D i DexYCB.
+
+    Jego rola w podrozdziale:
+
+    wskazanie zasłonięcia jako jednego z podstawowych problemów przy rozpoznawaniu dotykanych obiektów;
+    rozróżnienie zasłonięcia przez dłoń i samozasłonięcia obiektu;
+    pokazanie, że wynik analizy pojedynczej klatki zależy od sposobu chwytu i orientacji bryły względem kamery;
+    uzasadnienie potrzeby uwzględnienia wielu ułożeń dłoni i obiektu w zbiorze danych.
+
+    Nie opisywałbym szczegółowo rekonstrukcji NeRF ani zastosowanych funkcji kosztu. Artykuł jest przydatny przede wszystkim jako potwierdzenie, że niepełna widoczność trzymanego obiektu stanowi odrębny i istotny problem komputerowego widzenia.
+    ```
+
+}
+
+\note{
+    \textbf{Tekin, Bogo i Pollefeys — H+O: Unified Egocentric Recognition of 3D Hand-Object Poses and Interactions} \cite{bib:Tekin_2019_CVPR}\
+    Autorzy zaproponowali system analizujący sekwencje obrazu RGB rejestrowane z perspektywy pierwszej osoby. Model wspólnie estymuje położenie dłoni i obiektu w przestrzeni, rozpoznaje klasę przedmiotu oraz wykonywaną czynność. Informacje z kolejnych klatek są następnie łączone przez moduł rekurencyjny, który analizuje zmiany położenia dłoni i obiektu w czasie.
+
+    ```
+    Wyniki autorów wskazują, że wykorzystanie sekwencji i jawne modelowanie interakcji poprawiało skuteczność rozpoznawania czynności w porównaniu z analizą pojedynczego obrazu. Pełna metoda osiągnęła skuteczność 96,99\%, podczas gdy wariant oparty wyłącznie na pojedynczych klatkach uzyskał 85,56\%. System przetwarzał obraz z prędkością około 25 klatek na sekundę na wykorzystanym przez autorów sprzęcie.
+
+    Jego rola w podrozdziale:
+
+    pokazanie znaczenia czasowego charakteru interakcji z obiektem;
+    uzasadnienie łączenia informacji pochodzących z kolejnych klatek;
+    wskazanie, że ruch dłoni i zmiana orientacji przedmiotu mogą ujawniać cechy niewidoczne wcześniej;
+    zwrócenie uwagi na kompromis pomiędzy czasem potrzebnym na zgromadzenie informacji a szybkością udzielenia odpowiedzi użytkownikowi.
+
+    Artykuł dotyczy przede wszystkim estymacji pozy i rozpoznawania wykonywanych czynności, a nie rozpoznawania prostych brył geometrycznych. Nie należy więc bezpośrednio przenosić jego wyników na projektowany system, ale można wykorzystać je do uzasadnienia analizy sekwencyjnej.
+    ```
+
+}
+
+\note{
+    \textbf{Xu et al. — TANDEM3D: Active Tactile Exploration for 3D Object Recognition} \cite{bib:xu2023tandem3dactivetactileexploration}\
+    Praca dotyczy robotycznego rozpoznawania obiektów wyłącznie na podstawie informacji dotykowej. Czujnik zbiera lokalne dane o miejscach kontaktu i kierunkach normalnych powierzchni, z których stopniowo tworzona jest reprezentacja obiektu. System składa się z modułu rozpoznającego przedmiot oraz modułu wybierającego kolejne ruchy czujnika tak, aby pozyskiwać informacje pozwalające możliwie szybko odróżnić podobne obiekty.
+
+    ```
+    Autorzy przeprowadzili eksperymenty na dziesięciu obiektach ze zbioru YCB. Zaproponowana metoda osiągała większą skuteczność przy mniejszej liczbie działań niż porównywane strategie eksploracji oraz zachowywała większą odporność na zakłócenia czujnika. Pokazuje to, że każdy kolejny kontakt nie musi być równie wartościowy, a szczególnie istotne są punkty zawierające cechy charakterystyczne dla danego obiektu.
+
+    Jego rola w podrozdziale:
+
+    pokazanie, że eksploracja dotykowa jest procesem aktywnym i sekwencyjnym;
+    wskazanie, że pojedynczy kontakt dostarcza jedynie lokalnej informacji o powierzchni;
+    znaczenie charakterystycznych elementów, takich jak krawędzie, załamania i zmiany kierunku powierzchni;
+    powiązanie technicznej analizy interakcji z wnioskami dotyczącymi etapowego poznawania obiektów przez osoby niewidome.
+
+    Należy wyraźnie zaznaczyć, że jest to system robotyczny, a nie technologia wspomagająca osoby niewidome. Obiekty należą do wcześniej znanego zbioru, a podczas eksperymentów były przymocowane do podłoża, aby ograniczyć ich przemieszczanie. Artykuł powinien więc służyć jako opis natury aktywnej eksploracji dotykowej, a nie jako bezpośredni odpowiednik projektowanego rozwiązania.
+
+}
+
 
 \section{Metody detekcji obiektów w obrazach}
 
@@ -145,29 +247,29 @@ Dla osób niewidomych te regulacje mają szczególne znaczenie w kontekście wsp
 
 \section{Metryki oceny detekcji obiektów}
 
-Ocena modeli detekcji obiektów wymaga zastosowania odpowiednich metryk, które pozwalają na porównanie uzyskanych wyników. Metryki te powinny uwzględniać zarówno poprawność klasyfikacji, jak i dokładność lokalizacji obiektu na obrazie. Przeciwnie do klasyfikacji obrazów, przy detekcji nie wystarczy, aby model poprawnie rozpoznał klasę obiektu. Równie istotne jest, aby poprawnie wyznaczył ramkę ograniczającą wokół wykrytego obiektu. Jedną z najczęściej stosowanych metryk jest IoU (ang. \textit{Intersection over Union}), określająca stopień pokrycia między ramką obiektu przewidywaną przez model a ramką rzeczywistą \cite{bib:detectionMetrics}. Wartość IoU obliczana jest jako stosunek pola części wspólnej obu ramek do pola ich części łącznej:
+Ocena modeli detekcji obiektów wymaga zastosowania odpowiednich metryk, które pozwalają na porównanie uzyskanych wyników. Metryki te powinny uwzględniać zarówno poprawność klasyfikacji, jak i dokładność lokalizacji obiektu na obrazie. Przeciwnie do klasyfikacji obrazów, przy detekcji nie wystarczy, aby model poprawnie rozpoznał klasę obiektu. Równie istotne jest, aby poprawnie wyznaczył ramkę ograniczającą wokół wykrytego obiektu. Jedną z najczęściej stosowanych metryk jest IoU (ang. \english{Intersection over Union}), określająca stopień pokrycia między ramką obiektu przewidywaną przez model a ramką rzeczywistą \cite{bib:detectionMetrics}. Wartość IoU obliczana jest jako stosunek pola części wspólnej obu ramek do pola ich części łącznej:
 
 \begin{equation}
     IoU = \frac{|B_p \cap B_{gt}|}{|B_p \cup B_{gt}|},
 \end{equation}
 
-gdzie $B_p$ jest ramką przewidywaną przez model, a $B_{gt}$ jest ramką referencyjną (ang. \textit{ground truth}). Im większa wartość IoU, tym lepsze dopasowanie ramki przewidywanej do ramki rzeczywistej. W praktyce najczęściej stosuje się progi, np. $IoU \geq 0.5$, aby zdecydować, czy dana detekcja może być uznana za poprawną. Próg ten został wykorzystany w wielu klasycznych procedurach oceny detekcji, takich jak PASCAL VOC \cite{bib:PASCALVOCChallenge}, i jest nadal powszechnie stosowany w wielu benchmarkach. Na podstawie wartości IoU oraz zgodności klasy obiektu możliwe jest przypisanie wyników detekcji do jednej z kategorii: prawdziwych pozytywów (TP, ang. \textit{true positive}), fałszywych pozytywów (FP, ang. \textit{false positive}) i fałszywych negatywów (FN, ang. \textit{false negative}). Detekcja jest traktowana jako TP, jeżeli model poprawnie rozpoznał klasę obiektu, a przewidywana ramka spełnia zadany próg IoU względem ramki referencyjnej. FP to detekcja błędna w której model przewidział klasę obiektu, ale nie spełnił progu IoU lub przewidziana klasa była błędna. FN natomiast to sytuacja, w której model nie wykrył obiektu, który rzeczywiście był na obrazie.
+gdzie $B_p$ jest ramką przewidywaną przez model, a $B_{gt}$ jest ramką referencyjną (ang. \english{ground truth}). Im większa wartość IoU, tym lepsze dopasowanie ramki przewidywanej do ramki rzeczywistej. W praktyce najczęściej stosuje się progi, np. $IoU \geq 0.5$, aby zdecydować, czy dana detekcja może być uznana za poprawną. Próg ten został wykorzystany w wielu klasycznych procedurach oceny detekcji, takich jak PASCAL VOC \cite{bib:PASCALVOCChallenge}, i jest nadal powszechnie stosowany w wielu benchmarkach. Na podstawie wartości IoU oraz zgodności klasy obiektu możliwe jest przypisanie wyników detekcji do jednej z kategorii: prawdziwych pozytywów (TP, ang. \english{true positive}), fałszywych pozytywów (FP, ang. \english{false positive}) i fałszywych negatywów (FN, ang. \english{false negative}). Detekcja jest traktowana jako TP, jeżeli model poprawnie rozpoznał klasę obiektu, a przewidywana ramka spełnia zadany próg IoU względem ramki referencyjnej. FP to detekcja błędna w której model przewidział klasę obiektu, ale nie spełnił progu IoU lub przewidziana klasa była błędna. FN natomiast to sytuacja, w której model nie wykrył obiektu, który rzeczywiście był na obrazie.
 
-Jedną z podstawowych metryk oceny jest precyzja (ang. \textit{precision}), określająca udział poprawnych detekcji modelu wśród wszystkich detekcji, jakie zwrócił:
+Jedną z podstawowych metryk oceny jest precyzja (ang. \english{precision}), określająca udział poprawnych detekcji modelu wśród wszystkich detekcji, jakie zwrócił:
 
 \begin{equation}
     Precision = \frac{TP}{TP + FP}.
 \end{equation}
 
-Wysoka precyzja oznacza, że model generuje niewiele fałszywych pozytywów. Drugą, powiązaną z nią metryką, jest czułość (ang. \textit{recall}), określająca, jaki jest udział poprawnych detekcji wśród wszystkich rzeczywistych obiektów:
+Wysoka precyzja oznacza, że model generuje niewiele fałszywych pozytywów. Drugą, powiązaną z nią metryką, jest czułość (ang. \english{recall}), określająca, jaki jest udział poprawnych detekcji wśród wszystkich rzeczywistych obiektów:
 
 \begin{equation}
     Recall = \frac{TP}{TP + FN}.
 \end{equation}
 
-Obie metryki pozostają ze sobą w relacji kompromisu, ponieważ zwiększenie progu pewności detekcji może ograniczyć liczbę fałszywych pozytywów, ale jednocześnie prowadzić do pominięcia części rzeczywistych obiektów. Z kolei obniżenie tego progu może zwiększyć liczbę detekcji, ale równocześnie powodować wzrost liczby fałszywych detekcji. Z tego względu, przy analizie detektorów często łączy się je w jedną metrykę -- krzywą PR (precyzja-czułość, ang. \textit{precision-recall curve}), przedstawiającą zależność pomiędzy nimi dla różnych wartości progu decyzyjnego. Na jej podstawie wyznacza się metrykę AP (ang. \textit{Average Precision}), odpowiadającą polu pod krzywą PR.
+Obie metryki pozostają ze sobą w relacji kompromisu, ponieważ zwiększenie progu pewności detekcji może ograniczyć liczbę fałszywych pozytywów, ale jednocześnie prowadzić do pominięcia części rzeczywistych obiektów. Z kolei obniżenie tego progu może zwiększyć liczbę detekcji, ale równocześnie powodować wzrost liczby fałszywych detekcji. Z tego względu, przy analizie detektorów często łączy się je w jedną metrykę -- krzywą PR (precyzja-czułość, ang. \english{precision-recall curve}), przedstawiającą zależność pomiędzy nimi dla różnych wartości progu decyzyjnego. Na jej podstawie wyznacza się metrykę AP (ang. \english{Average Precision}), odpowiadającą polu pod krzywą PR.
 
-W przypadku detekcji wieloklasowej używa się średniej wartości AP obliczonej dla wszystkich klas, określanej jako mAP (ang. \textit{mean Average Precision}):
+W przypadku detekcji wieloklasowej używa się średniej wartości AP obliczonej dla wszystkich klas, określanej jako mAP (ang. \english{mean Average Precision}):
 
 \begin{equation}
     mAP = \frac{1}{N} \sum_{i=1}^{N} AP_i,
@@ -183,7 +285,7 @@ Dodatkowo, w pracy wykorzystano metrykę $F1$-score, będącą średnią harmoni
 
 gdzie $P$ jest precyzją, a $R$ jest czułością. Metryka ta umożliwia przedstawienie kompromisu pomiędzy liczbą fałszywych detekcji a liczbą pominiętych obiektów. Może być szczególnie przydatna, gdy sama precyzja lub czułość nie dają pełnego obrazu jakości modelu. W niniejszej pracy metrykę $F1$-score wykorzystano jako metrykę pomocniczą względem podstawowych metryk $mAP50$ i $mAP50-95$, aby lepiej zrozumieć kompromis pomiędzy precyzją a czułością w kontekście detekcji obiektów dotykanych przez użytkownika.
 
-Oprócz wartości liczbowych wykorzystano również macierze pomyłek (ang. \textit{confusion matrix}), pozwalające przeanalizować, które klasy obiektów są najczęściej mylone przez model. Są one przedstawiane w formie tabel, w których jedna oś odpowiada rzeczywistym klasom, a druga klasom przewidywanym przez model. Dla dobrze działającego modelu większość wartości powinna znajdować się na przekątnej macierzy, co wskazuje na poprawną klasyfikację obiektów. Macierze pomyłek są szczególnie istotne przy rozpoznawaniu brył geometrycznych o podobnych kształtach, np. sześcianu i prostopadłościanu, ponieważ sama wartość mAP nie wskazuje bezpośrednio, pomiędzy którymi klasami model popełnia najwięcej błędów. Analiza macierzy pomyłek może również pomóc w identyfikacji problemów z danymi treningowymi, np. niedostatecznej liczby przykładów dla wybranych klas lub błędów w oznaczeniach.
+Oprócz wartości liczbowych wykorzystano również macierze pomyłek (ang. \english{confusion matrix}), pozwalające przeanalizować, które klasy obiektów są najczęściej mylone przez model. Są one przedstawiane w formie tabel, w których jedna oś odpowiada rzeczywistym klasom, a druga klasom przewidywanym przez model. Dla dobrze działającego modelu większość wartości powinna znajdować się na przekątnej macierzy, co wskazuje na poprawną klasyfikację obiektów. Macierze pomyłek są szczególnie istotne przy rozpoznawaniu brył geometrycznych o podobnych kształtach, np. sześcianu i prostopadłościanu, ponieważ sama wartość mAP nie wskazuje bezpośrednio, pomiędzy którymi klasami model popełnia najwięcej błędów. Analiza macierzy pomyłek może również pomóc w identyfikacji problemów z danymi treningowymi, np. niedostatecznej liczby przykładów dla wybranych klas lub błędów w oznaczeniach.
 
 \section{Podsumowanie analizy tematu}
 
