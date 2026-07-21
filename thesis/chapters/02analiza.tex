@@ -50,6 +50,7 @@ Znaczenie dostępności zostało następnie zwiększone dzięki wdrożeniu krok�
 Dla osób niewidomych te regulacje mają szczególne znaczenie w kontekście współpracy czytników ekranowych z interfejsami, możliwości użycia bez użycia wzroku i jednoznacznego przekazywania informacji. Rozwój prawa sprawił więc, że dostępność cyfrowa nie pozostała w fazie teoretycznej, ale stała się wymogiem, a przez to istotnym czynnikiem technologii wspomagających.
 
 \subsection{Współczesne systemy wspomagające osoby niewidome}
+\label{ssec:systemy}
 
 \note[hide]{
     \textbf{Potdar, Pai i Akolkar — A Convolutional Neural Network based Live Object Recognition System as Blind Aid} \cite{bib:cnnBlindAid}
@@ -144,19 +145,20 @@ Odrębnym zagadnieniem, na jakie należy zwrócić uwagę przy tworzeniu system�
     Współczesne technologie wspomagające coraz częściej łączą mobilną akwizycję obrazu, detekcję działającą w czasie rzeczywistym oraz dźwiękową lub kontekstową informację zwrotną. Jednocześnie większość opisanych systemów koncentruje się na rozpoznawaniu obiektów znajdujących się w otoczeniu lub na wykrywaniu przeszkód. Mniej uwagi poświęca się rozpoznawaniu obiektu, który jest aktualnie eksplorowany dotykowo przez użytkownika.
 }
 
-Współczesne technologie wspomagające uzupełniają tradycyjne metody wsparcia osób niewidomych, oferując coraz bardziej złożone systemy i algorytmy. Wspólnym mianownikiem większości z nich jest wykorzystanie małych kamer do pozyskiwania obrazu, który następnie jest analizowany przez modele uczenia maszynowego, a wyniki są prezentowane użytkownikowi. Większość opisywanych systemów koncentruje się jednak na wsparciu w codziennym funkcjonowaniu -- poruszaniu się w przestrzeni, wykrywaniu przeszkód czy rozpoznawaniu twarzy i banknotów. Mało systemów skupia się jedynie na obiektach aktualnie eksplorowanych dotykowo przez użytkownika. W tym kontekście stworzenie systemu dedykowanemu nauce przestrzennej wydaje się być istotnym uzupełnieniem istniejących rozwiązań.
+Współczesne technologie wspomagające uzupełniają tradycyjne metody wsparcia osób niewidomych, oferując coraz bardziej złożone systemy i algorytmy. Wspólnym mianownikiem większości z nich jest wykorzystanie małych kamer do pozyskiwania obrazu, który następnie jest analizowany przez modele uczenia maszynowego, a wyniki są prezentowane użytkownikowi. Większość opisywanych systemów koncentruje się jednak na wsparciu w codziennym funkcjonowaniu -- poruszaniu się w przestrzeni, wykrywaniu przeszkód czy rozpoznawaniu twarzy i banknotów. Mało systemów skupia się jedynie na obiektach aktualnie eksplorowanych dotykowo przez użytkownika. W tym kontekście stworzenie systemu dedykowanego nauce przestrzennej wydaje się być istotnym uzupełnieniem istniejących rozwiązań.
 
 \section{Problem rozpoznawania obiektów 3D w interakcji dotykowej}
 
-\note{
+\note[hide]{
     Tutaj opisuję, że użytkownik nie tylko patrzy kamerą na scenę, ale dotyka obiektu, więc problem jest trochę inny niż klasyczna detekcja przedmiotów w pomieszczeniu.
 }
 
-\note{
+Problemem, jaki należy koniecznie poruszyć, jest rozpoznanie obiektów 3D w interakcji dotykowej, ponieważ zachodzi w tym miejscu istotna różnica od systemów opisywanych we wcześniejszym podrozdziale (\ref{ssec:systemy}). W odróżnieniu od nich, głównym celem projektowanego systemu nie jest rozpoznanie obiektów przed użytkownikiem, a tych z którymi wchodzi w interakcję. Mamy więc do czynienia z sytuacją, w której kamera nie jest zwrócona na to co znajduje się przed użytkownikiem, ale na niego samego, a w szczególności na jego dłonie. W tym kontekście klasyczne podejście do detekcji może być niewystarczające ze względu na to, że spora część obiektu może być przez nie zasłonięta, a sam kształt może być trudny do rozpoznania nawet dla osoby widzącej. W tym miejscu warto przytoczyć kilka prac, które poruszają podobne zagadnienia.
+
+\note[hide]{
     \textbf{Shan et al. — Understanding Human Hands in Contact at Internet Scale} \cite{bib:Shan_2020_CVPR}\
     Artykuł pokazuje, że w scenach zawierających interakcję człowieka z przedmiotem samo wykrycie dłoni i obiektów nie wystarcza. Zaproponowany model określa położenie dłoni, jej stronę, stan kontaktu oraz ramkę obiektu, którego dana dłoń dotyka. Pozwala to wyznaczyć relację pomiędzy dłonią a konkretnym przedmiotem, nawet jeżeli w obrazie znajduje się więcej obiektów.
 
-    ```
     Autorzy przygotowali zbiór 100DOH zawierający 100~000 opisanych klatek, w których oznaczono niemal 190~000 dłoni i ponad 110~000 obiektów pozostających z nimi w kontakcie. Model nie rozpoznaje jednak klasy dotykanego przedmiotu, lecz jedynie wskazuje jego położenie i powiązanie z dłonią.
 
     Jego rola w podrozdziale:
@@ -166,15 +168,15 @@ Współczesne technologie wspomagające uzupełniają tradycyjne metody wsparcia
     uzasadnienie obecności dłoni oraz różnych sposobów chwytu w danych treningowych.
 
     Warto zaznaczyć, że metoda zakłada możliwość przypisania pojedynczej dłoni do jednego obiektu. Autorzy wskazują, że obsługa sytuacji, w której jedna dłoń dotyka wielu przedmiotów, pozostaje zagadnieniem do dalszych badań.
-    ```
-
 }
 
-\note{
+Pierwszą z nich jest badanie przeprowadzone przez Shan et al., którzy sprawdzali zdolność modelu do rozpoznawania dłoni w kontakcie z obiektami. W tym celu przygotowali zbiór danych ponad 100~tys. obrazów, na których oznaczono ponad 180~tys. dłoni i ponad 110~tys. obiektów. Celem zaproponowanego modelu nie było jednak określenie klasy dotykanego przedmiotu, a jak najlepsze wskazanie pozycji dłoni i jej orientacji. Dzięki temu, możliwe było wyznaczenie nie tyle położenia przedmiotu, a formy relacji, w jaką wchodził z dłonią. Detekcja została oparta o model Faster~R-CNN, który dla pełnej predykcji wymagającej poprawnego wkrycia dłoni i obiektu uzyskał 38,5\ AP\@50 \cite{bib:Shan_2020_CVPR}.
+Pokazuje to, że w przypadku wykrywania trzymanych obiektów należy zwrócić uwagę na ich otoczenie, gdyż może dojść do sytuacji, gdy model poprawnie rozpozna obiekt, ale nie będzie on trzymany przez użytkownika, co może prowadzić do błędnych wyników.
+
+\note[hide]{
     \textbf{Zhang et al. — MOHO: Learning Single-view Hand-held Object Reconstruction with Multi-view Occlusion-Aware Supervision} \cite{bib:Zhang_2024_CVPR}\
     Autorzy analizują rekonstrukcję przedmiotów trzymanych w dłoni na podstawie pojedynczego obrazu RGB. Wskazują dwa podstawowe źródła niepełnej informacji: zasłonięcie części przedmiotu przez dłoń oraz samozasłonięcie obiektu, wynikające z obserwowania go tylko z jednego kierunku. Oznacza to, że nawet dobrze widoczny przedmiot może nie ujawniać w pojedynczej klatce wszystkich cech koniecznych do określenia jego pełnego kształtu.
 
-    ```
     Zaproponowana metoda wykorzystuje dane syntetyczne oraz nagrania przedstawiające interakcję dłoni z obiektami. Informacje pochodzące z wielu widoków są używane podczas uczenia, aby model mógł odtwarzać fragmenty kształtu niewidoczne w obrazie wejściowym. Metodę oceniono na zbiorach HO3D i DexYCB.
 
     Jego rola w podrozdziale:
@@ -185,11 +187,13 @@ Współczesne technologie wspomagające uzupełniają tradycyjne metody wsparcia
     uzasadnienie potrzeby uwzględnienia wielu ułożeń dłoni i obiektu w zbiorze danych.
 
     Nie opisywałbym szczegółowo rekonstrukcji NeRF ani zastosowanych funkcji kosztu. Artykuł jest przydatny przede wszystkim jako potwierdzenie, że niepełna widoczność trzymanego obiektu stanowi odrębny i istotny problem komputerowego widzenia.
-    ```
-
 }
 
-\note{
+Kolejnym aspektem na jaki należy zwrócić uwagę jest możliwość zasłonięcia części obiektu przez dłoń użytkownika. W odróżnieniu od poprzedniej pracy, Zhang et al. skupili się na rekonstrukcji trójwymiarowej przedmiotów trzymanych w dłoniach. Podczas uczenia wykorzystywali dane z wielu widoków, aby ograniczyć wpływ zasłaniania obiektu przez dłoń. Autorzy wskazali dwa źródła niepełności informacji: zasłonięcie części przedmiotu przez dłoń lub niewidoczność części obiektu wynikająca z obserwowania go tylko pod jednym kątem. Wskazuje to, że w pojedynczej klatce nawet dobrze widoczny przedmiot może nie ujawniać wszystkich swoich cech \cite{bib:Zhang_2024_CVPR}. Przez to istotne jest, aby zbiór danych treningowych zawierał bardzo zróżnicowane kombinacje ułożenia dłoni i obiektu. Warto zwrócić uwagę na to, że możliwa jest również analiza obiektu z kilku ujęć, co może pozwolić na odtworzenie jego widocznej części w przestrzeni trójwymiarowej. W literaturze znajdujemy również propozycje analizy sekwencji obrazów, która pozwoli na ograniczenie problemu zasłaniania obiektu, a możliwe, że również wykluczy niektóre przypadki błędnej predykcji. Jedną z prac poruszających ten problem jest badanie zespołu pod przewodnictwem Tekina. Zaproponowali oni system analizujący sekwencje obrazów RGB rejestrowanych przez użytkownika z perspektywy pierwszej osoby. Model jednocześnie określa położenie dłoni i obiektu, rozpoznaje jego klasę i wykonywaną czynność. Kolejne klatki są następnie analizowane przez moduł rekurencyjny, badający zmiany położenia wykrywanych dłoni i obiektów. Autorzy zaznaczają, że takie podejście pozwoliło im na poprawę skuteczności rozpoznawania czynności z 85,56\% do 96,99\% w porównaniu z analizą pojedynczych klatek. System działał również w czasie rzeczywistym z prędkością około 25 klatek na sekundę \cite{bib:Tekin_2019_CVPR}. Widzimy więc, że przy rozpoznawaniu obiektów istotne jest nie tyle samo ich wykrycie, a przetworzenie ich zbioru w czasie, aby uzyskać jak najpełniejszą informację.
+
+
+
+\note[hide]{
     \textbf{Tekin, Bogo i Pollefeys — H+O: Unified Egocentric Recognition of 3D Hand-Object Poses and Interactions} \cite{bib:Tekin_2019_CVPR}\
     Autorzy zaproponowali system analizujący sekwencje obrazu RGB rejestrowane z perspektywy pierwszej osoby. Model wspólnie estymuje położenie dłoni i obiektu w przestrzeni, rozpoznaje klasę przedmiotu oraz wykonywaną czynność. Informacje z kolejnych klatek są następnie łączone przez moduł rekurencyjny, który analizuje zmiany położenia dłoni i obiektu w czasie.
 
@@ -208,7 +212,7 @@ Współczesne technologie wspomagające uzupełniają tradycyjne metody wsparcia
 
 }
 
-\note{
+\note[hide]{
     \textbf{Xu et al. — TANDEM3D: Active Tactile Exploration for 3D Object Recognition} \cite{bib:xu2023tandem3dactivetactileexploration}\
     Praca dotyczy robotycznego rozpoznawania obiektów wyłącznie na podstawie informacji dotykowej. Czujnik zbiera lokalne dane o miejscach kontaktu i kierunkach normalnych powierzchni, z których stopniowo tworzona jest reprezentacja obiektu. System składa się z modułu rozpoznającego przedmiot oraz modułu wybierającego kolejne ruchy czujnika tak, aby pozyskiwać informacje pozwalające możliwie szybko odróżnić podobne obiekty.
 
@@ -223,9 +227,9 @@ Współczesne technologie wspomagające uzupełniają tradycyjne metody wsparcia
     powiązanie technicznej analizy interakcji z wnioskami dotyczącymi etapowego poznawania obiektów przez osoby niewidome.
 
     Należy wyraźnie zaznaczyć, że jest to system robotyczny, a nie technologia wspomagająca osoby niewidome. Obiekty należą do wcześniej znanego zbioru, a podczas eksperymentów były przymocowane do podłoża, aby ograniczyć ich przemieszczanie. Artykuł powinien więc służyć jako opis natury aktywnej eksploracji dotykowej, a nie jako bezpośredni odpowiednik projektowanego rozwiązania.
-
 }
 
+Na problem rozpoznawania obiektów można również spojrzeć z perspektywy robotyki. Możliwa jest eksploracja obiektu bez użycia kamer, a jedynie poprzez dotyk. Mimo że w tym przypadku nie mamy bezpośredniego odniesienia do osób niewidomych, to warto zwrócić uwagę na inne sposoby akwizycji danych. Ramię robota stworzonego przez zespół Xu et al. wyposażono w czujnik dotyku, a następnie umożliwiono mu eksplorację 10 przedmiotów ze zbioru YCB. Każde dotknięcie tworzyło wpis w lokalnej chmurze punktów, która następnie była wykorzystywana do predykcji lub określenia kolejnego ruchu pozwalającego na lepsze rozróżnienie przedmiotów. Autorzy wskazali, że już kilka charakterystycznych punktów pozwalało na odróżnienie obiektów \cite{bib:xu2023tandem3dactivetactileexploration}. Sugeruje to, że kamery nie są jedynym sposobem na pozyskanie informacji, a ciekawym kierunkiem badań może być analiza chmury punktów powstałej w wyniku dotyku lub skanowania przestrzeni. Odpowiednikiem wspomnianego robota może być rękawica sensoryczna, która będzie zbierała dane nie tylko o samym obiekcie, ale również o rękach użytkownika. Zhang et al. opracowali właśnie takie rozwiązanie, które na podstawie zbieranych danych mogło rozpoznać 16 klas obiektów z dokładnością ponad 95\% \cite{bib:ZHANG2025}. Ukazuje to, że do rozpoznania obiektów nie musimy wykorzystywać wyłącznie obrazów, a możliwe jest połączenie różnych źródeł danych, takich jak obraz, głębia czy informacje dotykowe.
 
 \section{Metody detekcji obiektów w obrazach}
 
