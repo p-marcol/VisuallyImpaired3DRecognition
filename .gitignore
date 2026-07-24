@@ -112,3 +112,4 @@ server/models/
 
 # ExFat MacOS metadata
 **/._*
+thesis/.zed/settings.json
