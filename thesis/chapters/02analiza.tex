@@ -1,9 +1,5 @@
 \chapter{Analiza problemu i przegląd literatury}  % Analiza tematu
 
-\note[hide]{
-    To jest główny wstęp teoretyczny / state of the art. Wymagania mówią wprost, że analiza tematu ma zawierać wprowadzenie do dziedziny, sformułowanie problemu, poszerzone studia literaturowe, przegląd rozwiązań i algorytmów.
-}
-
 Zagadnienie rozpoznawania obiektów przez osoby niewidome wymaga uwzględnienia nie tylko aspektów technicznych, ale też społecznych i psychologicznych -- tego, jak użytkownik poznaje otoczenie i jakie informacje z niego wyciąga. Osoby widzące zazwyczaj nie mają problemów z rozpoznawaniem kształtów, kolorów, orientacji czy położenia obiektów w przestrzeni, natomiast osoby niewidome i słabowidzące w większym stopniu wykorzystują inne zmysły i technologie wspomagające, aby móc zbudować mentalną reprezentację otoczenia.
 
 Ze względu na to, projektowanie i wykonanie systemu rozpoznawania obiektów nie może skupiać się wyłącznie na aspektach technicznych, ale należy również uwzględnić perspektywę użytkownika docelowego. Należy zrozumieć, w jaki sposób informacja przekazywana przez komputer może wesprzeć proces poznawania otoczenia. W niniejszym rozdziale przedstawiono perspektywę osób niewidomych w kontekście rozpoznawania obiektów przestrzennych, a następnie omówiono wybrane technologie wspomagające osoby z niepełnosprawnością wzroku i metody komputerowej detekcji obiektów z wykorzystaniem zróżnicowanych danych wejściowych, takich jak obrazy RGB, mapy głębi czy dane LiDAR. Szczególną uwagę poświęcono rodzinie modeli YOLO, wykorzystywanej w niniejszej pracy. W kolejnej części rozdziału przedstawiono metryki wykorzystywane do oceny jakości detekcji obiektów, a następnie podsumowano przeprowadzoną analizę.
@@ -27,10 +23,6 @@ Wynika z tego, że system wspomagający nie powinien ograniczać się jedynie do
 
 \section{Technologie wspomagające osoby z niepełnosprawnością wzroku}
 
-\note[hide]{
-    Aplikacje mobilne, systemy wearable, kamery, czujniki głębi, audio feedback.
-}
-
 Analiza perspektywy osób niewidomych pozwala zauważyć nie tylko to, że wymagają oni jedynie odmiennych sposobów poznawania przestrzeni wokół nich, ale również wsparcia w wielu przypadkach codziennego życia. Takim wsparciem może zostać prosta laska, ale w bardziej skomplikowanym środowisku musi to być pies przewodnik lub drugi człowiek. Można jednak zastąpić ich technologią, która ciągle rozwijana daje coraz lepsze możliwości.
 
 \subsection{Rozwój technologii asystujących}
@@ -52,196 +44,165 @@ Dla osób niewidomych te regulacje mają szczególne znaczenie w kontekście wsp
 \subsection{Współczesne systemy wspomagające osoby niewidome}
 \label{ssec:systemy}
 
-\note[hide]{
-    \textbf{Potdar, Pai i Akolkar — A Convolutional Neural Network based Live Object Recognition System as Blind Aid} \cite{bib:cnnBlindAid}
-
-    Dałbym go jako prosty punkt wyjścia. System wykorzystuje kamerę i sieć CNN do rozpoznawania obiektów w czasie rzeczywistym. Pokazuje klasyczne podejście:
-
-    obraz z kamery → rozpoznanie obiektu → przekazanie informacji użytkownikowi.
-
-    Artykuł jest starszy i technicznie prostszy od późniejszych rozwiązań, dzięki czemu nadaje się do pokazania, jak rozwijały się komputerowe technologie wspomagające. Nie trzeba szczegółowo opisywać ImageNet ani architektury Inception — to zostawiamy do przeglądu metod.
-}
-
 Wraz z rozwojem technologii informatycznej i postępującym zwiększaniem dostępności cyfrowej zaczęły powstawać kompletne systemy wspomagające osoby niewidome, których rozmiary i możliwości zazwyczaj nie krępowały codziennego funkcjonowania. Dziś, wiele z nich wykorzystuje uczenie maszynowe i kamery do analizy przestrzeni wokół użytkownika. Przykład ich użycia zaproponowali Potdar, Pai i Akolkar, którzy oparli swoją pracę na konwolucyjnych sieciach neuronowych (CNN) i kamerze. Zaznaczyli, że jednym z ich celów było, aby osoba niewidoma nie musiała wchodzić w bezpośredni kontakt z obiektem przed sobą, aby zminimalizować ryzyko uszczerbku na zdrowiu lub utraty życia. Sieć zastosowana przez autorów zawierała warstwy odpowiadające za wyodrębnianie cech, lokalizację i klasyfikację obiektów. System umożliwia rozpoznawanie 200 klas obiektów obejmujących ludzi, pojazdy, zwierzęta i elementy wyposażenia pomieszczeń. Sens działania systemu jest prosty: użytkownik naciska przycisk, kamera rejestruje obraz, a następnie model CNN rozpoznaje obiekty i przekazuje użytkownikowi informacje o nich. Niestety, założenie o naciśnięciu przycisku wyklucza możliwość ciągłego rozpoznawania obiektów, co może prowadzić np. do wypadków z szybko poruszającymi się pojazdami. Autorzy zaznaczają, że ich wyniki potwierdzają użyteczność systemu, ale jednocześnie mówią o utracie jakości przy małych obiektach. Sugerują, że zwiększenie ilości warstw konwolucyjnych może poprawić skuteczność, ale jednocześnie spowolni działanie systemu. Te wnioski pokazują, że należy zachować kompromis pomiędzy skutecznością, a prędkością działania systemu \cite{bib:cnnBlindAid}.
-
-\note[hide]{
-    \textbf{Sethuraman et al. — MagicEye: An Intelligent Wearable Towards Independent Living of Visually Impaired} \cite{bib:magiceye}\\
-    To jeden z najbardziej bezpośrednio związanych z Twoją pracą artykułów. Przedstawia urządzenie ubieralne z kamerą, które wykorzystuje model oparty na YOLOv5 do rozpoznawania przedmiotów codziennego użytku w czasie rzeczywistym.
-
-    Jego rola w 2.2:
-
-    pokazanie przejścia od eksperymentalnego modelu do kompletnego systemu;
-    mobilność i urządzenie znajdujące się przy użytkowniku;
-    wymaganie działania w czasie rzeczywistym;
-    ograniczenia związane z liczbą rozpoznawanych klas i jakością obrazu.
-
-    To dobre bezpośrednie odniesienie dla Twojego układu: urządzenie mobilne, obraz z kamery, model detekcji i informacja dla użytkownika.
-}
 
 Rozszerzeniem idei wykorzystania sieci neuronowych do wsparcia osób niewidomych jest system \nobreakdash{MagicEye} opracowany przez zespół pod przewodnictwem Sethuramana. Tym razem twórcy oparli się na idei stworzenia urządzenia ubieralnego w formie inteligentnych okularów z kamerą. Podobnie jak w przypadku poprzedniego systemu, po wejściu w interakcję z urządzeniem obraz z kamery jest analizowany przez model sieci neuronowej, a następnie wyniki detekcji są przekazywane użytkownikowi w formie dźwiękowej. Model oparto o architekturę YOLOv5, wybranej ze względu na szybkość działania, dokładność i niewielkiego rozmiaru sieci. Trening oparty był o wybrany podzbiór Google Open Images liczący ponad 13~200 obrazów, obejmujący 35 klas obiektów. Dodatkowo, w systemie zaimplementowano mechanizmy rozpoznawania twarzy, nominałów banknotów, odbiornik GPS i czujnik zbliżeniowy \cite{bib:magiceye}.
 
-\note[hide]{
-    \textbf{Baig et al. — AI-based Wearable Vision Assistance System for the Visually Impaired} \cite{bib:wearablevisionassistance}\\
-    Ten artykuł pokazuje kolejny etap rozwoju: system nie ogranicza się do samej etykiety obiektu. Łączy detekcję MobileNet-SSD, rozpoznawanie twarzy oraz model vision-language generujący kontekstowy opis sceny.
-
-    Bardzo dobrze łączy się to z wnioskami z 2.1:
-
-    sama informacja „to jest obiekt X” może być niewystarczająca; użytkownik może potrzebować również informacji o kontekście, cechach i otoczeniu.
-
-    Warto opisać też:
-
-    działanie na urządzeniu Raspberry Pi;
-    średni czas odpowiedzi;
-    pogorszenie skuteczności przy słabym oświetleniu;
-    możliwość dodawania nowych obiektów i osób.
-
-    Ponieważ jest to preprint, przedstawiałbym go jako przykład prototypowego rozwiązania, a nie jako ostateczne potwierdzenie skuteczności całej klasy systemów.
-}
-
-Kolejnym krokiem w rozwoju technologii asystujących jest już nie tylko rozpoznanie obiektów, ale przekazanie użytkownikowi informacji dotyczących kontekstu całej sceny. Takie rozwiązanie znajdujemy w pracy Baiga et al., którzy zaproponowali system oparty o Raspberry Pi 4 i model sztucznej inteligencji. Dzięki temu, nie byli ograniczeni do skończonego zbioru klas obiektów, ale dzięki użyciu dużego modelu vision-language mogli generować opisy całej sceny i przekazywać je użytkownikowi w formie audio. Dodatkowo, w systemie zaimplementowano rozpoznawanie twarzy i detekcję odległości od przeszkód. Zgodnie z założeniami, system działał w czasie rzeczywistym, ale radził sobie znacząco gorzej w złych warunkach oświetleniowych \cite{bib:wearablevisionassistance}. Ta praca rozwiązuje problem poruszony w podrozdziale \ref{s:perspektywa}, mówiący o tym, że sama informacja o obiekcie może być niewystarczająca. Tutaj twórcy skupili się na przekazaniu jak najpełniejszej informacji o przestrzeni w której znajduje się użytkownik. Warto jednak zauważyć, że skorzystanie z dużego modelu wymaga ciągłego połączenia z Internetem, a lokalne działanie systemu jest ograniczone do rozpoznawania twarzy i detekcji pobliskich przeszkód.
-
-\note[hide]{
-    \textbf{Wang et al. — YOLO-OD: Obstacle Detection for Visually Impaired Navigation Assistance} \cite{bib:yolo_od}\\
-    Ten artykuł reprezentuje drugi duży obszar technologii wspomagających: nawigację i wykrywanie przeszkód. Nie dotyczy bezpośrednio rozpoznawania dotykanych brył, ale pokazuje, że detekcja obiektów jest wykorzystywana nie tylko do ich identyfikacji, lecz także do wspierania orientacji przestrzennej.
-
-    Wystarczy opisać:
-
-    wykrywanie przeszkód w scenach zewnętrznych;
-    zastosowanie zmodyfikowanego modelu YOLO;
-    konieczność wykrywania obiektów o różnych rozmiarach;
-    znaczenie kompromisu między skutecznością a szybkością działania.
-
-    Nie wchodziłbym tutaj głęboko w bloki FWB, ABB czy EFAH. To podrozdział o technologiach wspomagających, nie o szczegółach architektury.
-}
+Kolejnym krokiem w rozwoju technologii asystujących jest już nie tylko rozpoznanie obiektów, ale przekazanie użytkownikowi informacji dotyczących kontekstu całej sceny. Takie rozwiązanie znajdujemy w pracy Baiga et al., którzy zaproponowali system oparty o Raspberry Pi 4 i model sztucznej inteligencji. Dzięki temu, nie byli ograniczeni do skończonego zbioru klas obiektów, ale dzięki użyciu dużego modelu vision-language mogli generować opisy całej sceny i przekazywać je użytkownikowi w formie audio. Dodatkowo, w systemie zaimplementowano rozpoznawanie twarzy i detekcję odległości od przeszkód. Zgodnie z założeniami, system działał w czasie rzeczywistym, ale radził sobie znacząco gorzej w złych warunkach oświetleniowych \cite{bib:wearablevisionassistance}. Ta praca rozwiązuje problem poruszony w podrozdziale~\ref{s:perspektywa}, mówiący o tym, że sama informacja o obiekcie może być niewystarczająca. Tutaj twórcy skupili się na przekazaniu jak najpełniejszej informacji o przestrzeni w której znajduje się użytkownik. Warto jednak zauważyć, że skorzystanie z dużego modelu wymaga ciągłego połączenia z Internetem, a lokalne działanie systemu jest ograniczone do rozpoznawania twarzy i detekcji pobliskich przeszkód.
 
 Poprzednio omawiane systemy skupiały się na rozpoznawaniu obiektów w określonej scenie, natomiast głównym celem systemu zaproponowanego przez Wang et al. jest pomoc użytkownikowi w omijaniu przeszkód w przestrzeni. Ponieważ rozwiązanie ma działać jako ciągła pomoc nawigacyjna, nie powinno być aktywowane przyciskami, a zamiast tego stale analizować obraz i -- w razie potrzeby -- informować użytkownika o potencjalnym zagrożeniu. Autorzy przedstawili metodę detekcji \nobreakdash{YOLO-OD} do której wykorzystali model o architekturze inspirowanej siecią \nobreakdash{YOLOv8} rozszerzoną o dodatkowe bloki odpowiedzialne za zwiększenie skuteczności detekcji w różnych warunkach. Sam model na publicznie dostępnym zbiorze danych osiągnął wartość średniej precyzji na poziomie 30.02\%, co zdaniem autorów wskazuje, że zaproponowane rozwiązanie może być wartościowe w kontekście wspomagania osób niewidomych \cite{bib:yolo_od}.
 
-\note[hide]{
-    \textbf{Dzierzgowska et al. — Alternative audio-graphic method for presenting structural information in mathematical graphs designed for low-vision users} \cite{bib:Dzierzgowska2025}\\
-    Ten artykuł nie opisuje klasycznej detekcji obiektów, ale jest bardzo ważny ze względu na sposób przekazywania informacji użytkownikowi. Pokazuje rozwiązanie łączące grafikę z informacją dźwiękową i zawiera badanie użytkowników z wykorzystaniem czasu wykonania zadań, liczby błędów, NASA-TLX i SUS.
-
-    Jego rola:
-
-    pokazanie, że technologia wspomagająca to nie tylko model rozpoznający obiekt;
-    znaczenie dobrze zaprojektowanej informacji zwrotnej;
-    ocena obciążenia, frustracji i użyteczności;
-    uzasadnienie wykorzystania komunikatów dźwiękowych w Twoim systemie.
-
-    To źródło jest mocne, bo przedstawia nie tylko rozwiązanie techniczne, ale też jego ocenę z udziałem użytkowników.
-}
-
 Odrębnym zagadnieniem, na jakie należy zwrócić uwagę przy tworzeniu systemów wspomagających, jest sposób przekazywania informacji. Wcześniej omawiane rozwiązania bazowały na prostym przekazie dźwiękowym, opartym o buzzer lub syntezator mowy. Dzierzgowska et al. zaproponowali metodę audio-graficzną, łączącą interaktywną prezentację wykresów funkcji matematycznych z opisami dźwiękowymi. Użytkownik, aby uzyskać kolejne informacje o wybranej części wykresu, musiał wykonać pojedyncze, podwójne lub potrójne stuknięcie na elemencie. Badanie przeprowadzone na grupie 54 osób wskazało, że zaproponowana metoda umożliwiła zmniejszenie obciążenia, frustracji, a w przypadku części zadań pozwoliło na skrócenie czasu ich wykonania. Wyniki wskazują, że skuteczność systemu wspomagającego nie zależy jedynie od stopnia możliwości rozpoznawania obiektów, ale również od poprawnego i odpowiedniego zaprojektowania przekazu informacji zwrotnej \cite{bib:Dzierzgowska2025}.
-
-\note[hide]{
-    \textbf{Dodatkowo:} Kawulok i Maćkowski — YOLO-Type Neural Networks in the Process of Adapting Mathematical Graphs to the Needs of the Blind \cite{bib:yolo_adaptation}\\
-    Pokazuje zastosowanie modeli YOLO do automatycznej adaptacji materiałów graficznych dla osób niewidomych. Dobrze pasuje jako przykład technologii edukacyjnej i jako łącznik między 2.1 a techniczną częścią pracy.
-
-    Nie poświęcałbym mu jednak całego dużego akapitu, ponieważ szczegółowe porównanie modeli YOLO będzie lepiej pasowało do 2.5.
-}
-
-\draft[hide]{
-    WNIOSEK KOŃCOWY:
-
-    Współczesne technologie wspomagające coraz częściej łączą mobilną akwizycję obrazu, detekcję działającą w czasie rzeczywistym oraz dźwiękową lub kontekstową informację zwrotną. Jednocześnie większość opisanych systemów koncentruje się na rozpoznawaniu obiektów znajdujących się w otoczeniu lub na wykrywaniu przeszkód. Mniej uwagi poświęca się rozpoznawaniu obiektu, który jest aktualnie eksplorowany dotykowo przez użytkownika.
-}
 
 Współczesne technologie wspomagające uzupełniają tradycyjne metody wsparcia osób niewidomych, oferując coraz bardziej złożone systemy i algorytmy. Wspólnym mianownikiem większości z nich jest wykorzystanie małych kamer do pozyskiwania obrazu, który następnie jest analizowany przez modele uczenia maszynowego, a wyniki są prezentowane użytkownikowi. Większość opisywanych systemów koncentruje się jednak na wsparciu w codziennym funkcjonowaniu -- poruszaniu się w przestrzeni, wykrywaniu przeszkód czy rozpoznawaniu twarzy i banknotów. Mało systemów skupia się jedynie na obiektach aktualnie eksplorowanych dotykowo przez użytkownika. W tym kontekście stworzenie systemu dedykowanego nauce przestrzennej wydaje się być istotnym uzupełnieniem istniejących rozwiązań.
 
 \section{Problem rozpoznawania obiektów 3D w interakcji dotykowej}
 
-\note[hide]{
-    Tutaj opisuję, że użytkownik nie tylko patrzy kamerą na scenę, ale dotyka obiektu, więc problem jest trochę inny niż klasyczna detekcja przedmiotów w pomieszczeniu.
-}
-
 Problemem, jaki należy koniecznie poruszyć, jest rozpoznanie obiektów 3D w interakcji dotykowej, ponieważ zachodzi w tym miejscu istotna różnica od systemów opisywanych we wcześniejszym podrozdziale (\ref{ssec:systemy}). W odróżnieniu od nich, głównym celem projektowanego systemu nie jest rozpoznanie obiektów przed użytkownikiem, a tych z którymi wchodzi w interakcję. Mamy więc do czynienia z sytuacją, w której kamera nie jest zwrócona na to co znajduje się przed użytkownikiem, ale na niego samego, a w szczególności na jego dłonie. W tym kontekście klasyczne podejście do detekcji może być niewystarczające ze względu na to, że spora część obiektu może być przez nie zasłonięta, a sam kształt może być trudny do rozpoznania nawet dla osoby widzącej. W tym miejscu warto przytoczyć kilka prac, które poruszają podobne zagadnienia.
-
-\note[hide]{
-    \textbf{Shan et al. — Understanding Human Hands in Contact at Internet Scale} \cite{bib:Shan_2020_CVPR}\
-    Artykuł pokazuje, że w scenach zawierających interakcję człowieka z przedmiotem samo wykrycie dłoni i obiektów nie wystarcza. Zaproponowany model określa położenie dłoni, jej stronę, stan kontaktu oraz ramkę obiektu, którego dana dłoń dotyka. Pozwala to wyznaczyć relację pomiędzy dłonią a konkretnym przedmiotem, nawet jeżeli w obrazie znajduje się więcej obiektów.
-
-    Autorzy przygotowali zbiór 100DOH zawierający 100~000 opisanych klatek, w których oznaczono niemal 190~000 dłoni i ponad 110~000 obiektów pozostających z nimi w kontakcie. Model nie rozpoznaje jednak klasy dotykanego przedmiotu, lecz jedynie wskazuje jego położenie i powiązanie z dłonią.
-
-    Jego rola w podrozdziale:
-
-    pokazanie różnicy pomiędzy klasyczną detekcją wszystkich obiektów w scenie a identyfikacją obiektu aktualnie dotykanego przez użytkownika;
-    znaczenie jawnego modelowania relacji dłoń--obiekt;
-    uzasadnienie obecności dłoni oraz różnych sposobów chwytu w danych treningowych.
-
-    Warto zaznaczyć, że metoda zakłada możliwość przypisania pojedynczej dłoni do jednego obiektu. Autorzy wskazują, że obsługa sytuacji, w której jedna dłoń dotyka wielu przedmiotów, pozostaje zagadnieniem do dalszych badań.
-}
 
 Pierwszą z nich jest badanie przeprowadzone przez Shan et al., którzy sprawdzali zdolność modelu do rozpoznawania dłoni w kontakcie z obiektami. W tym celu przygotowali zbiór danych ponad 100~tys. obrazów, na których oznaczono ponad 180~tys. dłoni i ponad 110~tys. obiektów. Celem zaproponowanego modelu nie było jednak określenie klasy dotykanego przedmiotu, a jak najlepsze wskazanie pozycji dłoni i jej orientacji. Dzięki temu, możliwe było wyznaczenie nie tyle położenia przedmiotu, a formy relacji, w jaką wchodził z dłonią. Detekcja została oparta o model Faster~R-CNN, który dla pełnej predykcji wymagającej poprawnego wkrycia dłoni i obiektu uzyskał 38,5\ AP\@50 \cite{bib:Shan_2020_CVPR}.
 Pokazuje to, że w przypadku wykrywania trzymanych obiektów należy zwrócić uwagę na ich otoczenie, gdyż może dojść do sytuacji, gdy model poprawnie rozpozna obiekt, ale nie będzie on trzymany przez użytkownika, co może prowadzić do błędnych wyników.
 
-\note[hide]{
-    \textbf{Zhang et al. — MOHO: Learning Single-view Hand-held Object Reconstruction with Multi-view Occlusion-Aware Supervision} \cite{bib:Zhang_2024_CVPR}\
-    Autorzy analizują rekonstrukcję przedmiotów trzymanych w dłoni na podstawie pojedynczego obrazu RGB. Wskazują dwa podstawowe źródła niepełnej informacji: zasłonięcie części przedmiotu przez dłoń oraz samozasłonięcie obiektu, wynikające z obserwowania go tylko z jednego kierunku. Oznacza to, że nawet dobrze widoczny przedmiot może nie ujawniać w pojedynczej klatce wszystkich cech koniecznych do określenia jego pełnego kształtu.
-
-    Zaproponowana metoda wykorzystuje dane syntetyczne oraz nagrania przedstawiające interakcję dłoni z obiektami. Informacje pochodzące z wielu widoków są używane podczas uczenia, aby model mógł odtwarzać fragmenty kształtu niewidoczne w obrazie wejściowym. Metodę oceniono na zbiorach HO3D i DexYCB.
-
-    Jego rola w podrozdziale:
-
-    wskazanie zasłonięcia jako jednego z podstawowych problemów przy rozpoznawaniu dotykanych obiektów;
-    rozróżnienie zasłonięcia przez dłoń i samozasłonięcia obiektu;
-    pokazanie, że wynik analizy pojedynczej klatki zależy od sposobu chwytu i orientacji bryły względem kamery;
-    uzasadnienie potrzeby uwzględnienia wielu ułożeń dłoni i obiektu w zbiorze danych.
-
-    Nie opisywałbym szczegółowo rekonstrukcji NeRF ani zastosowanych funkcji kosztu. Artykuł jest przydatny przede wszystkim jako potwierdzenie, że niepełna widoczność trzymanego obiektu stanowi odrębny i istotny problem komputerowego widzenia.
-}
-
 Kolejnym aspektem na jaki należy zwrócić uwagę jest możliwość zasłonięcia części obiektu przez dłoń użytkownika. W odróżnieniu od poprzedniej pracy, Zhang et al. skupili się na rekonstrukcji trójwymiarowej przedmiotów trzymanych w dłoniach. Podczas uczenia wykorzystywali dane z wielu widoków, aby ograniczyć wpływ zasłaniania obiektu przez dłoń. Autorzy wskazali dwa źródła niepełności informacji: zasłonięcie części przedmiotu przez dłoń lub niewidoczność części obiektu wynikająca z obserwowania go tylko pod jednym kątem. Wskazuje to, że w pojedynczej klatce nawet dobrze widoczny przedmiot może nie ujawniać wszystkich swoich cech \cite{bib:Zhang_2024_CVPR}. Przez to istotne jest, aby zbiór danych treningowych zawierał bardzo zróżnicowane kombinacje ułożenia dłoni i obiektu. Warto zwrócić uwagę na to, że możliwa jest również analiza obiektu z kilku ujęć, co może pozwolić na odtworzenie jego widocznej części w przestrzeni trójwymiarowej. W literaturze znajdujemy również propozycje analizy sekwencji obrazów, która pozwoli na ograniczenie problemu zasłaniania obiektu, a możliwe, że również wykluczy niektóre przypadki błędnej predykcji. Jedną z prac poruszających ten problem jest badanie zespołu pod przewodnictwem Tekina. Zaproponowali oni system analizujący sekwencje obrazów RGB rejestrowanych przez użytkownika z perspektywy pierwszej osoby. Model jednocześnie określa położenie dłoni i obiektu, rozpoznaje jego klasę i wykonywaną czynność. Kolejne klatki są następnie analizowane przez moduł rekurencyjny, badający zmiany położenia wykrywanych dłoni i obiektów. Autorzy zaznaczają, że takie podejście pozwoliło im na poprawę skuteczności rozpoznawania czynności z 85,56\% do 96,99\% w porównaniu z analizą pojedynczych klatek. System działał również w czasie rzeczywistym z prędkością około 25 klatek na sekundę \cite{bib:Tekin_2019_CVPR}. Widzimy więc, że przy rozpoznawaniu obiektów istotne jest nie tyle samo ich wykrycie, a przetworzenie ich zbioru w czasie, aby uzyskać jak najpełniejszą informację.
-
-
-
-\note[hide]{
-    \textbf{Tekin, Bogo i Pollefeys — H+O: Unified Egocentric Recognition of 3D Hand-Object Poses and Interactions} \cite{bib:Tekin_2019_CVPR}\
-    Autorzy zaproponowali system analizujący sekwencje obrazu RGB rejestrowane z perspektywy pierwszej osoby. Model wspólnie estymuje położenie dłoni i obiektu w przestrzeni, rozpoznaje klasę przedmiotu oraz wykonywaną czynność. Informacje z kolejnych klatek są następnie łączone przez moduł rekurencyjny, który analizuje zmiany położenia dłoni i obiektu w czasie.
-
-    ```
-    Wyniki autorów wskazują, że wykorzystanie sekwencji i jawne modelowanie interakcji poprawiało skuteczność rozpoznawania czynności w porównaniu z analizą pojedynczego obrazu. Pełna metoda osiągnęła skuteczność 96,99\%, podczas gdy wariant oparty wyłącznie na pojedynczych klatkach uzyskał 85,56\%. System przetwarzał obraz z prędkością około 25 klatek na sekundę na wykorzystanym przez autorów sprzęcie.
-
-    Jego rola w podrozdziale:
-
-    pokazanie znaczenia czasowego charakteru interakcji z obiektem;
-    uzasadnienie łączenia informacji pochodzących z kolejnych klatek;
-    wskazanie, że ruch dłoni i zmiana orientacji przedmiotu mogą ujawniać cechy niewidoczne wcześniej;
-    zwrócenie uwagi na kompromis pomiędzy czasem potrzebnym na zgromadzenie informacji a szybkością udzielenia odpowiedzi użytkownikowi.
-
-    Artykuł dotyczy przede wszystkim estymacji pozy i rozpoznawania wykonywanych czynności, a nie rozpoznawania prostych brył geometrycznych. Nie należy więc bezpośrednio przenosić jego wyników na projektowany system, ale można wykorzystać je do uzasadnienia analizy sekwencyjnej.
-    ```
-
-}
-
-\note[hide]{
-    \textbf{Xu et al. — TANDEM3D: Active Tactile Exploration for 3D Object Recognition} \cite{bib:xu2023tandem3dactivetactileexploration}\
-    Praca dotyczy robotycznego rozpoznawania obiektów wyłącznie na podstawie informacji dotykowej. Czujnik zbiera lokalne dane o miejscach kontaktu i kierunkach normalnych powierzchni, z których stopniowo tworzona jest reprezentacja obiektu. System składa się z modułu rozpoznającego przedmiot oraz modułu wybierającego kolejne ruchy czujnika tak, aby pozyskiwać informacje pozwalające możliwie szybko odróżnić podobne obiekty.
-
-    ```
-    Autorzy przeprowadzili eksperymenty na dziesięciu obiektach ze zbioru YCB. Zaproponowana metoda osiągała większą skuteczność przy mniejszej liczbie działań niż porównywane strategie eksploracji oraz zachowywała większą odporność na zakłócenia czujnika. Pokazuje to, że każdy kolejny kontakt nie musi być równie wartościowy, a szczególnie istotne są punkty zawierające cechy charakterystyczne dla danego obiektu.
-
-    Jego rola w podrozdziale:
-
-    pokazanie, że eksploracja dotykowa jest procesem aktywnym i sekwencyjnym;
-    wskazanie, że pojedynczy kontakt dostarcza jedynie lokalnej informacji o powierzchni;
-    znaczenie charakterystycznych elementów, takich jak krawędzie, załamania i zmiany kierunku powierzchni;
-    powiązanie technicznej analizy interakcji z wnioskami dotyczącymi etapowego poznawania obiektów przez osoby niewidome.
-
-    Należy wyraźnie zaznaczyć, że jest to system robotyczny, a nie technologia wspomagająca osoby niewidome. Obiekty należą do wcześniej znanego zbioru, a podczas eksperymentów były przymocowane do podłoża, aby ograniczyć ich przemieszczanie. Artykuł powinien więc służyć jako opis natury aktywnej eksploracji dotykowej, a nie jako bezpośredni odpowiednik projektowanego rozwiązania.
-}
 
 Na problem rozpoznawania obiektów można również spojrzeć z perspektywy robotyki. Możliwa jest eksploracja obiektu bez użycia kamer, a jedynie poprzez dotyk. Mimo że w tym przypadku nie mamy bezpośredniego odniesienia do osób niewidomych, to warto zwrócić uwagę na inne sposoby akwizycji danych. Ramię robota stworzonego przez zespół Xu et al. wyposażono w czujnik dotyku, a następnie umożliwiono mu eksplorację 10 przedmiotów ze zbioru YCB. Każde dotknięcie tworzyło wpis w lokalnej chmurze punktów, która następnie była wykorzystywana do predykcji lub określenia kolejnego ruchu pozwalającego na lepsze rozróżnienie przedmiotów. Autorzy wskazali, że już kilka charakterystycznych punktów pozwalało na odróżnienie obiektów \cite{bib:xu2023tandem3dactivetactileexploration}. Sugeruje to, że kamery nie są jedynym sposobem na pozyskanie informacji, a ciekawym kierunkiem badań może być analiza chmury punktów powstałej w wyniku dotyku lub skanowania przestrzeni. Odpowiednikiem wspomnianego robota może być rękawica sensoryczna, która będzie zbierała dane nie tylko o samym obiekcie, ale również o rękach użytkownika. Zhang et al. opracowali właśnie takie rozwiązanie, które na podstawie zbieranych danych mogło rozpoznać 16 klas obiektów z dokładnością ponad 95\% \cite{bib:ZHANG2025}. Ukazuje to, że do rozpoznania obiektów nie musimy wykorzystywać wyłącznie obrazów, a możliwe jest połączenie różnych źródeł danych, takich jak obraz, głębia czy informacje dotykowe.
 
 \section{Metody detekcji obiektów w obrazach}
 
-\note{
-    YOLO, SSD, Faster R-CNN, Mask R-CNN — ogólnie, bez przesadnego grzebania.
-}
+Mimo że dzisiejsza technika detekcji obiektów w obrazach opiera się głównie na sieciach neuronowych, istnieją różne podejścia do tego problemu. Należy wspomnieć o klasycznych metodach wizji komputerowej, wykorzystujących cechy samego obrazu, takie jak krawędzie, kolory czy histogramy \cite{bib:zou2023objectdetection}. Ten rozdział przedstawia przegląd najważniejszych metod detekcji obiektów.
+
+\subsection{Sformułowanie problemu detekcji obiektów}
+
+Detekcja jest zadaniem trudniejszym od klasyfikacji obrazu, ponieważ oprócz określenia, jakie obiekty znajdują się na obrazie, musi również wskazać ich położenie. Sama klasyfikacja opiera się na przypisaniu jednej lub kilku etykiet do całego obrazu, co w wielu przypadkach może być niewystarczające. Lokalizacja rozszerza klasyfikację o wyznaczenie ramki ograniczającej (ang. \english{bounding box}) położenie obiektu, najczęściej zakładając pojedynczą instancję. Zadaniem detekcji jest więc odnalezienie wszystkich istotnych obiektów na obrazie, a następnie przypisanie odpowiadających im klas i określenie ich położenia \cite{bib:redmon2016lookonceunifiedrealtime}. Wynik działania detektora może być przedstawiony jako zbiór predykcji:
+
+\begin{equation}
+    D = \left\{ \left(c_i, b_i, p_i\right) \right\}_{i=1}^{N},
+\end{equation}
+
+gdzie $N$ jest liczbą wykrytych obiektów, $c_i$ to przewidywana klasa $i$-tego obiektu, $b_i$ opisuje jego ramkę, a $p_i$ jest wartością pewności predykcji.
+
+Ramka ograniczająca najczęściej jest prostokątem opisanym współrzędnymi dwóch przeciwległych narożników lub częściej współrzędnymi środka, szerokości i wysokości:
+
+\begin{equation}
+    b_i = \left(x_i, y_i, w_i, h_i\right),
+\end{equation}
+
+gdzie $x_i$ i $y_i$ określają położenie środka ramki, a $w_i$ i $h_i$ jej szerokość oraz wysokość. Zależnie od implementacji każda z tych wartości może być wyrażona w pikselach lub znormalizowana względem rozmiaru obrazu. Drugie podejście uniezależnia reprezentację ramki od rozdzielczości obrazu wejściowego i jest powszechnie stosowane przy adnotacjach i predykcji.
+
+Wartość pewności predykcji, w zależności od implementacji, określa stopień przekonania modelu, że dany obszar zawiera obiekt przewidywanej klasy. Jeżeli ta wartość nie przekracza przyjętego progu, wynik wykonanej predykcji może zostać odrzucony. Jest to więc istotny parametr, jednak nie przesądza on poprawności predykcji. Przy ocenie należy również spojrzeć na zgodność klasy przewidywanej ze stanem faktycznym oraz na stopień pokrywania się ich ramek ograniczających (ang. \english{bounding box}). Zagadnienia te są szczegółowo opisane w podrozdziale~\ref{s:metryki}, dotyczącym metryk oceny detekcji.
+
+Zadaniem powiązanym z detekcją obiektów jest segmentacja instancji, której celem oprócz wyznaczenia ramki i klasy każdego obiektu jest określenie ich masek pikselowych. Umożliwia to dokładne określenie kształtu obiektów, ale wymaga przygotowania dokładniejszych danych uczących \cite{bib:he2018maskrcnn}. W przypadku projektowanego systemu zadaniem modelu jest wykrycie trzymanej bryły geometrycznej, określenie jej klasy, położenia oraz wartości pewności predykcji. Istotna przy tym jest nie tylko dokładność predykcji, ale szczególnie szybkość działania, gdyż wynik ma być przekazywany użytkownikowi w momencie jego bezpośredniej interakcji z obiektem. W tym kontekście segmentacja instancji może nałożyć za duże wymagania obliczeniowe, a jej zastosowanie może nie wiązać się z istotną poprawą jakości.
+
+\subsection{Klasyczne metody wizji komputerowej}
+
+Zanim w detekcji obiektów upowszechniły się głębokie sieci neuronowe, wykorzystywano przede wszystkim ręcznie projektowane metody przetwarzania obrazów. Między innymi wykorzystywano progowanie, segmentację na podstawie koloru, detekcję krawędzi i analizę konturów. Pozwalało to na wyodrębnienie obszarów różniących się od tła i opisanie ich cech, takich jak rozmiar, proporcje czy kształt. W kontrolowanych warunkach te metody mogły być skuteczne, jednak obiekty musiały wyraźnie odróżniać się od tła.
+
+Późniejsze, bardziej rozbudowane podejścia wykorzystywały deskryptory cech, jak histogramy zorientowanych gradientów (HOG) czy skalo-niezmiennicze przekształcenie cech (SIFT) \cite{bib:lowe2004distinctive, bib:dalal2005histograms}. Deskryptory obliczano dla całego obrazu lub kolejnych jego fragmentów za pomocą przesuwanego okna, a następnie wyodrębnione cechy przekazywano do klasyfikatora, którym mogła być maszyna wektorów nośnych (SVM). Warto również zwrócić uwagę na kaskady klasyfikatorów, mające cechy zbliżone do cech Haara, pozwalające na szybkie wykrywanie obiektów, głównie wykorzystywane w metodzie Viola--Jonesa \cite{bib:viola2001rapidobjectdetection}.
+
+Największe zalety metod klasycznych ujawniają się w ich prostocie, stosunkowo niskim koszcie obliczeniowym oraz możliwości interpretacji kolejnych etapów działania. Niestety, wymagają one ręcznego wyboru cech i ciągłego dostosowywania parametrów, aby uzyskać jak najlepsze wyniki. Są również bardzo wrażliwe na zmieniające się warunki otoczenia -- niewielkie zmiany w oświetleniu, tle czy częściowe zasłonięcie obiektu mogą skutkować krytycznym spadkiem skuteczności. Te ograniczenia uzasadniają wykorzystanie głębokich sieci neuronowych, które w wielu przypadkach radzą sobie lepiej i mogą same, automatycznie uczyć się cech z danych treningowych.
+
+\subsection{Detektory dwuetapowe}
+
+Z czasem rozwój metod uczenia głębokiego doprowadził do coraz częstszego zastępowania ręcznie projektowanych deskryptorów cech przez ich reprezentacje automatycznie określane przez CNN. Jedną z rodzin takich rozwiązań są detektory dwuetapowe. Ich działanie podzielone jest na dwa główne etapy: wyznaczenie obszarów zainteresowań, a następnie ich klasyfikacja i dopasowanie położenia ramek ograniczających.
+
+Jednym z pierwszych detektorów dwuetapowych był model R-CNN wykorzystujący algorytm do wyznaczenia propozycji regionów, które następnie kolejno były przetwarzane przez sieć konwolucyjną. Niestety, prowadziło to do wielokrotnego sprawdzania tych samych fragmentów obrazu przez sieć, co skutkowało dużym kosztem obliczeniowym. Kolejna wersja, Fast R-CNN, wprowadziła jednokrotne przetwarzanie całego obrazu przez sieć, a cechy były pobierane ze wspólnej mapy cech. Ograniczyło to liczbę wykonywanych obliczeń, ale wciąż generowano propozycje regionów za pomocą algorytmu. Dalszym rozwinięciem było wprowadzenie wersji Faster R-CNN, w którym zastąpiono algorytm modułem sieci propozycji regionów RPN (ang. \english{Region Proposal Network}), która analizuje mapę cech i wskazuje obszary zawierające potencjalne obiekty. Oba moduły korzystały ze wspólnych cech obrazu, co pozwoliło znacznie ograniczyć koszt obliczeniowy \cite{bib:ren2016fasterrcnnrealtimeobject}.
+
+Detektory dwuetapowe mogą osiągać wysoką skuteczność i dokładność lokalizacji dzięki rozdzieleniu od siebie etapu generowania propozycji regionów od ich klasyfikacji i dopasowania ramek ograniczających. Niestety, ten podział wpływa na złożoność obliczeniową całego modelu, a w konsekwencji na jego czas działania. W wielu przypadkach może stanowić to istotną przeszkodę, szczególnie jeżeli wynik ma być otrzymywany w czasie rzeczywistym.
+
+\subsection{Detektory jednoetapowe}
+
+Ostatnia dekada przyniosła znaczny rozwój detektorów jednoetapowych, których rdzeń działania opiera się na przewidywaniu klas obiektów i ich ramek ograniczających w pojedynczym kroku. Za pierwszy nowoczesny przykład takiego podejścia uznaje się OverFeat z 2013 roku \cite{bib:sermanet2014overfeatintegratedrecognitionlocalization}, jednakże dopiero modele wprowadzone po roku 2015 zyskały wysoką popularność i rozpoznawalność. Mimo że historycznie detektory jednoetapowe oferowały mniejszą dokładność od detektorów dwuetapowych, ich główną zaletą była szybkość działania, co umożliwiło ich wykorzystanie w systemach czasu rzeczywistego (ang. \english{Real-Time}, RT) \cite{bib:zou2023objectdetection,bib:lin2018focallossdenseobject}.
+
+Jednym z pierwszych znaczących modeli wprowadzonym na rynek jest SSD (ang. \english{Single Shot MultiBox Detector}) zaprezentowany na konferencji ECCV w 2016 roku przez Wei Liu. Jego działanie opiera się na przewidywaniu klas obiektów i położenia ramek ograniczających na kilku mapach o różnej rozdzielczości. Większe mapy umożliwiają wykrywanie mniejszych obiektów, a głębsze o mniejszej rozdzielczości służą rozpoznawaniu obiektów większych. Model wykorzystuje domyślne ramki o różnych proporcjach i skalach, których współrzędne następnie koryguje. Taki mechanizm umożliwia wykrycie obiektów o różnych rozmiarach bez osobnego etapu generowania propozycji regionów \cite{bib:Liu_2016}. Głównym ograniczeniem modelu SSD stała się zależność skuteczności detekcji od odpowiedniego doboru ramek, a także spadek dokładności przy wykrywaniu małych obiektów.
+
+W podobnym czasie został zaprezentowany również model YOLO (ang. \english{You Only Look Once}) w którym zadanie detekcji przedstawiono jako pojedynczy problem regresji. Takie podejście doprowadziło do modelu, który przewiduje ramki ograniczające oraz prawdopodobieństwa klas w oparciu bezpośrednio o obraz wejściowy \cite{bib:redmon2016lookonceunifiedrealtime}. Uproszczenie i ujednolicenie procesu umożliwiło uzyskanie krótkiego czasu działania, co z kolei sprawiło, że modele YOLO znalazły zastosowanie w systemach czasu rzeczywistego. Kolejne lata przyniosły rozwój rodziny modeli YOLO, w której znalazły się warianty o różnej liczbie parametrów i złożoności obliczeniowej, umożliwiając wybranie modelu dopasowanego do wymagań i ograniczeń systemu. Szczegółowy opis rodziny modeli YOLO znajduje się w podrozdziale~\ref{s:yolo}.
+
+\subsection{Detektory oparte na architekturze transformera}
+
+Podejściem alternatywnym do detektorów opartych na sieciach konwolucyjnych są modele oparte na architekturze transformera. Podstawowym elementem tego podejścia jest mechanizm samo-uwagi (ang. \english{self-attention}), który pozwala na analizę zależności pomiędzy różnymi fragmentami danych wejściowych. Podczas działania modelu Vision Transformer obraz wejściowy jest dzielony na mniejsze fragmenty, które następnie są reprezentowane jako sekwencja wektorów i przetwarzane przez warstwy transformera. Takie podejście pozwala na znajdowanie relacji pomiędzy odległymi od siebie elementami obrazu. Użycie transformerów wizyjnych wymaga również przygotowania dużych zbiorów danych treningowych tak, aby model mógł nauczyć się zależności globalnych \cite{bib:dosovitskiy2021imageworth16x16words}.
+
+Pierwszą propozycją zastosowania tego podejścia w detekcji obiektów jest model DETR (ang. \english{DEtection TRansformer}) zaprezentowany przez zespół będący częścią Facebook AI Research pod kierownictwem Cariona w 2020 roku. Jego podstawowa wersja opiera się na wyznaczeniu podstawowych cech przez CNN, a następnie przekazaniu ich do transformera zrealizowanego w architekturze enkoder-dekoder. W dekoderze wykorzystywany jest zbiór zapytań obiektowych (ang. \english{object queries}), na których podstawie model dokonuje równoległej predykcji klas obiektów i ich ramek ograniczających. Wynik detekcji jest traktowany przez model jako zbiór predykcji, które w trakcie uczenia są dopasowywane do obiektów referencyjnych poprzez dopasowanie dwudzielne (ang. \english{bipartite matching}) przy pomocy algorytmu węgierskiego. Pozwala to na uniknięcie użycia ramek domyślnych i algorytmu NMS (ang. \english{Non-Maximum Suppression}). W stosunku do klasycznych detektorów, DETR upraszcza potok detekcji, co pozwala na jego uczenie jako pojedynczego rozwiązania end-to-end. Niestety zalety płynące z użycia tego podejścia w detekcji wiążą się z wysokim kosztem treningu i trudniejszą optymalizacją modelu, szczególnie w przypadku wykrywania małych obiektów \cite{bib:carion2020endtoendobjectdetectiontransformers}.
+
+\subsection{Porównanie metod detekcji}
+
+Przytoczone metody detekcji obiektów różnią się od siebie przede wszystkim sposobem wyznaczania położenia obiektów na obrazie, złożonością obliczeniową oraz ich stosunkiem pomiędzy dokładnością a szybkością działania. Zestawienie ich najważniejszych właściwości, ważnych z punktu widzenia systemu, przedstawiono w tabeli~\ref{tab:porownanie_metod_detekcji}.
+
+% ! Umieść tabelę w odpowiednim miejscu! W razie potrzeby skróć tekst w kolumnach, aby zmieściła się na stronie. W ostateczności można również zmniejszyć czcionkę lub zmienić szerokość kolumny.
+
+\begin{table}[ht]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \renewcommand{\arraystretch}{1.25}
+    \caption{Porównanie wybranych metod detekcji obiektów}
+    \label{tab:porownanie_metod_detekcji}
+    \begin{tabularx}{\textwidth}{
+        >{\raggedright\arraybackslash}p{1.8cm}
+        >{\raggedright\arraybackslash}p{3.3cm}
+        >{\raggedright\arraybackslash}X
+        >{\raggedright\arraybackslash}X
+        }
+        \toprule
+        \textbf{Metoda}                                                                                             &
+        \textbf{Charakterystyka}                                                                                    &
+        \textbf{Atuty}                                                                                              &
+        \textbf{Ograniczenia}                                                                                                   \\
+        \midrule
+
+        Metody klasyczne                                                                                            &
+        Ręcznie projektowane cechy i osobne etapy przetwarzania                                                     &
+        Niewielkie wymagania obliczeniowe, interpretowalność i możliwość działania w kontrolowanych warunkach       &
+        Konieczność ręcznego określania cech, wrażliwość na zmianę oświetlenia, tła, orientacji i częściowe zasłonięcie obiektu \\
+
+        \addlinespace
+
+        Faster R-CNN                                                                                                &
+        Dwuetapowe generowanie propozycji regionów, ich klasyfikacja i dopasowanie ramek                            &
+        Wysoka skuteczność i dokładna określanie położenia obiektów                                                 &
+        Większa złożoność obliczeniowa i opóźnienie wynikające z przetwarzania dwuetapowego                                     \\
+        \addlinespace
+
+        SSD                                                                                                         &
+        Jednoetapowe predykcje na mapach cech o różnych rozdzielczościach                                           &
+        Krótki czas odpowiedzi i możliwość wykrywania obiektów o różnych rozmiarach                                 &
+        Zależność od konfiguracji ramek domyślnych i gorsze wyniki dla małych obiektów                                          \\
+
+        \addlinespace
+
+        YOLO                                                                                                        &
+        Jednoetapowa predykcja klas i ramek ograniczających                                                         &
+        Szybkie działanie, możliwość pracy w czasie rzeczywistym i dostępność wariantów modelu                      &
+        Konieczny kompromis pomiędzy szybkością a skutecznością, szczególnie przy małych lub częściowo zasłoniętych obiektach   \\
+
+        \addlinespace
+
+        DETR                                                                                                        &
+        Bezpośrednia predykcja zbioru obiektów z wykorzystaniem transformera i mechanizmu uwagi                     &
+        Modelowanie globalnych zależności w scenie i brak konieczności używania ramek domyślnych, ani algorytmu NMS &
+        Długi trening i trudniejsza optymalizacja                                                                               \\
+
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+Zestawienie nie wskazuje jednego najlepszego rozwiązania, ale przedstawia zalety i wady poszczególnych metod. Wybór odpowiedniego podejścia zależy od wymagań oraz ograniczeń sprzętowych i środowiskowych. Najważniejszym wymaganiem stawianym projektowanemu systemowi jest działanie w czasie rzeczywistym: rozpoznanie obiektu i przekazanie rzetelnych informacji użytkownikowi powinny następować w jak najkrótszym czasie, aby zagwarantować aktualność przekazywanych informacji. Dlatego rozwiązania klasyczne nie są dobrym wyborem przez ich niską odporność na zmiany środowiskowe, zaś detektory dwuetapowe -- mimo że mają wysoką skuteczność -- wymagają większej ilości kroków wiodących do uzyskania wyniku, a co za tym idzie, dłuższego czasu pomiędzy kolejnymi detekcjami. Dla systemu wspomagającego osoby niewidome prędkość działania jest jego cechą krytyczną. Czas reakcji powinien być możliwie krótki, przy zachowaniu odpowiedniej dokładności predykcji, a predykcje, które nie spełniają wymagań dokładności powinny być odrzucane. Wśród dostępnych modeli detekcji preferowany jest ten, który zapewni najkrótszy czas odpowiedzi. W literaturze podkreślany jest kompromis mówiący, że należy dążyć do jak największej dokładności, ale nie kosztem czasu reakcji \cite{bib:pratap2025adaptiveobjectdetectionindoor}.
+
+Spośród przedstawionych metod detekcji obiektów, najlepszym wyborem wydają się detektory jednoetapowe, a spośród nich szczególnie rodzina modeli YOLO. Pojedynczy krok detekcji pozwala na bezpośrednie przewidywanie klasy obiektu i jego położenia, co znacznie skraca czas potrzebny na uzyskanie wyniku. Cała rodzina modeli jest projektowana tak, aby zapewnić krótki czas inferencji, jednocześnie zapewniając duży wybór wariantów modeli. Pierwsza wersja YOLO osiągnęła prędkość predykcji około 45 FPS (ang. \english{frames per second}), a jej uproszczone warianty nawet 155 FPS, co pokazuje, że jest odpowiednim wyborem do zastosowania w systemie RT \cite{bib:redmon2016lookonceunifiedrealtime}.
+
+Wykorzystanie detektora opartego na architekturze transformera nie jest konieczne, ponieważ w tym przypadku nie jest wymagane jawne modelowanie globalnych zależności w scenie. Analizowana scena ma zawierać niewielką liczbę obiektów, a zadaniem modelu jest przede wszystkim ich rozpoznanie. Korzyści płynące z globalnego przetwarzania nie równoważą dodatkowego kosztu, który należy ponieść przy uczeniu i optymalizacji \cite{bib:carion2020endtoendobjectdetectiontransformers}.
 
 \section{Rodzina modeli YOLO}
+\label{s:yolo}
 
 \note{
     Tu najwięcej, bo tego używasz. Architektura ogólnie, zalety: szybkość, detekcja w czasie rzeczywistym, różne rozmiary modeli.
 }
+
+\subsection{Warianty ze względu na realizowane zadanie}
+
+\subsection{Warianty ze względu na skalę modelu}
+
+\note{\cite{bib:jocher2026ultralyticsyolo26}}
 
 \section{Wykorzystanie danych RGB, głębi i LiDAR w rozpoznawaniu obiektów}
 
@@ -249,7 +210,9 @@ Na problem rozpoznawania obiektów można również spojrzeć z perspektywy robo
     Tu mogę opisać, dlaczego LiDAR był rozważany, ale w praktyce ma ograniczenia przy małych obiektach i małych odległościach.
 }
 
+
 \section{Metryki oceny detekcji obiektów}
+\label{s:metryki}
 
 Ocena modeli detekcji obiektów wymaga zastosowania odpowiednich metryk, które pozwalają na porównanie uzyskanych wyników. Metryki te powinny uwzględniać zarówno poprawność klasyfikacji, jak i dokładność lokalizacji obiektu na obrazie. Przeciwnie do klasyfikacji obrazów, przy detekcji nie wystarczy, aby model poprawnie rozpoznał klasę obiektu. Równie istotne jest, aby poprawnie wyznaczył ramkę ograniczającą wokół wykrytego obiektu. Jedną z najczęściej stosowanych metryk jest IoU (ang. \english{Intersection over Union}), określająca stopień pokrycia między ramką obiektu przewidywaną przez model a ramką rzeczywistą \cite{bib:detectionMetrics}. Wartość IoU obliczana jest jako stosunek pola części wspólnej obu ramek do pola ich części łącznej:
 
