@@ -29,7 +29,7 @@ Analiza perspektywy osób niewidomych pozwala zauważyć nie tylko to, że wymag
 
 Naukowcy od dawna widzieli w rozwoju techniki okazję do wsparcia osób z jakąkolwiek niepełnosprawnością. Jednym z pierwszych urządzeń wspomagających niesłyszących był aparat słuchowy opracowywany przez Millera Reese'a Hutchisona od około 1895 roku \cite{bib:hearingAidsHistory}. Rozwiązaniem, które zapowiadało późniejszy rozwój elektronicznych systemów wspomagających był system \nobreakdash{POSSUM} (ang. \english{Patient Operated Selector Mechanism}) opracowany początkiem lat 60. XX wieku. Umożliwiał on osobom z poważną niepełnosprawnością ruchu sterowanie maszyną do pisania \cite{bib:possum}. Nie można jednak mówić o cyfrowych systemach wspomagających przed pojawieniem się elektronicznych komputerów. W latach 60. i 70. XX wieku zaczęły pojawiać się bardziej zaawansowane systemy wspomagające oparte o cyfrowe jednostki obliczeniowe. Przykładem jednego z nich może zostać Tufts Interactive Communicator, który umożliwiał niemym z ograniczeniami ruchowymi komunikację z otoczeniem poprzez wybieranie znaków za pomocą mechanizmu skanowania, a następnie prezentację pełnego komunikatu na wyświetlaczu w formie wydruku \cite{bib:augmentativeCommunication}. Późniejszy przykład podobnego systemu był wykorzystywany przez wybitnego fizyka Stephena Hawkinga który, pomimo swojej postępującej niepełnosprawności ruchowej, mógł sprawnie komunikować się z otoczeniem poprzez niewielkie ruchy policzka \cite{bib:intel2014hawking}.
 
-Równocześnie rozwijały się technologie wspomagające osoby z niepełnosprawnością wzroku, w którym dane przekształcano na formę możliwą do odbioru przez inne zmysły. Kamieniem milowym okazało się urządzenie \nobreakdash{Optacon} (ang. \english{Optical to Tactile Converter}) opatentowane w 1966 roku przez Johna G. Linvilla. Umożliwiało ono przekształcenie obrazu na wibracje matrycy, które mogły być odczytane przez użytkownika za pomocą dotyku \cite{pat:Linvill1966ReadingAid}. W kolejnych dekadach rozwijano m. in. systemy rozpoznawania znaków, syntezatory mowy, czytniki ekranów i urządzenia mobilne, stopniowo zwiększając i umożliwiając osobom niewidomym dostęp do informacji cyfrowych.
+Równocześnie rozwijały się technologie wspomagające osoby z niepełnosprawnością wzroku, w którym dane przekształcano na formę możliwą do odbioru przez inne zmysły. Kamieniem milowym okazało się urządzenie \nobreakdash{Optacon} (ang. \english{Optical to Tactile Converter}) opatentowane w 1966 roku przez Johna G. Linvilla. Umożliwiało ono przekształcenie obrazu na wibracje matrycy, które mogły być odczytane przez użytkownika za pomocą dotyku \cite{pat:Linvill1966ReadingAid}. W kolejnych dekadach rozwijano m.in. systemy rozpoznawania znaków, syntezatory mowy, czytniki ekranów i urządzenia mobilne, stopniowo zwiększając i umożliwiając osobom niewidomym dostęp do informacji cyfrowych.
 
 Współczesny rozwój takich rozwiązań dokonuje się dzięki stopniowej miniaturyzacji elektroniki i popularyzacji urządzeń osobistych. Według prognozy MarketsandMarkets rynek urządzeń ubieralnych ma wzrosnąć do 238,71 mld dolarów w 2032 \cite{bib:marketsandmarkets}. Dane te są przesłanką do wniosku, że w najbliższych latach możemy spodziewać się dynamicznego rozwoju małych urządzeń wyposażonych w czujniki, układy umożliwiające komunikację i mikroprocesory zdolne do szybkiego, lokalnego przetwarzania danych. Te same podzespoły mogą umożliwiać również rozwój systemów wspomagających osoby niewidome, a wykorzystanie szybkich sieci bezprzewodowych i nagły rozwój uczenia maszynowego pozwoli na szybsze tworzenie i udoskonalanie działających w czasie rzeczywistym algorytmów.
 
@@ -76,7 +76,7 @@ Mimo że dzisiejsza technika detekcji obiektów w obrazach opiera się głównie
 Detekcja jest zadaniem trudniejszym od klasyfikacji obrazu, ponieważ oprócz określenia, jakie obiekty znajdują się na obrazie, musi również wskazać ich położenie. Sama klasyfikacja opiera się na przypisaniu jednej lub kilku etykiet do całego obrazu, co w wielu przypadkach może być niewystarczające. Lokalizacja rozszerza klasyfikację o wyznaczenie ramki ograniczającej (ang. \english{bounding box}) położenie obiektu, najczęściej zakładając pojedynczą instancję. Zadaniem detekcji jest więc odnalezienie wszystkich istotnych obiektów na obrazie, a następnie przypisanie odpowiadających im klas i określenie ich położenia \cite{bib:redmon2016lookonceunifiedrealtime}. Wynik działania detektora może być przedstawiony jako zbiór predykcji:
 
 \begin{equation}
-    D = \left\{ \left(c_i, b_i, p_i\right) \right\}_{i=1}^{N},
+	D = \left\{ \left(c_i, b_i, p_i\right) \right\}_{i=1}^{N},
 \end{equation}
 
 gdzie $N$ jest liczbą wykrytych obiektów, $c_i$ to przewidywana klasa $i$-tego obiektu, $b_i$ opisuje jego ramkę, a $p_i$ jest wartością pewności predykcji.
@@ -84,7 +84,7 @@ gdzie $N$ jest liczbą wykrytych obiektów, $c_i$ to przewidywana klasa $i$-tego
 Ramka ograniczająca najczęściej jest prostokątem opisanym współrzędnymi dwóch przeciwległych narożników lub częściej współrzędnymi środka, szerokości i wysokości:
 
 \begin{equation}
-    b_i = \left(x_i, y_i, w_i, h_i\right),
+	b_i = \left(x_i, y_i, w_i, h_i\right),
 \end{equation}
 
 gdzie $x_i$ i $y_i$ określają położenie środka ramki, a $w_i$ i $h_i$ jej szerokość oraz wysokość. Zależnie od implementacji każda z tych wartości może być wyrażona w pikselach lub znormalizowana względem rozmiaru obrazu. Drugie podejście uniezależnia reprezentację ramki od rozdzielczości obrazu wejściowego i jest powszechnie stosowane przy adnotacjach i predykcji.
@@ -130,59 +130,59 @@ Przytoczone metody detekcji obiektów różnią się od siebie przede wszystkim 
 % ! Umieść tabelę w odpowiednim miejscu! W razie potrzeby skróć tekst w kolumnach, aby zmieściła się na stronie. W ostateczności można również zmniejszyć czcionkę lub zmienić szerokość kolumny.
 
 \begin{table}[ht]
-    \centering
-    \small
-    \setlength{\tabcolsep}{4pt}
-    \renewcommand{\arraystretch}{1.25}
-    \caption{Porównanie wybranych metod detekcji obiektów}
-    \label{tab:porownanie_metod_detekcji}
-    \begin{tabularx}{\textwidth}{
-        >{\raggedright\arraybackslash}p{1.8cm}
-        >{\raggedright\arraybackslash}p{3.3cm}
-        >{\raggedright\arraybackslash}X
-        >{\raggedright\arraybackslash}X
-        }
-        \toprule
-        \textbf{Metoda}                                                                                             &
-        \textbf{Charakterystyka}                                                                                    &
-        \textbf{Atuty}                                                                                              &
-        \textbf{Ograniczenia}                                                                                                   \\
-        \midrule
+	\centering
+	\small
+	\setlength{\tabcolsep}{4pt}
+	\renewcommand{\arraystretch}{1.25}
+	\caption{Porównanie wybranych metod detekcji obiektów}
+	\label{tab:porownanie_metod_detekcji}
+	\begin{tabularx}{\textwidth}{
+		>{\raggedright\arraybackslash}p{1.8cm}
+		>{\raggedright\arraybackslash}p{3.3cm}
+		>{\raggedright\arraybackslash}X
+		>{\raggedright\arraybackslash}X
+		}
+		\toprule
+		\textbf{Metoda}                                                                                             &
+		\textbf{Charakterystyka}                                                                                    &
+		\textbf{Atuty}                                                                                              &
+		\textbf{Ograniczenia}                                                                                                   \\
+		\midrule
 
-        Metody klasyczne                                                                                            &
-        Ręcznie projektowane cechy i osobne etapy przetwarzania                                                     &
-        Niewielkie wymagania obliczeniowe, interpretowalność i możliwość działania w kontrolowanych warunkach       &
-        Konieczność ręcznego określania cech, wrażliwość na zmianę oświetlenia, tła, orientacji i częściowe zasłonięcie obiektu \\
+		Metody klasyczne                                                                                            &
+		Ręcznie projektowane cechy i osobne etapy przetwarzania                                                     &
+		Niewielkie wymagania obliczeniowe, interpretowalność i możliwość działania w kontrolowanych warunkach       &
+		Konieczność ręcznego określania cech, wrażliwość na zmianę oświetlenia, tła, orientacji i częściowe zasłonięcie obiektu \\
 
-        \addlinespace
+		\addlinespace
 
-        Faster R-CNN                                                                                                &
-        Dwuetapowe generowanie propozycji regionów, ich klasyfikacja i dopasowanie ramek                            &
-        Wysoka skuteczność i dokładna określanie położenia obiektów                                                 &
-        Większa złożoność obliczeniowa i opóźnienie wynikające z przetwarzania dwuetapowego                                     \\
-        \addlinespace
+		Faster R-CNN                                                                                                &
+		Dwuetapowe generowanie propozycji regionów, ich klasyfikacja i dopasowanie ramek                            &
+		Wysoka skuteczność i dokładna określanie położenia obiektów                                                 &
+		Większa złożoność obliczeniowa i opóźnienie wynikające z przetwarzania dwuetapowego                                     \\
+		\addlinespace
 
-        SSD                                                                                                         &
-        Jednoetapowe predykcje na mapach cech o różnych rozdzielczościach                                           &
-        Krótki czas odpowiedzi i możliwość wykrywania obiektów o różnych rozmiarach                                 &
-        Zależność od konfiguracji ramek domyślnych i gorsze wyniki dla małych obiektów                                          \\
+		SSD                                                                                                         &
+		Jednoetapowe predykcje na mapach cech o różnych rozdzielczościach                                           &
+		Krótki czas odpowiedzi i możliwość wykrywania obiektów o różnych rozmiarach                                 &
+		Zależność od konfiguracji ramek domyślnych i gorsze wyniki dla małych obiektów                                          \\
 
-        \addlinespace
+		\addlinespace
 
-        YOLO                                                                                                        &
-        Jednoetapowa predykcja klas i ramek ograniczających                                                         &
-        Szybkie działanie, możliwość pracy w czasie rzeczywistym i dostępność wariantów modelu                      &
-        Konieczny kompromis pomiędzy szybkością a skutecznością, szczególnie przy małych lub częściowo zasłoniętych obiektach   \\
+		YOLO                                                                                                        &
+		Jednoetapowa predykcja klas i ramek ograniczających                                                         &
+		Szybkie działanie, możliwość pracy w czasie rzeczywistym i dostępność wariantów modelu                      &
+		Konieczny kompromis pomiędzy szybkością a skutecznością, szczególnie przy małych lub częściowo zasłoniętych obiektach   \\
 
-        \addlinespace
+		\addlinespace
 
-        DETR                                                                                                        &
-        Bezpośrednia predykcja zbioru obiektów z wykorzystaniem transformera i mechanizmu uwagi                     &
-        Modelowanie globalnych zależności w scenie i brak konieczności używania ramek domyślnych, ani algorytmu NMS &
-        Długi trening i trudniejsza optymalizacja                                                                               \\
+		DETR                                                                                                        &
+		Bezpośrednia predykcja zbioru obiektów z wykorzystaniem transformera i mechanizmu uwagi                     &
+		Modelowanie globalnych zależności w scenie i brak konieczności używania ramek domyślnych, ani algorytmu NMS &
+		Długi trening i trudniejsza optymalizacja                                                                               \\
 
-        \bottomrule
-    \end{tabularx}
+		\bottomrule
+	\end{tabularx}
 \end{table}
 
 Zestawienie nie wskazuje jednego najlepszego rozwiązania, ale przedstawia zalety i wady poszczególnych metod. Wybór odpowiedniego podejścia zależy od wymagań oraz ograniczeń sprzętowych i środowiskowych. Najważniejszym wymaganiem stawianym projektowanemu systemowi jest działanie w czasie rzeczywistym: rozpoznanie obiektu i przekazanie rzetelnych informacji użytkownikowi powinny następować w jak najkrótszym czasie, aby zagwarantować aktualność przekazywanych informacji. Dlatego rozwiązania klasyczne nie są dobrym wyborem przez ich niską odporność na zmiany środowiskowe, zaś detektory dwuetapowe -- mimo że mają wysoką skuteczność -- wymagają większej ilości kroków wiodących do uzyskania wyniku, a co za tym idzie, dłuższego czasu pomiędzy kolejnymi detekcjami. Dla systemu wspomagającego osoby niewidome prędkość działania jest jego cechą krytyczną. Czas reakcji powinien być możliwie krótki, przy zachowaniu odpowiedniej dokładności predykcji, a predykcje, które nie spełniają wymagań dokładności powinny być odrzucane. Wśród dostępnych modeli detekcji preferowany jest ten, który zapewni najkrótszy czas odpowiedzi. W literaturze podkreślany jest kompromis mówiący, że należy dążyć do jak największej dokładności, ale nie kosztem czasu reakcji \cite{bib:pratap2025adaptiveobjectdetectionindoor}.
@@ -194,20 +194,276 @@ Wykorzystanie detektora opartego na architekturze transformera nie jest konieczn
 \section{Rodzina modeli YOLO}
 \label{s:yolo}
 
-\note{
-    Tu najwięcej, bo tego używasz. Architektura ogólnie, zalety: szybkość, detekcja w czasie rzeczywistym, różne rozmiary modeli.
+\note[hide]{
+	Tu najwięcej, bo tego używasz. Architektura ogólnie, zalety: szybkość, detekcja w czasie rzeczywistym, różne rozmiary modeli.
 }
+
+Pierwsza wersja YOLO zadebiutowała wraz z publikacją artykułu \textit{You Only Look Once: Unified, Real-Time Object Detection} przez Josepha Redmona, Santosha Divvalę, Rossa Girshicka i Ali Farhadi w 2016 roku i od tego czasu rodzina modeli YOLO należy do najbardziej rozpoznawalnych i popularnych detektorów jednoetapowych. Autorzy określili problem detekcji obrazu jako regresję, w której pojedyncza sieć neuronowa przewiduje zarówno ramki obiektów, jak i odpowiadające im prawdopodobieństwa klas \cite{bib:redmon2016lookonceunifiedrealtime}. Kolejne lata przyniosły rozwój kolejnych modeli rodziny YOLO przez różne zespoły badawcze, więc nie istnieje pojedyncza gałąź rozwoju rodziny. Jedna z głównych gałęzi jest rozwijana przez firmę Ultralytics, która w 2020 roku zaprezentowała YOLOv5, a w następnych latach jej kolejne generacje. W chwili opracowywania pracy najnowszą wersją jest YOLO26 \cite{bib:jocher2026ultralyticsyolo26}.
+
+\subsection{Architektura modeli YOLO}
+
+Mimo że architektura każdej wersji modelu YOLO różni się od siebie, to idea pierwszej wersji pozostaje niezmieniona. Założenie, że obraz jest analizowany w pojedynczym przebiegu sieci neuronowej, a wynik wyznaczany jest bez wcześniejszego wygenerowania propozycji regionów jest obecne w każdej kolejnej wersji. Sama architektura sieci mocno zmieniała się na przestrzeni kolejnych wersji, a porównanie kilku kolejnych modeli pozwala określić kierunek rozwoju całej rodziny.
+
+% YOLOv1
+
+Pierwszy model YOLO składał się z CNN złożonej z 24 warstw konwolucyjnych i dwóch warstw w pełni połączonych. Zadaniem warstw konwolucyjnych była ekstrakcja cech z obrazu wejściowego, a warstwy końcowe generowały wynik detekcji. W modelu wykorzystano m.in. warstwy $1 \times 1$ do redukcji liczby kanałów oraz warstwy $3 \times 3$ \cite{bib:redmon2016lookonceunifiedrealtime}.
+
+Dla obrazów ze zbioru PASCAL VOC wejście sieci miało rozmiar $448 \times 448$ pikseli, które następnie były przekształcane w logiczną siatkę o wymiarach $S \times S$. W zastosowanej konfiguracji sieci przyjęto wartość $S=7$ dzielącą obraz na 49 komórek. Wykrycie obiektu następowało w oparciu o komórkę, w której znajdował się środek jego ramki ograniczającej. Każda z komórek mogła przewidzieć $B=2$ ramki, wartości ich pewności i prawdopodobieństwa $C=20$ klas obiektów występujących w zbiorze. Rozmiar tensora był definiowany jako $S \times S \times (B \cdot 5 + C)$, co w omawianym przypadku dawało tensor o wymiarach $7 \times 7 \times 30$. Każda ramka opisana była za pomocą pięciu wartości: współrzędnych środka ramki, jej szerokości i wysokości oraz wartości pewności predykcji. Jednoczesne przewidywanie ramek i klas obiektów w pojedynczym kroku wyeliminowało wymaganie stosowania oddzielnych etapów generowania propozycji regionów i ich klasyfikacji. Schemat przedstawiony na rysunku~\ref{fig:yolov1_architektura} pokazuje uproszczoną architekturę pierwszego modelu YOLO, w której, pomimo stosunkowo prostej budowy, udało się połączyć w jeden model zarówno klasyfikację, jak i lokalizację obiektów.
+
+% ! Sprawdzić dokładnie poprawność!
+
+\begin{figure}[ht] % Uproszczony schemat architektury pierwszego modelu YOLO
+	\centering
+	\begin{tikzpicture}[
+			node distance=0.8cm,
+			block/.style={
+					draw,
+					rounded corners,
+					minimum width=3.2cm,
+					minimum height=0.9cm,
+					align=center
+				},
+			arrow/.style={->, thick}
+		]
+
+		\node[block] (input) {Obraz wejściowy\\$448\times448\times3$};
+		\node[block, right=of input] (conv) {24 warstwy\\konwolucyjne};
+		\node[block, right=of conv] (fc) {2 warstwy\\w pełni połączone};
+		\node[block, right=of fc] (output) {Predykcja\\$7\times7\times30$};
+
+		\draw[arrow] (input) -- (conv);
+		\draw[arrow] (conv) -- (fc);
+		\draw[arrow] (fc) -- (output);
+
+	\end{tikzpicture}
+	\caption{Uproszczony schemat architektury pierwszego modelu YOLO \cite{bib:redmon2016lookonceunifiedrealtime}.}
+	\label{fig:yolov1_architektura}
+\end{figure}
+
+% Ewolucja
+
+Kolejne wersje YOLO przyniosły przede wszystkim zmiany w architekturze przez stosowanie coraz wydajniejszych modułów sieci, korzystanie z kilku skal obrazu i modyfikację sposobu generowania ramek ograniczających. Z czasem architekturę opartą na pojedynczej siatce zastąpiono architekturami wykorzystującymi wieloskalowe mapy cech. Zmodernizowano również sposób w jaki łączone są informacje z różnych warstw sieci, a także budowę głowic. Dzięki temu, współczesne modele można przedstawić za pomocą trzech głównych elementów: \english{backbone}, \english{neck} i \english{head}. Najważniejsze wersje i zmiany w ich architekturze zestawiono w tabeli~\ref{tab:porownanie_wersji_YOLO}.
+
+\begin{table}[ht] % Porównanie wybranych wersji modeli YOLO
+	\centering
+	\small
+	\renewcommand{\arraystretch}{1.2}
+	\caption{Wybrane etapy rozwoju architektury modeli YOLO.
+		Opracowanie własne na podstawie
+		\cite{bib:redmon2016lookonceunifiedrealtime,
+			bib:redmon2018yolov3incrementalimprovement,
+			bib:ultralytics_yolo_architecture,
+			bib:jocher2026ultralyticsyolo26}.
+	}
+	\label{tab:porownanie_wersji_YOLO}
+	\begin{tabularx}{\textwidth}{
+		>{\raggedright\arraybackslash}p{2.5cm}
+		>{\raggedright\arraybackslash}X
+		>{\raggedright\arraybackslash}X
+		>{\raggedright\arraybackslash}X
+		}
+
+		\toprule
+
+		\textbf{Generacja}                           &
+		\textbf{Ekstrakcja cech}                     &
+		\textbf{Sposób detekcji}                     &
+		\textbf{Charakterystyczna zmiana}                                          \\
+
+		\midrule
+
+		YOLO (v1)                                    &
+		Własna sieć CNN                              &
+		Jedna siatka predykcji                       &
+		Ujęcie detekcji jako pojedynczego problemu regresji                        \\
+
+		YOLOv3                                       &
+		Darknet-53                                   &
+		Detekcja na trzech skalach, ramki kotwiczące &
+		Wprowadzenie wieloskalowej detekcji i architektury FPN                     \\
+
+		YOLOv5                                       &
+		CSP/C3                                       &
+		Wieloskalowa, ramki kotwiczące               &
+		Rozbudowanie fuzji cech o ścieżkę PAN i moduł SPPF                         \\
+
+		YOLOv8                                       &
+		C2f                                          &
+		Wieloskalowa, bez ramek kotwiczących         &
+		Przejście na głowicę anchor-free i wykorzystanie DFL                       \\
+
+		YOLO11                                       &
+		C3k2, C2PSA                                  &
+		Wieloskalowa, bez ramek kotwiczących         &
+		Wprowadzenie kolejnych mechanizmów uwagi i zmian w blokach ekstrakcji cech \\
+
+		YOLO26                                       &
+		C3k2, C2PSA                                  &
+		Detekcja end-to-end                          &
+		Domyślna detekcja bez NMS oraz rezygnacja z DFL                            \\
+
+		\bottomrule
+	\end{tabularx}
+\end{table}
+
+% \cite{bib:ultralytics_yolo_architecture}
+
+% YOLO26
+
+Współczesna architektura modelu YOLO26 zachowała konwolucyjny rdzeń rodziny, ale znacząco różni się od pierwszej wersji modelu. Sieć podzielona jest na trzy główne części, z których każda pełni inną funkcję. Pierwszą częścią jest \english{backbone}, który ma za zadanie ekstrakcję hierarchicznych reprezentacji cech z obrazu. Przechodzenie przez kolejne warstwy sieci wiąże się ze zmniejszeniem rozdzielczości przestrzennej map cech, a jednocześnie zwiększeniem zdolności do rozpoznawania coraz bardziej złożonych i abstrakcyjnych cech. Kolejna część to \english{neck} odpowiedzialny za połączenie informacji pochodzących z różnych poziomów sieci, co jest kluczowe przy wykrywaniu obiektów o różnych wymiarach: cechy pochodzące z głębszych warstw są bardziej abstrakcyjne, a płytsze warstwy dostarczają informacji przestrzennych. To połączenie umożliwia modelowi prowadzenie detekcji na kilku skalach jednocześnie. Ostatnią częścią jest głowica detekcyjna (ang. \english{head}), która przewiduje klasy obiektów i położenie ich ramek ograniczających na podstawie dostarczonych z poprzedniej części map cech. Model YOLO26 wyposażony jest w dwie głowice decyzyjne: głowicę \english{one-to-many} i głowicę \english{one-to-one}. Pierwsza odpowiada za generowanie dużej liczby kandydatów obiektów, dostarczając gęstszego sygnału nadzorującego podczas uczenia, a druga uczy się przypisywać pojedynczą predykcję do każdego obiektu referencyjnego i jest domyślnie używana podczas inferencji \cite{bib:jocher2026ultralyticsyolo26}.
+
+Co ważne, podczas domyślnego wnioskowania model YOLO26 wykorzystuje głowicę \english{one-to-one}. Dzięki temu, że predykcja jest jednoznacznie przypisana, model może dokonywać detekcji bez użycia algorytmu NMS, a co za tym idzie może realizować detekcję typu end-to-end. W sytuacjach, w których użycie algorytmu NMS jest dopuszczalne model może korzystać z głowicy \english{one-to-many}, aby uzyskać większą skuteczność kosztem dodatkowego czasu \cite{bib:jocher2026ultralyticsyolo26}.
+
+Kolejnym ważnym aspektem wersji 26 jest fakt rezygnacji z użycia DFL (ang. \english{Distribution Focal Loss}) w trakcie regresji ramek, co pozwala zmniejszyć złożoność głowicy decyzyjnej i usunąć ograniczenia wynikające z dyskretnej reprezentacji odległości. Do procesu uczenia wprowadzono mechanizmy Progressive Loss oraz STAL (ang. \english{Small-Target-Aware Label Assignment}), poprawiający przypisanie przykładów pozytywnych dla małych obiektów. W procesie optymalizacji wykorzystano optymalizator MuSGD \cite{bib:jocher2026ultralyticsyolo26}.
+
+% ! Sprawdzić dokładnie poprawność i ułożyć poprawnie na stronie!
+
+\begin{figure}[ht] % Uproszczony schemat architektury modelu YOLO26
+	\centering
+	\begin{tikzpicture}[
+			node distance=0.9cm and 1.2cm,
+			block/.style={
+					draw,
+					rounded corners,
+					minimum width=2.8cm,
+					minimum height=0.85cm,
+					align=center
+				},
+			arrow/.style={->, thick}
+		]
+
+		\node[block] (input) {Obraz wejściowy};
+		\node[block, right=of input] (backbone)
+		{Backbone\\C3k2, SPPF, C2PSA};
+		\node[block, below=of backbone] (neck)
+		{Neck\\FPN + PAN};
+
+		\node[block, below left=0.2cm and 1cm of neck] (o2o)
+		{Głowica one-to-one};
+		\node[block, below right=0.2cm and 1cm of neck] (o2m)
+		{Głowica one-to-many};
+
+		\node[block, below=1.2cm of o2o] (output)
+		{Klasy i ramki\\ograniczające};
+
+		\draw[arrow] (input) -- (backbone);
+		\draw[arrow] (backbone) -- (neck);
+		\draw[arrow] (neck) -- (o2o);
+		\draw[arrow] (neck) -- (o2m);
+		\draw[arrow] (o2o) -- (output);
+
+	\end{tikzpicture}
+
+	\caption{Uproszczony schemat architektury detektora YOLO26 \cite{bib:jocher2026ultralyticsyolo26}.}
+	\label{fig:yolo26_architektura}
+\end{figure}
+
+Na rysunku~\ref{fig:yolo26_architektura} przedstawiono uproszczony schemat współczesnej architektury modelu YOLO26. Możemy zauważyć znaczny rozwój względem pierwszej wersji modelu i wyraźne odejście od przekształcania wejścia w pojedynczą siatkę predykcji. Zastąpiono ją hierarchicznym przetwarzaniem cech, ich wieloskalowym połączeniem i dostosowaną głowicą decyzyjną. Pomimo tych zmian, zachowano główną ideę rodziny, czyli detekcję przez jeden model, bez osobnego etapu generowania propozycji regionów.
 
 \subsection{Warianty ze względu na realizowane zadanie}
 
+Dzisiejsza implementacja rodziny YOLO przez Ultralytics nie ogranicza się jedynie do klasycznej detekcji, a stara się dostarczać wielu modeli obsługujących różne zadania. Głównym kierunkiem jest wciąż model klasycznej detekcji, ale jego architektura może zostać rozszerzona o dodatkowe głowice przeznaczone do obsługi innych zadań. Obecnie dostępne modele mogą obsługiwać zadania detekcji, klasyfikacji, segmentacji instancji, segmentacji semantycznej, estymacji głębi, estymację pozy oraz detekcji z obróconymi ramkami \cite{bib:ultralyticsYOLO26}, poszczególne zadania zostały wyrażone w formie tabeli~\ref{tab:yolo26_zadania}.
+
+% ! Sprawdzić poprawność!
+
+\begin{table}[ht] % Wybrane zadania obsługiwane przez modele YOLO26
+	\centering
+	\small
+	\renewcommand{\arraystretch}{1.2}
+	\caption{Wybrane zadania obsługiwane przez modele YOLO26}
+	\label{tab:yolo26_zadania}
+	\begin{tabularx}{\textwidth}{
+		>{\raggedright\arraybackslash}p{3.2cm}
+		>{\raggedright\arraybackslash}p{3.2cm}
+		>{\raggedright\arraybackslash}X
+		}
+		\toprule
+		\textbf{Zadanie}              &
+		\textbf{Oznaczenie modelu}    &
+		\textbf{Wynik działania}                                            \\
+		\midrule
+
+		Detekcja obiektów             &
+		\texttt{yolo26*.pt}           &
+		Klasy obiektów, wartości pewności i prostokątne ramki ograniczające \\
+
+		Segmentacja instancji         &
+		\texttt{yolo26*-seg.pt}       &
+		Klasy, ramki ograniczające i osobne maski pikselowe obiektów        \\
+
+		Segmentacja semantyczna       &
+		\texttt{yolo26*-sem.pt}       &
+		Przypisanie klasy do każdego piksela obrazu                         \\
+
+		Estymacja głębi               &
+		\texttt{yolo26*-depth.pt}     &
+		Mapa przewidywanej głębi obrazu                                     \\
+
+		Klasyfikacja obrazu           &
+		\texttt{yolo26*-cls.pt}       &
+		Klasa przypisana do całego obrazu                                   \\
+
+		Estymacja pozy                &
+		\texttt{yolo26*-pose.pt}      &
+		Położenie punktów charakterystycznych obiektu lub sylwetki          \\
+
+		Detekcja z ramkami obróconymi &
+		\texttt{yolo26*-obb.pt}       &
+		Klasy i ramki ograniczające rozszerzone o orientację obiektu        \\
+
+		\bottomrule
+	\end{tabularx}
+\end{table}
+
+Ze względu na specyfikę systemu, spośród dostępnych wariantów YOLO26 zdecydowano się na wykorzystanie podstawowego, zajmującego się detekcją obiektów na obrazie. Wynik zawierający klasę obiektu, wartość pewności oraz jego prostokątna ramka ograniczająca dostarcza wystarczającą liczbę informacji o obiekcie do realizacji zadania systemu. Segmentacja umożliwiłaby kompletne wyodrębnianie obiektu z tła, ale wymagałoby to przygotowania masek segmentacyjnych dla zbioru uczącego, a także zwiększyłaby złożoność obliczeniową modelu. Ciekawym kierunkiem rozwoju może być wykorzystanie wariantu z ramkami obróconymi, wprowadzonym w najnowszej wersji YOLO, aby ograniczyć udział tła w ramce detekcji.
+
 \subsection{Warianty ze względu na skalę modelu}
 
-\note{\cite{bib:jocher2026ultralyticsyolo26}}
+Każdy wariant YOLO26 jest dostępny w kilku skalach różniących się od siebie liczbą parametrów oraz kosztem obliczeniowym. Wybór odpowiedniego wariantu powinien być oparty na wymaganiach systemu oraz ograniczeniach zasobów sprzętowych urządzenia końcowego. Autorzy modelu detekcyjnego przewidzieli pięć wariantów: \texttt{n} (\english{nano}), \texttt{s} (\english{small}), \texttt{m} (\english{medium}), \texttt{l} (\english{large}) oraz \texttt{x} (\english{extra large}). W referencyjnych wynikach każdy kolejny wariant osiąga wyższe wartości $mAP50\text{-}90$, wymagając jednocześnie większej ilości parametrów i operacji \cite{bib:ultralyticsYOLO26}.
+
+% ! Sprawdzić poprawność!
+
+\begin{table}[ht] % Porównanie wariantów detekcyjnych modelu YOLO26 na zbiorze COCO
+	\centering
+	\small
+	\renewcommand{\arraystretch}{1.2}
+	\caption{Porównanie wariantów detekcyjnych YOLO26 na zbiorze COCO
+		dla obrazów $640\times640$. Opracowanie własne na podstawie
+		\cite{bib:ultralyticsYOLO26}.}
+	\label{tab:warianty_YOLO}
+	\begin{tabular}{lrrrr}
+		\toprule
+		\textbf{Wariant}         &
+		\textbf{mAP50-95}        &
+		\textbf{Parametry [mln]} &
+		\textbf{GFLOPs}          &
+		\textbf{T4 TensorRT10 [ms]}                           \\
+		\midrule
+		YOLO26n                  & 40,9 & 2,4  & 5,4   & 1,7  \\
+		YOLO26s                  & 48,6 & 9,5  & 20,7  & 2,5  \\
+		YOLO26m                  & 53,1 & 20,4 & 68,2  & 4,7  \\
+		YOLO26l                  & 55,0 & 24,8 & 86,4  & 6,2  \\
+		YOLO26x                  & 57,5 & 55,7 & 193,9 & 11,8 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+Wyniki, które zostały przedstawione w tabeli~\ref{tab:warianty_YOLO} pokazują kompromis, typowy dla tej rodziny modeli. Wzrost rozmiaru modelu skorelowany jest ze wzrostem wartości $mAP50\text{-}95$, liczbą parametrów, liczbą wykonywanych operacji, oraz czasem wykonania. Największy wzrost skuteczności obserwujemy przy przejściu z modelu YOLO26n do YOLO26s, wynoszącym $7,7$ punktu mAP pierwszego z nich, a dalsze zwiększanie rozmiaru przynosi coraz mniejsze przyrosty względem rosnącego kosztu.
+
+Wartości czasowe służą porównaniu wariantów w jednakowych warunkach i nie mogą być utożsamiane z wartością pewną czasu wykonania. Ten zależy od sprzętu, na którym uruchamiany jest model, oraz innych czynników wynikających z implementacji danego systemu.
+
+\subsection{Dobór wariantów modelu}
+
+Do dalszej analizy przyjęto najnowszą wersję modeli rozwijanych przez Ultralytics -- YOLO26. Ta wersja wprowadza rozwiązania istotne z punktu projektowanego systemu, przede wszystkim rozwojem podejścia do detekcji end-to-end bez etapu NMS i uproszczoną regresję ramek. Te zmiany ograniczają złożoność głowicy modelu i zakres przetwarzania, jaki był wykonywany po zakończeniu pracy sieci \cite{bib:jocher2026ultralyticsyolo26}.
+
+Ze względu na wymaganie działania modelu w RT oraz założenie wykorzystania systemu w środowisku szkolnym, dalszą analizę należy skupić na najmniejszych wariantach modelu: \texttt{n} i \texttt{s}. Wynika to z konieczności uwzględnienia ograniczeń i heterogeniczności infrastruktury sprzętowej w polskich placówkach oświatowych. Zieliński w badaniu z 2023 roku dotyczącym cyfryzacji polskich szkół wskazuje na problem przestarzałego sprzętu komputerowego, często mającego ponad 5 lat użytkowania \cite{bib:zielinski2023cyfryzacja}.
+
+Wariant \texttt{n} charakteryzuje się najmniejszą liczbą parametrów i najmniejszym kosztem wykonywanych obliczeń, przez co czyni go idealnym Kandydatem dla jednostek o ograniczonych zasobach. Wariant \texttt{s} stanowi kolejny poziom złożoności sieci neuronowej, a wyniki referencyjne wskazują na wyższą wartość mAP. Uwzględnienie obu wariantów pozwoli przeanalizować wpływ poszczególnych wariantów i kombinacji parametrów na wydajność i dokładność detekcji.
 
 \section{Wykorzystanie danych RGB, głębi i LiDAR w rozpoznawaniu obiektów}
 
 \note{
-    Tu mogę opisać, dlaczego LiDAR był rozważany, ale w praktyce ma ograniczenia przy małych obiektach i małych odległościach.
+	Tu mogę opisać, dlaczego LiDAR był rozważany, ale w praktyce ma ograniczenia przy małych obiektach i małych odległościach.
 }
 
 
@@ -217,7 +473,7 @@ Wykorzystanie detektora opartego na architekturze transformera nie jest konieczn
 Ocena modeli detekcji obiektów wymaga zastosowania odpowiednich metryk, które pozwalają na porównanie uzyskanych wyników. Metryki te powinny uwzględniać zarówno poprawność klasyfikacji, jak i dokładność lokalizacji obiektu na obrazie. Przeciwnie do klasyfikacji obrazów, przy detekcji nie wystarczy, aby model poprawnie rozpoznał klasę obiektu. Równie istotne jest, aby poprawnie wyznaczył ramkę ograniczającą wokół wykrytego obiektu. Jedną z najczęściej stosowanych metryk jest IoU (ang. \english{Intersection over Union}), określająca stopień pokrycia między ramką obiektu przewidywaną przez model a ramką rzeczywistą \cite{bib:detectionMetrics}. Wartość IoU obliczana jest jako stosunek pola części wspólnej obu ramek do pola ich części łącznej:
 
 \begin{equation}
-    IoU = \frac{|B_p \cap B_{gt}|}{|B_p \cup B_{gt}|},
+	IoU = \frac{|B_p \cap B_{gt}|}{|B_p \cup B_{gt}|},
 \end{equation}
 
 gdzie $B_p$ jest ramką przewidywaną przez model, a $B_{gt}$ jest ramką referencyjną (ang. \english{ground truth}). Im większa wartość IoU, tym lepsze dopasowanie ramki przewidywanej do ramki rzeczywistej. W praktyce najczęściej stosuje się progi, np. $IoU \geq 0.5$, aby zdecydować, czy dana detekcja może być uznana za poprawną. Próg ten został wykorzystany w wielu klasycznych procedurach oceny detekcji, takich jak PASCAL VOC \cite{bib:PASCALVOCChallenge}, i jest nadal powszechnie stosowany w wielu benchmarkach. Na podstawie wartości IoU oraz zgodności klasy obiektu możliwe jest przypisanie wyników detekcji do jednej z kategorii: prawdziwych pozytywów (TP, ang. \english{true positive}), fałszywych pozytywów (FP, ang. \english{false positive}) i fałszywych negatywów (FN, ang. \english{false negative}). Detekcja jest traktowana jako TP, jeżeli model poprawnie rozpoznał klasę obiektu, a przewidywana ramka spełnia zadany próg IoU względem ramki referencyjnej. FP to detekcja błędna w której model przewidział klasę obiektu, ale nie spełnił progu IoU lub przewidziana klasa była błędna. FN natomiast to sytuacja, w której model nie wykrył obiektu, który rzeczywiście był na obrazie.
@@ -225,13 +481,13 @@ gdzie $B_p$ jest ramką przewidywaną przez model, a $B_{gt}$ jest ramką refere
 Jedną z podstawowych metryk oceny jest precyzja (ang. \english{precision}), określająca udział poprawnych detekcji modelu wśród wszystkich detekcji, jakie zwrócił:
 
 \begin{equation}
-    Precision = \frac{TP}{TP + FP}.
+	Precision = \frac{TP}{TP + FP}.
 \end{equation}
 
 Wysoka precyzja oznacza, że model generuje niewiele fałszywych pozytywów. Drugą, powiązaną z nią metryką, jest czułość (ang. \english{recall}), określająca, jaki jest udział poprawnych detekcji wśród wszystkich rzeczywistych obiektów:
 
 \begin{equation}
-    Recall = \frac{TP}{TP + FN}.
+	Recall = \frac{TP}{TP + FN}.
 \end{equation}
 
 Obie metryki pozostają ze sobą w relacji kompromisu, ponieważ zwiększenie progu pewności detekcji może ograniczyć liczbę fałszywych pozytywów, ale jednocześnie prowadzić do pominięcia części rzeczywistych obiektów. Z kolei obniżenie tego progu może zwiększyć liczbę detekcji, ale równocześnie powodować wzrost liczby fałszywych detekcji. Z tego względu, przy analizie detektorów często łączy się je w jedną metrykę -- krzywą PR (precyzja-czułość, ang. \english{precision-recall curve}), przedstawiającą zależność pomiędzy nimi dla różnych wartości progu decyzyjnego. Na jej podstawie wyznacza się metrykę AP (ang. \english{Average Precision}), odpowiadającą polu pod krzywą PR.
@@ -239,15 +495,15 @@ Obie metryki pozostają ze sobą w relacji kompromisu, ponieważ zwiększenie pr
 W przypadku detekcji wieloklasowej używa się średniej wartości AP obliczonej dla wszystkich klas, określanej jako mAP (ang. \english{mean Average Precision}):
 
 \begin{equation}
-    mAP = \frac{1}{N} \sum_{i=1}^{N} AP_i,
+	mAP = \frac{1}{N} \sum_{i=1}^{N} AP_i,
 \end{equation}
 
-gdzie $N$ jest liczbą klas, a $AP_i$ jest wartością AP dla $i$-tej klasy. W praktyce najczęściej wykorzystuje się dwie wersje tej metryki: $mAP50$, gdzie detekcję uznaje się za poprawną przy progu $IoU \geq 0.5$, oraz $mAP50-95$, gdzie wynik jest uśredniany dla progów $IoU$ z zakresu od $0.5$ do $0.95$. Pierwsza z nich jest bardziej liberalna i pozwala określić ogólną zdolność modelu do wykrycia obiektu. Druga natomiast jest bardziej rygorystyczna, ponieważ wymaga dokładniejszego dopasowania ramek ograniczających, dzięki czemu lepiej pokazuje zarówno skuteczność klasyfikacji, jak i lokalizacji obiektu. Uśrednianie wyników dla wielu progów zostało szeroko zastosowane m. in. w metodyce oceny detekcji zbioru Microsoft COCO \cite{bib:microsoftCOCO} i jest obecnie standardem w wielu benchmarkach detekcji obiektów.
+gdzie $N$ jest liczbą klas, a $AP_i$ jest wartością AP dla $i$-tej klasy. W praktyce najczęściej wykorzystuje się dwie wersje tej metryki: $mAP50$, gdzie detekcję uznaje się za poprawną przy progu $IoU \geq 0.5$, oraz $mAP50-95$, gdzie wynik jest uśredniany dla progów $IoU$ z zakresu od $0.5$ do $0.95$. Pierwsza z nich jest bardziej liberalna i pozwala określić ogólną zdolność modelu do wykrycia obiektu. Druga natomiast jest bardziej rygorystyczna, ponieważ wymaga dokładniejszego dopasowania ramek ograniczających, dzięki czemu lepiej pokazuje zarówno skuteczność klasyfikacji, jak i lokalizacji obiektu. Uśrednianie wyników dla wielu progów zostało szeroko zastosowane m.in. w metodyce oceny detekcji zbioru Microsoft COCO \cite{bib:microsoftCOCO} i jest obecnie standardem w wielu benchmarkach detekcji obiektów.
 
 Dodatkowo, w pracy wykorzystano metrykę $F1$-score, będącą średnią harmoniczną precyzji i czułości:
 
 \begin{equation}
-    F1 = 2 \cdot \frac{P \cdot R}{P + R},
+	F1 = 2 \cdot \frac{P \cdot R}{P + R},
 \end{equation}
 
 gdzie $P$ jest precyzją, a $R$ jest czułością. Metryka ta umożliwia przedstawienie kompromisu pomiędzy liczbą fałszywych detekcji a liczbą pominiętych obiektów. Może być szczególnie przydatna, gdy sama precyzja lub czułość nie dają pełnego obrazu jakości modelu. W niniejszej pracy metrykę $F1$-score wykorzystano jako metrykę pomocniczą względem podstawowych metryk $mAP50$ i $mAP50-95$, aby lepiej zrozumieć kompromis pomiędzy precyzją a czułością w kontekście detekcji obiektów dotykanych przez użytkownika.
@@ -257,36 +513,5 @@ Oprócz wartości liczbowych wykorzystano również macierze pomyłek (ang. \eng
 \section{Podsumowanie analizy tematu}
 
 \note{
-    Najważniejsze: z literatury wynika, że detekcja obiektów w czasie rzeczywistym jest sensownym kierunkiem, ale Twoja nisza to rozpoznawanie konkretnych dotykanych brył 3D w kontrolowanym scenariuszu.
+	Najważniejsze: z literatury wynika, że detekcja obiektów w czasie rzeczywistym jest sensownym kierunkiem, ale Twoja nisza to rozpoznawanie konkretnych dotykanych brył 3D w kontrolowanym scenariuszu.
 }
-
-% 
-
-%\begin{itemize}
-%\item Jaki problem chcę (muszę :-) rozwiązać?
-%\item Dlaczego rozwiązanie problemu jest ważne?
-%\item Jak inni rozwiązują ten problem?
-%\item Jakie są zalety i wady tych rozwiązań?
-%\end{itemize}
-
-% Odwołania do literatury: 
-% książek \cite{bib:ksiazka},
-% artykułów w czasopismach \cite{bib:artykul}, 
-% materiałów konferencyjnych \cite{bib:konferencja}
-% i stron www \cite{bib:internet}.
-
-% Równania powinny być numerowane
-% \begin{align}
-% y = \frac{\partial x}{\partial t}
-% \end{align}
-
-%
-%\begin{itemize}
-%\item analiza tematu
-%\item wprowadzenie do dziedziny (\english{state of the art}) – sformułowanie problemu, 
-%\item poszerzone studia literaturowe, przegląd literatury tematu (należy wskazać źródła wszystkich informacji zawartych w pracy)
-%\item opis znanych rozwiązań, algorytmów, osadzenie pracy w kontekście
-%\item Tytuł rozdziału jest często zbliżony do tematu pracy. 
-%\item Rozdział jest wysycony cytowaniami do literatury \cite{bib:artykul,bib:ksiazka,bib:konferencja}. 
-%Cytowanie książki \cite{bib:ksiazka}, artykułu w czasopiśmie \cite{bib:artykul}, artykułu konferencyjnego \cite{bib:konferencja} lub strony internetowej \cite{bib:internet}.
-%\end{itemize}
