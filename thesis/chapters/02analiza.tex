@@ -194,10 +194,6 @@ Wykorzystanie detektora opartego na architekturze transformera nie jest konieczn
 \section{Rodzina modeli YOLO}
 \label{s:yolo}
 
-\note[hide]{
-	Tu najwięcej, bo tego używasz. Architektura ogólnie, zalety: szybkość, detekcja w czasie rzeczywistym, różne rozmiary modeli.
-}
-
 Pierwsza wersja YOLO zadebiutowała wraz z publikacją artykułu \textit{You Only Look Once: Unified, Real-Time Object Detection} przez Josepha Redmona, Santosha Divvalę, Rossa Girshicka i Ali Farhadi w 2016 roku i od tego czasu rodzina modeli YOLO należy do najbardziej rozpoznawalnych i popularnych detektorów jednoetapowych. Autorzy określili problem detekcji obrazu jako regresję, w której pojedyncza sieć neuronowa przewiduje zarówno ramki obiektów, jak i odpowiadające im prawdopodobieństwa klas \cite{bib:redmon2016lookonceunifiedrealtime}. Kolejne lata przyniosły rozwój kolejnych modeli rodziny YOLO przez różne zespoły badawcze, więc nie istnieje pojedyncza gałąź rozwoju rodziny. Jedna z głównych gałęzi jest rozwijana przez firmę Ultralytics, która w 2020 roku zaprezentowała YOLOv5, a w następnych latach jej kolejne generacje. W chwili opracowywania pracy najnowszą wersją jest YOLO26 \cite{bib:jocher2026ultralyticsyolo26}.
 
 \subsection{Architektura modeli YOLO}
@@ -361,6 +357,7 @@ Kolejnym ważnym aspektem wersji 26 jest fakt rezygnacji z użycia DFL (ang. \en
 Na rysunku~\ref{fig:yolo26_architektura} przedstawiono uproszczony schemat współczesnej architektury modelu YOLO26. Możemy zauważyć znaczny rozwój względem pierwszej wersji modelu i wyraźne odejście od przekształcania wejścia w pojedynczą siatkę predykcji. Zastąpiono ją hierarchicznym przetwarzaniem cech, ich wieloskalowym połączeniem i dostosowaną głowicą decyzyjną. Pomimo tych zmian, zachowano główną ideę rodziny, czyli detekcję przez jeden model, bez osobnego etapu generowania propozycji regionów.
 
 \subsection{Warianty ze względu na realizowane zadanie}
+\label{ssec:warianty_zadanie}
 
 Dzisiejsza implementacja rodziny YOLO przez Ultralytics nie ogranicza się jedynie do klasycznej detekcji, a stara się dostarczać wielu modeli obsługujących różne zadania. Głównym kierunkiem jest wciąż model klasycznej detekcji, ale jego architektura może zostać rozszerzona o dodatkowe głowice przeznaczone do obsługi innych zadań. Obecnie dostępne modele mogą obsługiwać zadania detekcji, klasyfikacji, segmentacji instancji, segmentacji semantycznej, estymacji głębi, estymację pozy oraz detekcji z obróconymi ramkami \cite{bib:ultralyticsYOLO26}, poszczególne zadania zostały wyrażone w formie tabeli~\ref{tab:yolo26_zadania}.
 
@@ -448,7 +445,7 @@ Każdy wariant YOLO26 jest dostępny w kilku skalach różniących się od siebi
 	\end{tabular}
 \end{table}
 
-Wyniki, które zostały przedstawione w tabeli~\ref{tab:warianty_YOLO} pokazują kompromis, typowy dla tej rodziny modeli. Wzrost rozmiaru modelu skorelowany jest ze wzrostem wartości $mAP50\text{-}95$, liczbą parametrów, liczbą wykonywanych operacji, oraz czasem wykonania. Największy wzrost skuteczności obserwujemy przy przejściu z modelu YOLO26n do YOLO26s, wynoszącym $7,7$ punktu mAP pierwszego z nich, a dalsze zwiększanie rozmiaru przynosi coraz mniejsze przyrosty względem rosnącego kosztu.
+Wyniki, które zostały przedstawione w tabeli~\ref{tab:warianty_YOLO} pokazują kompromis, typowy dla tej rodziny modeli. Wzrost rozmiaru modelu skorelowany jest ze wzrostem wartości $mAP50\text{-}95$, liczbą parametrów, liczbą wykonywanych operacji, oraz czasem wykonania. Największy wzrost skuteczności obserwujemy przy przejściu z modelu YOLO26n do YOLO26s, wynoszącym $7,7$ punktu $mAP$ pierwszego z nich, a dalsze zwiększanie rozmiaru przynosi coraz mniejsze przyrosty względem rosnącego kosztu.
 
 Wartości czasowe służą porównaniu wariantów w jednakowych warunkach i nie mogą być utożsamiane z wartością pewną czasu wykonania. Ten zależy od sprzętu, na którym uruchamiany jest model, oraz innych czynników wynikających z implementacji danego systemu.
 
@@ -458,14 +455,89 @@ Do dalszej analizy przyjęto najnowszą wersję modeli rozwijanych przez Ultraly
 
 Ze względu na wymaganie działania modelu w RT oraz założenie wykorzystania systemu w środowisku szkolnym, dalszą analizę należy skupić na najmniejszych wariantach modelu: \texttt{n} i \texttt{s}. Wynika to z konieczności uwzględnienia ograniczeń i heterogeniczności infrastruktury sprzętowej w polskich placówkach oświatowych. Zieliński w badaniu z 2023 roku dotyczącym cyfryzacji polskich szkół wskazuje na problem przestarzałego sprzętu komputerowego, często mającego ponad 5 lat użytkowania \cite{bib:zielinski2023cyfryzacja}.
 
-Wariant \texttt{n} charakteryzuje się najmniejszą liczbą parametrów i najmniejszym kosztem wykonywanych obliczeń, przez co czyni go idealnym Kandydatem dla jednostek o ograniczonych zasobach. Wariant \texttt{s} stanowi kolejny poziom złożoności sieci neuronowej, a wyniki referencyjne wskazują na wyższą wartość mAP. Uwzględnienie obu wariantów pozwoli przeanalizować wpływ poszczególnych wariantów i kombinacji parametrów na wydajność i dokładność detekcji.
+Wariant \texttt{n} charakteryzuje się najmniejszą liczbą parametrów i najmniejszym kosztem wykonywanych obliczeń, przez co czyni go idealnym Kandydatem dla jednostek o ograniczonych zasobach. Wariant \texttt{s} stanowi kolejny poziom złożoności sieci neuronowej, a wyniki referencyjne wskazują na wyższą wartość $mAP$. Uwzględnienie obu wariantów pozwoli przeanalizować wpływ poszczególnych wariantów i kombinacji parametrów na wydajność i dokładność detekcji.
 
-\section{Wykorzystanie danych RGB, głębi i LiDAR w rozpoznawaniu obiektów}
+\section{Wykorzystanie danych wizualnych i przestrzennych w rozpoznawaniu obiektów}
 
-\note{
-	Tu mogę opisać, dlaczego LiDAR był rozważany, ale w praktyce ma ograniczenia przy małych obiektach i małych odległościach.
-}
+Rozpoznawanie obiektów nie musi opierać się jedynie na klasycznym obrazie RGB. Współczesne urządzenia mogą oferować dostęp do danych oferujących opis geometrii obserwowanej sceny, przedstawianej w postaci chmur punktów, czy map głębi. Dane przestrzenne mogą bardzo dobrze uzupełniać informacje o kolorze, teksturze, i strukturze obrazu rejestrowanego przez kamerę. Każdy z wymienionych sposobów reprezentacji danych wiąże się jednak z odmiennymi ograniczeniami i wymaganiami, które należy rozpatrywać w kontekście konkretnego zastosowania.
 
+\subsection{Obraz RGB}
+
+Obrazy kolorowe, najczęściej reprezentowane w przestrzeni RGB (ang. \textit{red-green-blue}), stanowią obecnie jedną z najpowszechniejszych form reprezentacji danych w dziedzinie wizji komputerowej \cite{bib:wang2023imagesampling}. Kamery obecnie znajdujemy w większości dziedzin życia: monitoringu, medycynie, przemyśle, motoryzacji czy w urządzeniach osobistych. Istotne jest więc określenie, jakie informacje zawarte w zarejestrowanym obrazie mogą zostać wykorzystane do rozpoznawania obiektów 3D.
+
+Obraz zarejestrowany przez kamerę jest reprezentacją trójwymiarowej sceny na płaszczyźnie dwuwymiarowej. Pomimo usunięcia jednego wymiaru przestrzennego, z pojedynczej klatki wyodrębnić można bardzo dużo cech użytecznych podczas analizy obiektów, m.in. o kolorze, teksturze, krawędziach, zmianach jasności czy cieniach. Te informacje mogą z powodzeniem zostać wykorzystane przez modele uczenia maszynowego do wyznaczenia charakterystycznych cech przedstawionych obiektów. Obrazy RGB stanowią również podstawową formę danych wejściowych dla wielu CNN oraz detektorów obiektów, w tym rodziny YOLO (\ref{s:yolo}).
+
+Rejestracja obrazu przez kamerę cyfrową jest oparta na procesie przejścia światła odbitego przez układ optyczny i skupieniu go na światłoczułym sensorze. Współczesne kamery cyfrowe do rejestracji obrazu wykorzystują głównie sensory CMOS (ang. \textit{complementary metal-oxide-semiconductor}), a historycznie szeroko stosowano sensory CCD (ang. \textit{charge-coupled device}). Dane zarejestrowane przez sensor są zwykle przetwarzane dalej w celu ich odszumienia, korekty kolorów czy poprawienia balansu bieli. Wynik może zostać zapisany w formacie skompresowanym JPEG (ang. \english{Joint Photographic Experts Group}) lub HEIF (ang. \english{High Efficiency Image File Format}) \cite{bib:szeliski2021cvalgorithms}.
+
+Po przetworzeniu obraz RGB może być reprezentowany w formacie macierzy trójwymiarowej o wymiarach
+
+\begin{equation}
+	M \times N \times 3,
+\end{equation}
+
+gdzie $M$ i $N$ to liczba wierszy i kolumn obrazu, a trzeci wymiar odpowiada kanałom barwnym: czerwonemu, zielonemu i niebieskiemu. Wartość pojedynczego piksela jest więc krotką trzech wartości, które najczęściej występują w kombinacji
+
+\begin{equation}
+	I(i,j) = (R, G, B).
+\end{equation}
+
+Pojedynczy piksel zawiera jedynie informację o wartościach trzech składowych koloru, ale zależności przestrzenne pomiędzy wieloma pikselami pozwalają odwzorować strukturę obserwowanej sceny. Lokalne zmiany wartości pikseli pozwalają m.in. wyznaczać gradienty obrazu, które mogą posłużyć do wykrywania krawędzi i innych strukturalnie ważnych elementów \cite{bib:sobel2014isotropic}.
+Jednakże, pomimo dużej ilości danych dostępnych do odczytu w samym obrazie, reprezentacja ta ma również istotne ograniczenia. Przede wszystkim, wygląd obserwowanego obiektu zależy znacząco od warunków oświetleniowych i stopnia zasłonięcia. Zmiana tych warunków może doprowadzić do różnic w kolorach, kontraście czy widoczności jego krawędzi, tym samym wpływając na zdolność jego rozpoznania \cite{bib:szeliski2021cvalgorithms}. Brak informacji o odległości punktu od kamery jest również istotnym ograniczeniem.
+Projekcja dwuwymiarowa skutkuje utratą części informacji przestrzennej, przez co różne obiekty -- często zasłonięte -- mogą prowadzić do bardzo podobnych obrazów. Istnieją modele estymujące głębię (np. YOLO26*-depth \ref{ssec:warianty_zadanie}), jednak otrzymane z nich wartości nie stanowią pomiaru odległości, a ich dokładność zależy od wielu czynników. Z tego względu uzupełnienie obrazu o informację dot. odległości punktów od kamery wydaje się przydatne podczas procesu rozpoznania brył trójwymiarowych.
+
+\subsection{Pozyskiwanie informacji o głębi}
+
+Informacja dotycząca głębi opisuje położenie aktualnie obserwowanych punktów względem kamery. Jeżeli jej wartości przypiszemy do poszczególnych pikseli, otrzymujemy mapę głębi, którą możemy zapisać jako
+
+\begin{equation}
+	D(i,j) = d,
+\end{equation}
+
+gdzie $d$ to głębokość sceny odpowiadająca pikselowi $(i,j)$. Dzisiejsza technika pozwala na określanie głębi na kilka sposobów.
+
+Najprostsza ze względu na wymaganą infrastrukturę jest estymacja głębi z pojedynczego obrazu RGB. Należy jednak przy tym mieć na uwadze, że nie jest do dokładny pomiar, a jedynie przybliżenie wartości odległości. Najmniej wymagającym pod względem sprzętowym jest estymacja głębi z pojedynczego obrazu, określana jako \english{monocular depth estimation}. To podejście opiera się na wyznaczeniu struktury przestrzennej na podstawie cech obrazu. Przykładami tej techniki są: rozwiązanie zaproponowane przez Ranftla et al. oraz Monodepth2 opracowane przez zespół Godarda. Te metody umożliwiają uzyskać mapę głębi bez stosowania dodatkowych urządzeń. Należy jednak pamiętać, że wynik nie jest wartością rzeczywistą, a jedynie estymacją.
+
+Kolejno metodą jest stereowizja, wykorzystująca dwa obrazy zarejestrowane z różnych położeń. Znając wzajemne położenie kamer i analizując dysparcję możliwe jest określenie różnicy położenia odpowiadających sobie punktów na obrazach. Technologia stereoskopowa znalazła zastosowanie w urządzeniach konsumenckich. W 2010 roku firma Nintendo zaprezentowała nową konsolę wykorzystującą właśnie to rozwiązanie. Nintendo~3DS było wyposażone w dwie kamery, które umożliwiały robienie zdjęć 3D \cite{bib:Ito2012Stereoscopic}. Niestety, to rozwiązanie wymaga znajomości parametrów kamer i ich wzajemnego położenia, a także kalibracji układu.
+
+Ciekawym podejściem do omawianego problemu jest aktywny pomiar odległości, w którym urządzenie emituje sygnał i wyznacza odległość na bazie jego powrotu. Jednym z takich urządzeń jest LiDAR (ang. \english{Light Detection and Ranging}), który emituje promienie lasera i analizuje sygnał odbity od obiektów. Jeżeli dane rozwiązanie wykorzystuje metodę czasu przelotu, to odległość jest wyznaczana na podstawie czasu między emisją impulsu, a zarejestrowaniem jego powrotu.
+
+\subsection{Dane LiDAR i chmury punktów}
+
+Dane pozyskane z czujnika LiDAR mogą być wykorzystane do zbudowania reprezentacji przestrzennej sceny. Jako formę tej reprezentacji często stosuje się chmurę punktów (ang. \english{point cloud}), będącą zbiorem punktów rozmieszczonych w przestrzeni 3D. Można ją przedstawić jako zbiór
+
+\begin{equation}
+	P = \{p_i\}_{i=1}^{N},
+\end{equation}
+
+gdzie każdy punkt $p_i$ jest reprezentowany jako wektor
+
+\begin{equation}
+	p_i = (x_i, y_i, z_i).
+\end{equation}
+
+Zależnie od źródła danych, do poszczególnych punktów mogą zostać dodane dodatkowe informacje, np. intensywność sygnału, kolor lub wektor normalny. Chmura punktów, przeciwnie do obrazu RGB, nie musi tworzyć regularnej siatki i zazwyczaj traktuje się ja jak nieuporządkowany zbiór punktów. Kolejność zbioru nie powinna mieć znaczenia dla reprezentacji geometrii obiektu \cite{bib:qi2017pointnet}.
+
+Brak regularnej struktury chmury punktów powoduje, że jej przetwarzanie nie może być zrealizowane w identyczny sposób jak obrazu. Z tego powodu zaproponowano wiele architektur służących wyłącznie do ich przetwarzania. Jedną z nich jest PointNet który, aby przetworzyć chmurę punktów, korzysta z cech poszczególnych punktów, a następnie wykonuje na nich symetryczną agregację. Dzięki temu wynik nie jest zależny od kolejności punktów wejściowych. Ta architektura jest wykorzystywana m.in. do klasyfikacji i segmentacji obiektów trójwymiarowych \cite{bib:qi2017pointnet}.
+
+Podstawowa wersja PointNet tylko w małym stopniu uwzględnia lokalne zależności między punktami, co poskutkowało powstaniem jej rozwinięcia: PointNet++. Wprowadzono w nim hierarchiczne grupowanie punktów oraz uczenie cech dla kolejnych obszarów przestrzennych. Umożliwia to analizę geometrii dla różnych poziomów szczegółowości oraz lepsze uwzględnienie zmiennej gęstości próbek, która występuje w chmurach punktów \cite{bib:qi2017pointnetplusplus}.
+
+Chmury punktów mogą być wykorzystywane bezpośrednio do detekcji obiektów, czego przykładem jest VoteNet. Jego architektura oparta jest na PointNet++ oraz mechanizmie głosowania Hougha. Kolejne punkty wraz z ich cechami generują głosy wskazujące środki potencjalnych obiektów, następnie są grupowane, a na ich podstawie wyznacza się trójwymiarowe ramki ograniczające. To rozwiązanie nie wymaga wiedzy o kolorach obiektów, a bazuje jedynie na chmurze, bez potrzeby konwertowania jej do regularnej reprezentacji przestrzennej \cite{bib:ding2019votenet}.
+
+Zdolność detekcji obiektów w chmurze punktów nie jest niestety nieograniczona. Wiele zależy od jakości pomiarów dostarczanych przez skaner i metody ich analizy. Rzeczywiste pomiary mogą zawierać w sobie losowe szumy, odstające punkty, czy zmienną gęstość próbek. Ten problem uwidacznia się szczególnie przy analizie niewielkich elementów geometrii, które przy chmurze małej gęstości mogą być reprezentowane przez pojedyncze punkty. Jak wskazują Zhang et al., takie zakłócenia obecne w rzeczywistych chmurach punktów mogą prowadzić pogorszenia skuteczności rozpoznawania obiektów. Odpowiedzią autorów na ten problem jest architektura R-PointNet, która zwiększa odporność modelu na zakłócenia \cite{bib:zhang2024rpointnet}.
+
+Dane pochodzące z LiDAR są przede wszystkim opisem geometrii obserwowanej sceny i nie przenoszą  informacji o kolorze lub teksturze, które dostępne są w obrazach z kamery. Jednakże, istnieją metody dołączania tych danych przy pomocy dodatkowej kamery. Możliwości każdej z tych reprezentacji niejako uzupełniają wzajemnie swoje ograniczenia. Możliwe jest więc ich jednoczesne wykorzystanie, by wspomóc proces detekcji wykorzystując zarówno dane wizualne, jak i przestrzenne.
+
+\subsection{Fuzja danych wizualnych i przestrzennych}
+
+Zależnie od etapu, na którym następuje fuzja danych możliwe jest podzielenie jej na kilka poziomów: fuzję danych, fuzję cech i fuzję decyzji \cite{bib:liu2023lidarcamerafusion}.
+
+Połączenie ze sobą danych wizualnych i przestrzennych sprawia, że otrzymujemy wspólną reprezentację sceny. Obraz z kamery dostarcza informacji o kolorze i krawędziach, a mapy głębi i chmury punktów dają nam możliwość bezpośredniego umiejscowienia punktów w przestrzeni, ukazując geometrię przestrzenną całej sceny. Ograniczenia każdej z tych modalności skłaniają naukowców do dywagacji na temat możliwości ich wspólnego użycia. W literaturze znajdujemy wiele metod fuzji danych. Celem tego działania jest uzyskanie reprezentacji, która będzie zawierała w sobie zarówno cechy wizualne, jak i przestrzenne obserwowanych przedmiotów. Takie podejście zastosowano w modelu ImVoteNet, będącym rozwinięciem architektury VoteNet. Model łączy ze sobą informacje z obrazów RGB z cechami pochodzącymi z chmury punktów. Na obrazie wyznaczane są cechy geometryczne, semantyczne i teksturowe, a następnie są one przenoszone do przestrzeni trójwymiarowej. Po połączeniu ich z cechami punktów następuje głosowanie, na wzór modelu VoteNet. Na zbiorze SUN RGB-D model osiągnął wartość $mAP@0.25$ wynoszącą $63.4$, poprawiając wynik swego poprzednika o $5.7$ punktu \cite{bib:qi2020imvotenet}.
+
+Korzyści z łączenia danych wykazali również Liu et al. proponując model, który wykonywał równolegle detekcje na obrazie z kamery oraz mapie głębi z LiDAR. Ich rozwiązanie, łączące dane, uzyskało  lepsze wyniki niż detekcje wykonywane osobno na obu modalnościach. Podczas eksperymentów wartość mAP modelu osiągnęła wynik $89.26\%$, wyprzedzając warianty wykorzystujące pojedyncze źródło danych o $2.56$ punktu procentowego dla modelu korzystającego obrazy i $14.99$ punktu procentowego dla modelu korzystającego z danych z LiDAR. Jednocześnie wskazali, że przetworzenie pojedynczej klatki zajmowało jedynie $0.03$ sekundy, co teoretycznie umożliwia działanie modelu w czasie rzeczywistym \cite{bib:liu2023lidarcamerafusion}.
+
+Architektura rodzina YOLO może również stanowić element systemów wykorzystujących fuzję danych. Przykładami mogą być sieć \nolinebreak{YOLO-POINT}, w której autorzy połączyli detektor YOLOv5 z siecią PointNet++, a także sieć \nolinebreak{DTC-YOLO}, która wykorzystuje jednocześnie obraz RGB oraz LiDAR. W \nolinebreak{DTC-YOLO} zastosowano odwzorowanie informacji o głębi na obraz i ważoną fuzję obu reprezentacji. Model wykorzystuje też sieć \nolinebreak{ADF\textsuperscript{3}-Net}, która wykorzystuje dynamiczne bramkowanie do łączenia cech pochodzących z różnych poziomów. Eksperymenty z jej zastosowaniem na zbiorze KITTI dały wynik $mAP50$ równy $0.911$ oraz $mAP50\text{-}95$ równą $0.693$, co przewyższa wyniki osiągane przez porównywane modele YOLOv8n, YOLOv10n oraz YOLO11n \cite{bib:ma2024yolopoint,bib:xu2025dtcyolo}.
+
+Wskazuje to, że połączenie danych z różnorodnych modalności może poprawić skuteczność detekcji, a jednocześnie nie musi uniemożliwiać działania w czasie rzeczywistym. Największą wadą, jaką należy wziąć pod uwagę, jest to, że aby wykorzystać bezpośrednio mierzone informacje o głębi konieczne jest zastosowanie dodatkowego sensora np. LiDAR. Korzystanie z kilku źródeł danych może również wymagać ich kalibracji i synchronizacji. Przetwarzanie dużego wolumenu danych może zwiększyć znacząco wymagania obliczeniowe systemu. Przydatność fuzji należy więc rozpatrywać nie tylko z perspektywy potencjalnego wzrostu jakości detekcji, ale także z perspektywy dostępności odpowiednich sensorów, jakości pozyskiwanych danych oraz wymagań dotyczących czasu działania systemu.
 
 \section{Metryki oceny detekcji obiektów}
 \label{s:metryki}
@@ -492,13 +564,13 @@ Wysoka precyzja oznacza, że model generuje niewiele fałszywych pozytywów. Dru
 
 Obie metryki pozostają ze sobą w relacji kompromisu, ponieważ zwiększenie progu pewności detekcji może ograniczyć liczbę fałszywych pozytywów, ale jednocześnie prowadzić do pominięcia części rzeczywistych obiektów. Z kolei obniżenie tego progu może zwiększyć liczbę detekcji, ale równocześnie powodować wzrost liczby fałszywych detekcji. Z tego względu, przy analizie detektorów często łączy się je w jedną metrykę -- krzywą PR (precyzja-czułość, ang. \english{precision-recall curve}), przedstawiającą zależność pomiędzy nimi dla różnych wartości progu decyzyjnego. Na jej podstawie wyznacza się metrykę AP (ang. \english{Average Precision}), odpowiadającą polu pod krzywą PR.
 
-W przypadku detekcji wieloklasowej używa się średniej wartości AP obliczonej dla wszystkich klas, określanej jako mAP (ang. \english{mean Average Precision}):
+W przypadku detekcji wieloklasowej używa się średniej wartości AP obliczonej dla wszystkich klas, określanej jako $mAP$ (ang. \english{mean Average Precision}):
 
 \begin{equation}
 	mAP = \frac{1}{N} \sum_{i=1}^{N} AP_i,
 \end{equation}
 
-gdzie $N$ jest liczbą klas, a $AP_i$ jest wartością AP dla $i$-tej klasy. W praktyce najczęściej wykorzystuje się dwie wersje tej metryki: $mAP50$, gdzie detekcję uznaje się za poprawną przy progu $IoU \geq 0.5$, oraz $mAP50-95$, gdzie wynik jest uśredniany dla progów $IoU$ z zakresu od $0.5$ do $0.95$. Pierwsza z nich jest bardziej liberalna i pozwala określić ogólną zdolność modelu do wykrycia obiektu. Druga natomiast jest bardziej rygorystyczna, ponieważ wymaga dokładniejszego dopasowania ramek ograniczających, dzięki czemu lepiej pokazuje zarówno skuteczność klasyfikacji, jak i lokalizacji obiektu. Uśrednianie wyników dla wielu progów zostało szeroko zastosowane m.in. w metodyce oceny detekcji zbioru Microsoft COCO \cite{bib:microsoftCOCO} i jest obecnie standardem w wielu benchmarkach detekcji obiektów.
+gdzie $N$ jest liczbą klas, a $AP_i$ jest wartością AP dla $i$-tej klasy. W praktyce najczęściej wykorzystuje się dwie wersje tej metryki: $mAP50$, gdzie detekcję uznaje się za poprawną przy progu $IoU \geq 0.5$, oraz $mAP50\text{-}95$, gdzie wynik jest uśredniany dla progów $IoU$ z zakresu od $0.5$ do $0.95$. Pierwsza z nich jest bardziej liberalna i pozwala określić ogólną zdolność modelu do wykrycia obiektu. Druga natomiast jest bardziej rygorystyczna, ponieważ wymaga dokładniejszego dopasowania ramek ograniczających, dzięki czemu lepiej pokazuje zarówno skuteczność klasyfikacji, jak i lokalizacji obiektu. Uśrednianie wyników dla wielu progów zostało szeroko zastosowane m.in. w metodyce oceny detekcji zbioru Microsoft COCO \cite{bib:microsoftCOCO} i jest obecnie standardem w wielu benchmarkach detekcji obiektów.
 
 Dodatkowo, w pracy wykorzystano metrykę $F1$-score, będącą średnią harmoniczną precyzji i czułości:
 
@@ -506,7 +578,7 @@ Dodatkowo, w pracy wykorzystano metrykę $F1$-score, będącą średnią harmoni
 	F1 = 2 \cdot \frac{P \cdot R}{P + R},
 \end{equation}
 
-gdzie $P$ jest precyzją, a $R$ jest czułością. Metryka ta umożliwia przedstawienie kompromisu pomiędzy liczbą fałszywych detekcji a liczbą pominiętych obiektów. Może być szczególnie przydatna, gdy sama precyzja lub czułość nie dają pełnego obrazu jakości modelu. W niniejszej pracy metrykę $F1$-score wykorzystano jako metrykę pomocniczą względem podstawowych metryk $mAP50$ i $mAP50-95$, aby lepiej zrozumieć kompromis pomiędzy precyzją a czułością w kontekście detekcji obiektów dotykanych przez użytkownika.
+gdzie $P$ jest precyzją, a $R$ jest czułością. Metryka ta umożliwia przedstawienie kompromisu pomiędzy liczbą fałszywych detekcji a liczbą pominiętych obiektów. Może być szczególnie przydatna, gdy sama precyzja lub czułość nie dają pełnego obrazu jakości modelu. W niniejszej pracy metrykę $F1$-score wykorzystano jako metrykę pomocniczą względem podstawowych metryk $mAP50$ i $mAP50\text{-}95$, aby lepiej zrozumieć kompromis pomiędzy precyzją a czułością w kontekście detekcji obiektów dotykanych przez użytkownika.
 
 Oprócz wartości liczbowych wykorzystano również macierze pomyłek (ang. \english{confusion matrix}), pozwalające przeanalizować, które klasy obiektów są najczęściej mylone przez model. Są one przedstawiane w formie tabel, w których jedna oś odpowiada rzeczywistym klasom, a druga klasom przewidywanym przez model. Dla dobrze działającego modelu większość wartości powinna znajdować się na przekątnej macierzy, co wskazuje na poprawną klasyfikację obiektów. Macierze pomyłek są szczególnie istotne przy rozpoznawaniu brył geometrycznych o podobnych kształtach, np. sześcianu i prostopadłościanu, ponieważ sama wartość mAP nie wskazuje bezpośrednio, pomiędzy którymi klasami model popełnia najwięcej błędów. Analiza macierzy pomyłek może również pomóc w identyfikacji problemów z danymi treningowymi, np. niedostatecznej liczby przykładów dla wybranych klas lub błędów w oznaczeniach.
 
@@ -514,4 +586,14 @@ Oprócz wartości liczbowych wykorzystano również macierze pomyłek (ang. \eng
 
 \note{
 	Najważniejsze: z literatury wynika, że detekcja obiektów w czasie rzeczywistym jest sensownym kierunkiem, ale Twoja nisza to rozpoznawanie konkretnych dotykanych brył 3D w kontrolowanym scenariuszu.
+}
+
+\draft{
+	W urządzeniach Apple wyposażonych w skaner LiDAR framework ARKit
+	umożliwia dostęp do mapy głębi sceny poprzez mechanizm
+	\texttt{sceneDepth}. Każdy element mapy odpowiada oszacowanej
+	odległości fragmentu obserwowanej sceny od płaszczyzny kamery.
+	Apple wskazuje jednak, że mapa głębi udostępniana przez ARKit ma
+	znacznie niższą rozdzielczość niż odpowiadający jej obraz RGB
+	\cite{bib:appleSceneDepth}.
 }
