@@ -10,6 +10,7 @@
     <script src="i18n.js"></script>
   </head>
   <body>
+    <a class="skip-link" href="#main-content" data-i18n="actions.skip_to_content">Skip to content</a>
     <div class="app-shell">
       <header class="topbar">
         <div class="brand-block">
@@ -18,13 +19,13 @@
         </div>
 
         <div class="status-group">
-          <div class="status-chip">
-            <span class="status-chip__label" data-i18n="labels.backend">Backend</span>
-            <strong id="backend-status">BOOTING</strong>
+          <div class="status-chip" aria-labelledby="backend-status-label">
+            <span id="backend-status-label" class="status-chip__label" data-i18n="labels.backend">Backend</span>
+            <strong id="backend-status" role="status" aria-live="polite" aria-atomic="true">BOOTING</strong>
           </div>
-          <div class="status-chip">
-            <span class="status-chip__label" data-i18n="labels.session">Session</span>
-            <strong id="capture-status">IDLE</strong>
+          <div class="status-chip" aria-labelledby="capture-status-label">
+            <span id="capture-status-label" class="status-chip__label" data-i18n="labels.session">Session</span>
+            <strong id="capture-status" role="status" aria-live="polite" aria-atomic="true">IDLE</strong>
           </div>
         </div>
 
@@ -36,33 +37,41 @@
               <option value="pl">Polski</option>
             </select>
           </label>
-          <button id="shutdown-button" class="action-button" data-i18n="actions.close">Close</button>
+          <button id="shutdown-button" type="button" class="action-button" data-i18n="actions.close">Close</button>
         </div>
       </header>
 
-      <main class="main-grid">
-        <section class="preview-panel">
+      <main id="main-content" class="main-grid" tabindex="-1">
+        <section class="preview-panel" aria-labelledby="preview-heading">
           <div class="preview-panel__header">
             <div>
               <span class="eyebrow" data-i18n="labels.live_preview">Live Preview</span>
-              <h2 data-i18n="labels.phone_preview">Phone Preview</h2>
+              <h2 id="preview-heading" data-i18n="labels.phone_preview">Phone Preview</h2>
             </div>
-            <div id="frame-meta" class="frame-meta" data-i18n="messages.no_frame">No frame</div>
+            <div id="frame-meta" class="frame-meta" aria-live="off" data-i18n="messages.no_frame">No frame</div>
           </div>
 
           <div class="preview-stage">
-            <img id="preview-image" alt="Preview stream" />
+            <img
+              id="preview-image"
+              alt="Live camera preview from the connected phone."
+              aria-describedby="frame-meta"
+              data-i18n-attr-alt="messages.preview_alt"
+            />
             <div
               id="preview-placeholder"
               class="preview-placeholder"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
               data-i18n="messages.waiting_for_phone"
             >Waiting for a phone connection</div>
           </div>
         </section>
 
-        <aside class="side-panel">
-          <section class="info-card">
-            <span class="eyebrow" data-i18n="labels.transport">Transport</span>
+        <aside class="side-panel" aria-label="System details" data-i18n-attr-aria-label="labels.system_details">
+          <section class="info-card" aria-labelledby="transport-heading">
+            <h2 id="transport-heading" class="card-heading" data-i18n="labels.transport">Transport</h2>
             <dl class="kv-list">
               <div>
                 <dt data-i18n="labels.port">Port</dt>
@@ -75,8 +84,8 @@
             </dl>
           </section>
 
-          <section class="info-card">
-            <span class="eyebrow" data-i18n="labels.session">Session</span>
+          <section class="info-card" aria-labelledby="session-heading">
+            <h2 id="session-heading" class="card-heading" data-i18n="labels.session">Session</h2>
             <dl class="kv-list">
               <div>
                 <dt data-i18n="labels.client_ip">Client IP</dt>
@@ -94,12 +103,15 @@
             <p
               id="capture-detail"
               class="detail-text"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
               data-i18n="messages.waiting_for_phone_detail"
             >Waiting for a phone connection.</p>
           </section>
 
-          <section class="info-card">
-            <span class="eyebrow" data-i18n="labels.detection">Detection</span>
+          <section class="info-card" aria-labelledby="detection-heading">
+            <h2 id="detection-heading" class="card-heading" data-i18n="labels.detection">Detection</h2>
             <dl class="kv-list">
               <div>
                 <dt data-i18n="labels.model">Model</dt>
@@ -113,20 +125,27 @@
             <p
               id="model-detail"
               class="detail-text"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
               data-i18n="messages.model_waiting"
             >Waiting for model status.</p>
             <button
               id="choose-model-button"
+              type="button"
               class="action-button action-button--secondary action-button--block"
               data-i18n="actions.choose_model"
             >Choose model</button>
           </section>
 
-          <section class="info-card detected-object-card">
-            <span class="eyebrow" data-i18n="labels.detected_object">Detected Object</span>
+          <section class="info-card detected-object-card" aria-labelledby="detected-object-heading">
+            <h2 id="detected-object-heading" class="card-heading" data-i18n="labels.detected_object">Detected Object</h2>
             <strong
               id="detected-object-value"
               class="detected-object-card__value"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
               data-i18n="messages.no_detection"
             >No detection</strong>
             <div class="detected-object-card__confidence">
@@ -138,8 +157,8 @@
             </div>
           </section>
 
-          <section class="info-card">
-            <span class="eyebrow" data-i18n="labels.next">Next</span>
+          <section class="info-card" aria-labelledby="next-heading">
+            <h2 id="next-heading" class="card-heading" data-i18n="labels.next">Next</h2>
             <p class="detail-text" data-i18n="messages.next_step">
               The next step is a YOLO overlay and shape material controls.
             </p>

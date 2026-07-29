@@ -32,41 +32,51 @@ function translate(key, params) {
   return i18n.t(key, params);
 }
 
+function setTextIfChanged(element, value) {
+  if (element.textContent !== value) {
+    element.textContent = value;
+  }
+}
+
 function updateBackendStatus(status) {
-  backendStatus.textContent = translate(`status.${status || "unknown"}`);
+  setTextIfChanged(backendStatus, translate(`status.${status || "unknown"}`));
 }
 
 function updateCaptureStatus(state, message) {
   const normalizedState = state || "idle";
   currentCaptureState = normalizedState;
   currentCaptureMessage = message || "";
-  captureStatus.textContent = translate(`status.${normalizedState}`);
-  captureDetail.textContent = translateCaptureMessage(normalizedState, message);
+  setTextIfChanged(captureStatus, translate(`status.${normalizedState}`));
+  setTextIfChanged(captureDetail, translateCaptureMessage(normalizedState, message));
 
   if (normalizedState !== "connected" && !previewImage.src) {
-    previewPlaceholder.textContent = translateCaptureMessage(normalizedState, message);
+    setTextIfChanged(
+      previewPlaceholder,
+      translateCaptureMessage(normalizedState, message),
+    );
   }
 }
 
 function updateServer(host, port, mdnsIp) {
-  portValue.textContent = port || "-";
-  mdnsValue.textContent = mdnsIp || "-";
+  setTextIfChanged(portValue, port || "-");
+  setTextIfChanged(mdnsValue, mdnsIp || "-");
 }
 
 function updateCaptureMetrics(clientIp, fps, compression) {
-  clientIpValue.textContent = clientIp || "-";
-  fpsValue.textContent = fps || "-";
-  compressionValue.textContent = compression || "-";
+  setTextIfChanged(clientIpValue, clientIp || "-");
+  setTextIfChanged(fpsValue, fps || "-");
+  setTextIfChanged(compressionValue, compression || "-");
 }
 
 function updateDetectionModel(modelPath, status, message) {
   currentModelPath = modelPath || "";
   currentModelStatus = status || "unknown";
   currentModelMessage = message || "";
-  modelValue.textContent = formatModelName(currentModelPath);
-  modelStatusValue.textContent = translate(`model_status.${currentModelStatus}`);
-  modelDetail.textContent = translateModelMessage(currentModelStatus, currentModelMessage);
+  setTextIfChanged(modelValue, formatModelName(currentModelPath));
+  setTextIfChanged(modelStatusValue, translate(`model_status.${currentModelStatus}`));
+  setTextIfChanged(modelDetail, translateModelMessage(currentModelStatus, currentModelMessage));
   chooseModelButton.disabled = currentModelStatus === "loading";
+  chooseModelButton.setAttribute("aria-busy", currentModelStatus === "loading" ? "true" : "false");
 }
 
 function updateDetectionResult(label, confidence) {
@@ -75,16 +85,16 @@ function updateDetectionResult(label, confidence) {
   currentDetectionConfidence = Number.isFinite(parsedConfidence) ? parsedConfidence : 0;
 
   if (!currentDetectionLabel) {
-    detectedObjectValue.textContent = translate("messages.no_detection");
-    detectedObjectConfidenceValue.textContent = "-";
+    setTextIfChanged(detectedObjectValue, translate("messages.no_detection"));
+    setTextIfChanged(detectedObjectConfidenceValue, "-");
     detectedObjectConfidenceBar.style.width = "0%";
     return;
   }
 
   const probability = Math.max(0, Math.min(currentDetectionConfidence, 1));
   const percent = Math.round(probability * 100);
-  detectedObjectValue.textContent = currentDetectionLabel;
-  detectedObjectConfidenceValue.textContent = `${percent}%`;
+  setTextIfChanged(detectedObjectValue, currentDetectionLabel);
+  setTextIfChanged(detectedObjectConfidenceValue, `${percent}%`);
   detectedObjectConfidenceBar.style.width = `${percent}%`;
 }
 
@@ -93,14 +103,14 @@ function updatePreviewFrame(frameDataUrl, width, height) {
     previewImage.style.display = "none";
     previewImage.removeAttribute("src");
     previewPlaceholder.style.display = "grid";
-    frameMeta.textContent = translate("messages.no_frame");
+    setTextIfChanged(frameMeta, translate("messages.no_frame"));
     return;
   }
 
   previewImage.src = frameDataUrl;
   previewImage.style.display = "block";
   previewPlaceholder.style.display = "none";
-  frameMeta.textContent = translate("meta.frame_dimensions", { width, height });
+  setTextIfChanged(frameMeta, translate("meta.frame_dimensions", { width, height }));
 }
 
 function translateCaptureMessage(state, message) {
@@ -141,10 +151,10 @@ function setLocale(locale) {
   languageSelect.value = i18n.getLocale();
 
   if (!previewImage.src) {
-    frameMeta.textContent = translate("messages.no_frame");
-    previewPlaceholder.textContent = translateCaptureMessage(
-      currentCaptureState,
-      currentCaptureMessage,
+    setTextIfChanged(frameMeta, translate("messages.no_frame"));
+    setTextIfChanged(
+      previewPlaceholder,
+      translateCaptureMessage(currentCaptureState, currentCaptureMessage),
     );
   }
   updateDetectionModel(currentModelPath, currentModelStatus, currentModelMessage);

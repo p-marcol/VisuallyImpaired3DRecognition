@@ -2,6 +2,7 @@ window.VI3DR_TRANSLATIONS = {
   en: {
     title: "VI3DR Control Room",
     actions: {
+      skip_to_content: "Skip to content",
       close: "Close",
       choose_model: "Choose model",
     },
@@ -23,10 +24,12 @@ window.VI3DR_TRANSLATIONS = {
       model_status: "Status",
       detected_object: "Detected Object",
       probability: "Probability",
+      system_details: "System details",
     },
     messages: {
       no_frame: "No frame",
       no_detection: "No detection",
+      preview_alt: "Live camera preview from the connected phone.",
       waiting_for_phone: "Waiting for a phone connection",
       waiting_for_phone_detail: "Waiting for a phone connection.",
       next_step: "The next step is a YOLO overlay and shape material controls.",
@@ -79,6 +82,7 @@ window.VI3DR_TRANSLATIONS = {
   pl: {
     title: "VI3DR Control Room",
     actions: {
+      skip_to_content: "Przejdź do treści",
       close: "Zamknij",
       choose_model: "Wybierz model",
     },
@@ -100,10 +104,12 @@ window.VI3DR_TRANSLATIONS = {
       model_status: "Status",
       detected_object: "Wykryty obiekt",
       probability: "Prawdopodobieństwo",
+      system_details: "Szczegóły systemu",
     },
     messages: {
       no_frame: "Brak klatki",
       no_detection: "Brak detekcji",
+      preview_alt: "Podgląd obrazu na żywo z połączonego telefonu.",
       waiting_for_phone: "Oczekiwanie na połączenie telefonu",
       waiting_for_phone_detail: "Oczekiwanie na połączenie telefonu.",
       next_step: "Kolejny etap to overlay detekcji YOLO i sterowanie materiałami brył.",

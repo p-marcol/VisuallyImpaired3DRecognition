@@ -27,6 +27,14 @@ function applyTranslations(root = document) {
   root.querySelectorAll("[data-i18n]").forEach((element) => {
     element.textContent = t(element.dataset.i18n);
   });
+
+  root.querySelectorAll("[data-i18n-attr-alt]").forEach((element) => {
+    element.setAttribute("alt", t(element.dataset.i18nAttrAlt));
+  });
+
+  root.querySelectorAll("[data-i18n-attr-aria-label]").forEach((element) => {
+    element.setAttribute("aria-label", t(element.dataset.i18nAttrAriaLabel));
+  });
 }
 
 function setLocale(locale) {
