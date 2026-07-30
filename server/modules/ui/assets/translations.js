@@ -5,6 +5,7 @@ window.VI3DR_TRANSLATIONS = {
       skip_to_content: "Skip to content",
       close: "Close",
       choose_model: "Choose model",
+      send_debug_response: "Send info-response",
     },
     labels: {
       backend: "Backend",
@@ -25,6 +26,8 @@ window.VI3DR_TRANSLATIONS = {
       detected_object: "Detected Object",
       probability: "Probability",
       system_details: "System details",
+      debug: "Debug",
+      debug_message: "Message",
     },
     messages: {
       no_frame: "No frame",
@@ -36,6 +39,7 @@ window.VI3DR_TRANSLATIONS = {
       no_session_details: "No session details available.",
       backend_waiting: "Waiting for desktop runtime data.",
       model_waiting: "Waiting for model status.",
+      debug_message_placeholder: "Text sent as info-response",
     },
     status: {
       booting: "BOOTING",
@@ -85,6 +89,7 @@ window.VI3DR_TRANSLATIONS = {
       skip_to_content: "Przejdź do treści",
       close: "Zamknij",
       choose_model: "Wybierz model",
+      send_debug_response: "Wyślij info-response",
     },
     labels: {
       backend: "Backend",
@@ -105,6 +110,8 @@ window.VI3DR_TRANSLATIONS = {
       detected_object: "Wykryty obiekt",
       probability: "Prawdopodobieństwo",
       system_details: "Szczegóły systemu",
+      debug: "Debug",
+      debug_message: "Wiadomość",
     },
     messages: {
       no_frame: "Brak klatki",
@@ -116,6 +123,7 @@ window.VI3DR_TRANSLATIONS = {
       no_session_details: "Brak szczegółów sesji.",
       backend_waiting: "Oczekiwanie na dane z warstwy desktopowej.",
       model_waiting: "Oczekiwanie na status modelu.",
+      debug_message_placeholder: "Tekst wysyłany jako info-response",
     },
     status: {
       booting: "URUCHAMIANIE",

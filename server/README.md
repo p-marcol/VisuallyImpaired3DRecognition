@@ -40,11 +40,49 @@ This mode starts only the backend without the desktop UI. In this variant, previ
 
 - listens for phone connections over WebSocket,
 - accepts JPEG frames,
+- accepts JSON control messages with `info-request`,
 - loads a YOLO detector through Ultralytics/PyTorch,
 - draws YOLO detection boxes into the preview frame,
 - shows live preview in the desktop UI,
 - closes the current session after the `stop` command,
 - sends `client_stop` when the server initiates connection shutdown.
+
+## WebSocket control messages
+
+Text messages may use JSON control payloads. The first supported control key is `info-request`.
+
+The current mobile client sends a plain text request:
+
+```text
+info-request
+```
+
+This is treated like an `all` request. A specific topic may be requested with:
+
+```json
+{"info-request":"server"}
+```
+
+Supported info topics:
+
+- `server` - host, port, mDNS IP, and runtime status
+- `detection` - current detection configuration
+- `all` - all available topics
+
+The server responds with an `info-response` text message:
+
+```json
+{"type":"info-response","info-response":{"request":"server","data":{"server":{}}}}
+```
+
+If a topic is unknown or the provider fails, the server responds with `info-error`.
+
+The desktop Debug panel can also send a manual plain text response to the active
+client:
+
+```text
+info-response:message text
+```
 
 ## Detection configuration
 

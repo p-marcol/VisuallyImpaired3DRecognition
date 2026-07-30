@@ -31,12 +31,14 @@ body {
 }
 
 button,
-select {
+select,
+textarea {
   font: inherit;
 }
 
 button:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 a:focus-visible,
 [tabindex="-1"]:focus-visible {
   outline: 3px solid var(--focus);
@@ -333,6 +335,29 @@ a:focus-visible,
   transition: width 120ms ease;
 }
 
+.debug-card {
+  display: grid;
+  gap: 10px;
+}
+
+.debug-card__label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.debug-card__input {
+  width: 100%;
+  min-height: 84px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  background: var(--control-bg);
+  line-height: 1.4;
+}
+
 @media (max-width: 1080px) {
   .app-shell {
     min-height: 100vh;
@@ -413,6 +438,7 @@ a:focus-visible,
   .preview-panel,
   .info-card,
   .language-picker__select,
+  .debug-card__input,
   .action-button {
     border: 1px solid CanvasText;
   }

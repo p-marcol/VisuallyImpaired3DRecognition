@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import websockets
 
+from .control import ControlMessageRouter, encode_plain_info_response
 from .protocol import CLIENT_STOP_COMMAND, is_jpeg_frame, is_stop_command
 from .preview import PreviewWindow
 
@@ -21,6 +22,7 @@ class CaptureSession:
         frame_callback=None,
         frame_callback_interval_seconds: float = 0.0,
         frame_processor=None,
+        info_provider=None,
         session_event_callback=None,
         session_metrics_callback=None,
     ):
@@ -31,6 +33,10 @@ class CaptureSession:
         self.frame_processor = frame_processor
         self.session_event_callback = session_event_callback
         self.session_metrics_callback = session_metrics_callback
+        self.control_router = ControlMessageRouter(
+            info_provider=info_provider,
+            event_callback=session_event_callback,
+        )
         self.last_resolution = None
         self.last_fps_at = time.time()
         self.fps = 0
@@ -79,7 +85,13 @@ class CaptureSession:
         if not isinstance(message, bytes):
             return True
 
-        message = await self._drain_to_latest_frame(message)
+        message, should_continue = await self._drain_to_latest_frame(message)
+        if not should_continue:
+            return False
+
+        if message is None:
+            return True
+
         if isinstance(message, str):
             return await self._handle_text_message(message)
 
@@ -90,6 +102,9 @@ class CaptureSession:
             print("stop command received, closing preview")
             await self.close("stop requested by client")
             return False
+
+        if await self.control_router.handle_text_message(self.ws, message):
+            return True
 
         print(f"unsupported text message: {message!r}")
         return True
@@ -131,14 +146,15 @@ class CaptureSession:
                 break
 
             if isinstance(queued_message, str):
-                if is_stop_command(queued_message):
-                    return queued_message
+                should_continue = await self._handle_text_message(queued_message)
+                if not should_continue:
+                    return None, False
                 continue
 
             if isinstance(queued_message, bytes):
                 latest_message = queued_message
 
-        return latest_message
+        return latest_message, True
 
     async def _handle_preview_events(self) -> bool:
         if self.preview is None:
@@ -220,6 +236,11 @@ class CaptureSession:
             if notify_client:
                 await self.ws.send(CLIENT_STOP_COMMAND)
             await self.ws.close(code=1000, reason=reason)
+
+    async def send_info_response_text(self, message: str):
+        if self.ws.close_code is not None:
+            return
+        await self.ws.send(encode_plain_info_response(message))
 
     def _emit_frame(self, payload: bytes, width: int, height: int):
         if self.frame_callback is not None:

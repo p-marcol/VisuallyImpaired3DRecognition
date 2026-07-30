@@ -62,6 +62,10 @@ class DesktopBridge(QObject):
         if model_path:
             self.backend_controller.load_detection_model(model_path)
 
+    @Slot(str)
+    def sendDebugInfoResponse(self, message: str):
+        self.backend_controller.send_debug_info_response(message)
+
     @Slot()
     def shutdownApplication(self):
         self.backend_controller.stop(wait=True)

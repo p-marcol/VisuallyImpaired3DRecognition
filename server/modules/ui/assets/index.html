@@ -157,6 +157,25 @@
             </div>
           </section>
 
+          <section class="info-card debug-card" aria-labelledby="debug-heading">
+            <h2 id="debug-heading" class="card-heading" data-i18n="labels.debug">Debug</h2>
+            <label class="debug-card__label" for="debug-message-input" data-i18n="labels.debug_message">Message</label>
+            <textarea
+              id="debug-message-input"
+              class="debug-card__input"
+              rows="3"
+              data-i18n-attr-placeholder="messages.debug_message_placeholder"
+              placeholder="Text sent as info-response"
+            ></textarea>
+            <button
+              id="debug-send-button"
+              type="button"
+              class="action-button action-button--secondary action-button--block"
+              data-i18n="actions.send_debug_response"
+              disabled
+            >Send info-response</button>
+          </section>
+
           <section class="info-card" aria-labelledby="next-heading">
             <h2 id="next-heading" class="card-heading" data-i18n="labels.next">Next</h2>
             <p class="detail-text" data-i18n="messages.next_step">

@@ -18,6 +18,8 @@ const previewPlaceholder = document.getElementById("preview-placeholder");
 const chooseModelButton = document.getElementById("choose-model-button");
 const shutdownButton = document.getElementById("shutdown-button");
 const languageSelect = document.getElementById("language-select");
+const debugMessageInput = document.getElementById("debug-message-input");
+const debugSendButton = document.getElementById("debug-send-button");
 const i18n = window.VI3DR_I18N;
 const LOCALE_STORAGE_KEY = "vi3dr.locale";
 let currentCaptureState = "idle";
@@ -48,6 +50,7 @@ function updateCaptureStatus(state, message) {
   currentCaptureMessage = message || "";
   setTextIfChanged(captureStatus, translate(`status.${normalizedState}`));
   setTextIfChanged(captureDetail, translateCaptureMessage(normalizedState, message));
+  updateDebugControls();
 
   if (normalizedState !== "connected" && !previewImage.src) {
     setTextIfChanged(
@@ -114,10 +117,20 @@ function updatePreviewFrame(frameDataUrl, width, height) {
 }
 
 function translateCaptureMessage(state, message) {
+  const normalizedMessage = message || "";
+  const genericMessages = {
+    connected: "Client connected",
+    disconnected: "Session closed",
+  };
+
+  if (normalizedMessage && normalizedMessage !== genericMessages[state]) {
+    return normalizedMessage;
+  }
+
   const stateKey = `capture.${state}`;
   const translated = translate(stateKey);
   return translated === stateKey
-    ? message || translate("messages.no_session_details")
+    ? normalizedMessage || translate("messages.no_session_details")
     : translated;
 }
 
@@ -135,6 +148,12 @@ function formatModelName(modelPath) {
   }
 
   return modelPath.split(/[\\/]/).pop() || modelPath;
+}
+
+function updateDebugControls() {
+  const hasClient = currentCaptureState === "connected";
+  const hasMessage = debugMessageInput.value.trim().length > 0;
+  debugSendButton.disabled = !hasClient || !hasMessage;
 }
 
 function getInitialLocale() {
@@ -193,6 +212,17 @@ function attachBridge() {
 
     shutdownButton.addEventListener("click", () => {
       bridge.shutdownApplication();
+    });
+
+    debugMessageInput.addEventListener("input", updateDebugControls);
+
+    debugSendButton.addEventListener("click", () => {
+      const message = debugMessageInput.value.trim();
+      if (!message) {
+        return;
+      }
+
+      bridge.sendDebugInfoResponse(message);
     });
 
     languageSelect.addEventListener("change", (event) => {

@@ -110,6 +110,26 @@ class BackendController(QObject):
         )
         future.add_done_callback(self._handle_detection_model_loaded)
 
+    def send_debug_info_response(self, message: str):
+        normalized_message = (message or "").strip()
+        if not normalized_message:
+            return
+
+        if self._loop is None or self._runtime is None:
+            self._safe_emit(self.backendErrorChanged, "Backend is not running.")
+            return
+
+        future = asyncio.run_coroutine_threadsafe(
+            self._runtime.send_debug_info_response(normalized_message),
+            self._loop,
+        )
+        future.add_done_callback(
+            lambda completed_future: self._handle_debug_info_response_sent(
+                completed_future,
+                normalized_message,
+            )
+        )
+
     def _run_backend(self):
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
@@ -287,6 +307,27 @@ class BackendController(QObject):
             self.detectionResultChanged,
             emitted_label,
             emitted_confidence,
+        )
+
+    def _handle_debug_info_response_sent(self, future, message: str):
+        try:
+            sent = future.result()
+        except Exception as err:
+            self._safe_emit(self.backendErrorChanged, str(err))
+            return
+
+        if not sent:
+            with self._state_lock:
+                capture_state = self._capture_state
+            self._safe_emit(self.captureSessionChanged, capture_state, "No client connected.")
+            return
+
+        with self._state_lock:
+            capture_state = self._capture_state
+        self._safe_emit(
+            self.captureSessionChanged,
+            capture_state,
+            f"Debug info-response sent: {message}",
         )
 
     @staticmethod

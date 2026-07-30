@@ -22,6 +22,7 @@ class CaptureServer:
         frame_callback=None,
         frame_callback_interval_seconds: float = PREVIEW_FRAME_PUSH_INTERVAL_SECONDS,
         frame_processor=None,
+        info_provider=None,
         session_event_callback=None,
         session_metrics_callback=None,
     ):
@@ -32,9 +33,11 @@ class CaptureServer:
         self.frame_callback = frame_callback
         self.frame_callback_interval_seconds = frame_callback_interval_seconds
         self.frame_processor = frame_processor
+        self.info_provider = info_provider
         self.session_event_callback = session_event_callback
         self.session_metrics_callback = session_metrics_callback
         self._session_active = False
+        self._active_session = None
         self._server = None
 
     async def start(self):
@@ -68,6 +71,13 @@ class CaptureServer:
         await self.start()
         await self.wait_closed()
 
+    async def send_info_response_text(self, message: str) -> bool:
+        if self._active_session is None:
+            return False
+
+        await self._active_session.send_info_response_text(message)
+        return True
+
     async def _handle_connection(self, ws):
         if self._session_active:
             print("rejecting concurrent client: capture session already active")
@@ -84,9 +94,12 @@ class CaptureServer:
                 frame_callback=self.frame_callback,
                 frame_callback_interval_seconds=self.frame_callback_interval_seconds,
                 frame_processor=self.frame_processor,
+                info_provider=self.info_provider,
                 session_event_callback=self.session_event_callback,
                 session_metrics_callback=self.session_metrics_callback,
             )
+            self._active_session = session
             await session.run()
         finally:
+            self._active_session = None
             self._session_active = False

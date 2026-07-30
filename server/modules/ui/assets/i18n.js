@@ -35,6 +35,10 @@ function applyTranslations(root = document) {
   root.querySelectorAll("[data-i18n-attr-aria-label]").forEach((element) => {
     element.setAttribute("aria-label", t(element.dataset.i18nAttrAriaLabel));
   });
+
+  root.querySelectorAll("[data-i18n-attr-placeholder]").forEach((element) => {
+    element.setAttribute("placeholder", t(element.dataset.i18nAttrPlaceholder));
+  });
 }
 
 function setLocale(locale) {
