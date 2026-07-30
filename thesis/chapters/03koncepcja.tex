@@ -1,25 +1,100 @@
-
 \chapter{Koncepcja systemu rozpoznawania dotykanych obiektów 3D}
 
-\note{
+\note[hide]{
     To odpowiada wymaganej części „przedmiot pracy”: rozwiązanie zaproponowane przez dyplomanta, analiza teoretyczna, uzasadnienie metod, algorytmów i narzędzi.
 }
 
+Przed przystąpieniem do implementacji systemu rozpoznawania dotykanych obiektów 3D, konieczne jest określenie jego koncepcji i wykonanie projektu. Analiza literatury naukowej pozwoliła nakreślić główne wymagania jakie spełniać powinien projektowany system. Najważniejszymi z nich są: rozpoznawanie dotykanych brył, również częściowo zasłoniętych, działanie w czasie zbliżonym do rzeczywistego, jednoznaczne, wspierające użytkownika informacje zwrotne i możliwość uruchomienia części obliczeniowej na powszechnie dostępnych komputerach, również tych o ograniczonych zasobach. Niniejszy rozdział przedstawia proponowaną koncepcję systemu, jego sposób działania, architekturę, sposób przepływu danych oraz najważniejsze decyzje projektowe.
+
+System zaprojektowany jest w architekturze klient-serwer, gdzie klientem jest aplikacja mobilna, która rejestruje dane i przekazuje je do serwera uruchomionego na komputerze. Ten przetwarza dane, wykonuje detekcję obiektów i zwraca wynik. Wybór takiej architektury umożliwia użycie bardziej wymagających modeli niż byłoby to możliwe w przypadku uruchomienia ich na urządzeniu mobilnym.
+
 \section{Założenia funkcjonalne i niefunkcjonalne}
-\note{
-    Funkcjonalne: akwizycja obrazu, przesyłanie klatek, detekcja obiektu, informacja zwrotna.
-    Niefunkcjonalne: możliwie niskie opóźnienie, prostota użycia, mobilność, powtarzalność badań.
-}
+\label{sec:założenia}
+
+% ! Wróć do mnie po napisaniu rozdziału o koncepcji systemu, a potem implementacji, żeby zweryfikować!!!
+
+\note{\LARGE! Wróć do mnie po napisaniu rozdziału o koncepcji systemu, a potem implementacji, żeby zweryfikować!!!}
+
+Poprzez pogłębione studium literatury naukowej oraz analizę wymagań użytkowników określono główne założenia funkcjonalne i niefunkcjonalne projektowanego systemu. Wynikają one z celu pracy, sposobów działania podobnych systemów oraz potrzeb, jakie zauważono przy analizie potrzeb użytkowników niewidomych.
+
+\subsubsection{Założenia funkcjonalne}
+\label{ssec:założenia-funkcjonalne}
+
+Projekt systemu zakłada spełnienie następujących założeń funkcjonalnych.
+
+\begin{itemize}
+    \item Rejestracja obrazu dłoni i dotykanego obiektu przy pomocy kamery urządzenia mobilnego.
+    \item Przesyłanie zarejestrowanych klatek obrazu do części obliczeniowej systemu uruchomionej na komputerze.
+    \item Wykrycie obiektu znajdującego się w dłoniach użytkownika i rozpoznanie jego klasy przy pomocy modelu detekcji obiektów.
+    \item Udostępnienie użytkownikowi informacji zwrotnej o rozpoznanym obiekcie i aktualnie eksplorowanej ściance w formie komunikatu głosowego.
+    \item Dostępność interakcji i informacji zwrotnej.
+    \item Wykrywanie obiektu przy zróżnicowanych ułożeniach dłoni i obiektu, w tym przy częściowym zasłonięciu obiektu.
+    \item Obsługa sytuacji, gdy system nie rozpozna obiektu lub detekcja zakończy się wynikiem o zbyt niskiej pewności. Użytkownik powinien zostać poinformowany o tym fakcie i zachęcony do zmiany ułożenia dłoni lub obiektu.
+    \item Aktywacja modułu głosowego bez odrywania dłoni od przedmiotu, poprzez komendę głosową.
+    \item Detekcja działające bez przerwy, umożliwiająca ciągłe rozpoznawanie obiektów.
+    \item Otrzymanie informacji na żądanie użytkownika.
+\end{itemize}
+
+\subsubsection{Założenia niefunkcjonalne}
+\label{ssec:założenia-niefunkcjonalne}
+
+Założenia niefunkcjonalne projektowanego systemu skupiają się na zapewnieniu odpowiedniej jakości jego działania. Ich wyznaczenie ma skutkować wytworzeniem systemu, który będzie użyteczny i wygodny w codziennym użytkowaniu. Wyszczególniono następujące założenia niefunkcjonalne.
+
+\begin{itemize}
+    \item Krótki czas odpowiedzi -- wynik powinien być dostępny w jak najkrótszym czasie, zbliżonym do rzeczywistego.
+    \item Działanie w warunkach obniżonej mocy obliczeniowej -- część obliczeniowa systemu powinna móc być uruchomiona i działać na komputerach o ograniczonych zasobach, np. laptopach.
+    \item Prostota obsługi -- system nie powinien wymagać od użytkownika wykonywania skomplikowanych czynności, a jego obsługa nie powinna wymagać specjalistycznej wiedzy.
+    \item Mobilność -- urządzenie rejestrujące dane powinno dać się swobodnie przenosić i używać w różnych miejscach, np. w domu, w szkole czy w pracy i nie powinno wymagać specjalistycznego przygotowania miejsca pracy.
+    \item Odporność na zmiany warunków -- system powinien oferować porównywalną jakość działania w różnych warunkach oświetleniowych.
+    \item Brak konieczności korzystania z specjalistycznego sprzętu -- system powinien działać przy użyciu powszechnie dostępnych urządzeń, takich jak smartfony i komputery osobiste.
+    \item Rozszerzalność -- architektura systemu powinna umożliwiać wymianę części obliczeniowej na inną, np. w celu porównania różnych metod detekcji czy aktualizacji modelu.
+\end{itemize}
 
 \section{Architektura systemu}
+\label{sec:architektura}
 \note{
     iPhone → przesyłanie obrazu/WebSocket → serwer Python → model YOLO → wynik → feedback.
 }
+
+% \item Podział odpowiedzialności systemu na część rejestrującą dane i część obliczeniową.
+% \item Modularność systemu, umożliwiająca wymianę części obliczeniowej na inną, np. w celu porównania różnych metod detekcji.
+
+% ! Sprawdź na końcu pisania, czy liczba modułów się przypadkiem nie zmieniła
+
+Jako system rozpoznawania dotykanych obiektów 3D rozumie się zestaw powiązanych ze sobą modułów z którymi użytkownik wchodzi w interakcję. Jego architektura została zaprojektowana w taki sposób, aby możliwe było spełnienie wyznaczonych w sekcji \ref{sec:założenia} wymagań projektowych. Do działania systemu niezbędne jest uruchomienie dwóch głównych modułów: rejestrującego obraz, na urządzeniu mobilnym, oraz obliczeniowego, uruchomionego na komputerze. Komunikują się one ze sobą poprzez sieć bezprzewodową, a dane przesyłane są w czasie rzeczywistym. Diagram blokowy przedstawiający architekturę systemu został zaprezentowany na rysunku \ref{fig:architektura}.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[node distance=1cm, every node/.style={draw, rounded corners, text width=2.2cm, text centered}]
+
+        \node (user) {Użytkownik};
+
+        \node (mobile) [right=of user] {Aplikacja mobilna KMP};
+
+        % \node (network) [right=of mobile, draw=none, text width=2cm, font=\small] {WebSocket};
+
+        \node (server) [right=2.5cm of mobile] {Serwer Python};
+
+        \node (model) [right=of server] {Wyuczony model};
+
+        \draw [-stealth] (user) -- (mobile);
+        % \draw [stealth-stealth] (mobile) -- node[right, draw=none] {} (network);
+        \draw [stealth-stealth] (mobile) -- node [draw=none,midway,above] {WebSocket} (server);
+        \draw [-stealth] (server) -- (model);
+
+    \end{tikzpicture}
+    \caption{Diagram blokowy architektury systemu}
+    \label{fig:architektura}
+\end{figure}
 
 \section{Dobór klas rozpoznawanych obiektów}
 \note{
     Cube, sphere, cylinder, cuboid, tetrahedron, cone. Tu warto uzasadnić, że są to podstawowe bryły geometryczne, możliwe do wydruku 3D i łatwe do kontrolowanego oznaczania.
 }
+
+System przewiduje rozpoznanie sześciu klas obiektów, będących podstawowymi bryłami geometrycznymi: sześcian, kula, walec, prostopadłościan, czworościan i stożek. Ich wybór wynika z faktu, że są one wystarczające w większości przypadków zadań edukacyjnych. Jednocześnie ich kształty są łatwe do kontrolowanego oznaczania oraz możliwe jest ich wydrukowanie niskim kosztem na szeroko dostępnych drukarkach 3D.
+
+% ! tutaj dopisujemy treść!!
 
 \section{Uzasadnienie wyboru metody detekcji}
 \note{
@@ -64,7 +139,7 @@
 %     }
 % ]
 % \addplot [domain=0.0:0.1] {rnd};
-% \end{axis} 
+% \end{axis}
 % \end{tikzpicture}
 % \caption{Wykres przebiegu funkcji.} % Podpis jest zawsze POD rysunkiem.
 % \label{fig:2}
@@ -84,7 +159,7 @@
 % %%%%%%%%%%%%%%%%%%%%%
 % %
 % %%%%%%%%%%%%%%%%%%%%%
-% %% WIELE RYSUNKÓW 
+% %% WIELE RYSUNKÓW
 % %
 % %\begin{figure}
 % %\centering
@@ -111,7 +186,7 @@
 % %    \caption{Prawy dolny rysunek.}
 % %    \label{fig:prawy-dolny}
 % %\end{subfigure}
-% %        
+% %
 % %\caption{Wspólny podpis kilku rysunków.}
 % %\label{fig:wiele-rysunkow}
 % %\end{figure}
@@ -146,7 +221,7 @@
 % 	      50 & 12.9245 & 3.58228 &       9.2702 &    11.2183 &    12.3990 & 1.40922 &                       1.3724 \\
 % \bottomrule
 % \end{tabular}
-% \end{table}  
+% \end{table}
 
 % %\chapter{[Przedmiot pracy]}
 % %
