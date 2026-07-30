@@ -16,6 +16,9 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
+private const val INFO_RESPONSE_KEY = "info-response"
+private const val INFO_ERROR_KEY = "info-error"
+
 class StreamingController {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -23,6 +26,8 @@ class StreamingController {
     val uiState: StateFlow<StreamingUiState> = _uiState.asStateFlow()
     private val _connectionErrors = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val connectionErrors: SharedFlow<String> = _connectionErrors.asSharedFlow()
+    private val _infoResponses = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val infoResponses: SharedFlow<String> = _infoResponses.asSharedFlow()
 
     private var socketClient: FrameSocketClient? = null
     private var lastSentMark: TimeMark? = null
@@ -108,6 +113,18 @@ class StreamingController {
         stopStreaming(sendStopMessage = true)
     }
 
+    fun requestObjectInfo() {
+        val state = _uiState.value
+        if (!state.isStreaming || state.connectionStatus != ConnectionStatus.Connected) return
+        val client = socketClient ?: return
+
+        scope.launch {
+            runCatching {
+                client.sendObjectInfoRequest()
+            }
+        }
+    }
+
     private fun stopStreaming(sendStopMessage: Boolean) {
         _uiState.value = _uiState.value.copy(
             isStreaming = false,
@@ -146,6 +163,10 @@ class StreamingController {
                     _connectionErrors.tryEmit("Connection closed by server")
                     stopStreaming(sendStopMessage = false)
                     break
+                }
+
+                message.toInfoResponseDisplayText()?.let { response ->
+                    _infoResponses.tryEmit(response)
                 }
             }
         }
@@ -190,4 +211,122 @@ class StreamingController {
     companion object {
         const val DEFAULT_FPS = 10
     }
+}
+
+private fun String.toInfoResponseDisplayText(): String? {
+    val message = trim()
+    if (message.startsWith("$INFO_RESPONSE_KEY:")) {
+        return message.substringAfter(':').trim().ifBlank { INFO_RESPONSE_KEY }
+    }
+    if (message.startsWith("$INFO_ERROR_KEY:")) {
+        return message.substringAfter(':').trim().ifBlank { INFO_ERROR_KEY }
+    }
+
+    return extractControlValue(INFO_RESPONSE_KEY)
+        ?: extractControlValue(INFO_ERROR_KEY)?.let { "Error: $it" }
+}
+
+private fun String.extractControlValue(key: String): String? {
+    val quotedKey = "\"$key\""
+    val keyIndex = indexOf(quotedKey)
+    if (keyIndex == -1) return null
+
+    val colonIndex = indexOf(':', startIndex = keyIndex + quotedKey.length)
+    if (colonIndex == -1) return key
+
+    val valueStart = nextNonWhitespaceIndex(colonIndex + 1) ?: return key
+    return extractJsonValue(valueStart)
+        ?.ifBlank { key }
+        ?: key
+}
+
+private fun String.nextNonWhitespaceIndex(startIndex: Int): Int? {
+    for (index in startIndex until length) {
+        if (!this[index].isWhitespace()) return index
+    }
+    return null
+}
+
+private fun String.extractJsonValue(startIndex: Int): String? {
+    return when (this[startIndex]) {
+        '"' -> extractJsonString(startIndex)
+        '{' -> extractBalancedJson(startIndex, '{', '}')
+        '[' -> extractBalancedJson(startIndex, '[', ']')
+        else -> {
+            val endIndex = indexOf(',', startIndex).takeIf { it != -1 }
+                ?: indexOf('}', startIndex).takeIf { it != -1 }
+                ?: length
+            substring(startIndex, endIndex).trim()
+        }
+    }
+}
+
+private fun String.extractJsonString(startIndex: Int): String? {
+    val result = StringBuilder()
+    var escaped = false
+
+    for (index in startIndex + 1 until length) {
+        val char = this[index]
+        if (escaped) {
+            result.append(
+                when (char) {
+                    '"' -> '"'
+                    '\\' -> '\\'
+                    '/' -> '/'
+                    'b' -> '\b'
+                    'n' -> '\n'
+                    'r' -> '\r'
+                    't' -> '\t'
+                    else -> char
+                }
+            )
+            escaped = false
+            continue
+        }
+
+        when (char) {
+            '\\' -> escaped = true
+            '"' -> return result.toString()
+            else -> result.append(char)
+        }
+    }
+
+    return null
+}
+
+private fun String.extractBalancedJson(
+    startIndex: Int,
+    openingChar: Char,
+    closingChar: Char
+): String? {
+    var depth = 0
+    var inString = false
+    var escaped = false
+
+    for (index in startIndex until length) {
+        val char = this[index]
+        if (inString) {
+            if (escaped) {
+                escaped = false
+            } else if (char == '\\') {
+                escaped = true
+            } else if (char == '"') {
+                inString = false
+            }
+            continue
+        }
+
+        when (char) {
+            '"' -> inString = true
+            openingChar -> depth += 1
+            closingChar -> {
+                depth -= 1
+                if (depth == 0) {
+                    return substring(startIndex, index + 1)
+                }
+            }
+        }
+    }
+
+    return null
 }

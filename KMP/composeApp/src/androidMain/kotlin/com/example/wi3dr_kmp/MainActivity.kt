@@ -2,6 +2,7 @@ package com.example.wi3dr_kmp
 
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -33,8 +34,10 @@ import com.example.wi3dr_kmp.discovery.MDNS_LOG_TAG
 import com.example.wi3dr_kmp.discovery.MDNS_SERVICE_NAME
 import com.example.wi3dr_kmp.discovery.MDNS_SERVICE_TYPE
 import com.example.wi3dr_kmp.discovery.MdnsServerScanner
+import com.example.wi3dr_kmp.input.VoiceCommandRecognizer
 import com.example.wi3dr_kmp.streaming.ImageQualityPreset
 import com.example.wi3dr_kmp.streaming.StreamingController
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlinx.coroutines.launch
@@ -47,11 +50,19 @@ class MainActivity : ComponentActivity() {
     private val cameraAnalysisExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private var appliedCameraQualityPreset: ImageQualityPreset? = null
     private var isScanInProgress by mutableStateOf(false)
+    private var voiceCommandRecognizer: VoiceCommandRecognizer? = null
+    private var isVoiceRecognitionAvailable by mutableStateOf(false)
+    private var isVoiceRecognitionInProgress by mutableStateOf(false)
+    private var voiceRecognitionStatus by mutableStateOf<String?>(null)
+    private var textToSpeech: TextToSpeech? = null
+    private var isTextToSpeechReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        initializeTextToSpeech()
         observeConnectionErrors()
+        observeInfoResponses()
 
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         WindowCompat.setDecorFitsSystemWindows(window, true)
@@ -59,14 +70,19 @@ class MainActivity : ComponentActivity() {
         if (checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(
                 arrayOf(android.Manifest.permission.CAMERA),
-                1001
+                CAMERA_PERMISSION_REQUEST_CODE
             )
             return
         }
 
+        initializeApp()
+    }
+
+    private fun initializeApp() {
         previewView = PreviewView(this).apply {
             scaleType = PreviewView.ScaleType.FIT_CENTER
         }
+        initializeVoiceCommandRecognizer()
 
         setContent {
             val uiState by streamingController.uiState.collectAsState()
@@ -80,7 +96,12 @@ class MainActivity : ComponentActivity() {
                     streamingController = streamingController,
                     modifier = Modifier.width(300.dp),
                     onScanClick = ::scanForServerInLan,
-                    isScanInProgress = isScanInProgress
+                    isScanInProgress = isScanInProgress,
+                    showVoiceRecognitionSection = true,
+                    isVoiceRecognitionAvailable = isVoiceRecognitionAvailable,
+                    isVoiceRecognitionInProgress = isVoiceRecognitionInProgress,
+                    voiceRecognitionStatus = voiceRecognitionStatus,
+                    onVoiceCommandClick = ::startVoiceCommandRecognition
                 )
 
                 AndroidApp(
@@ -93,6 +114,27 @@ class MainActivity : ComponentActivity() {
 
         startCamera(streamingController.uiState.value.imageQualityPreset)
         observeCameraQualityChanges()
+    }
+
+    private fun initializeVoiceCommandRecognizer() {
+        val recognizer = VoiceCommandRecognizer(
+            context = this,
+            onInfoCommand = {
+                streamingController.requestObjectInfo()
+                Toast.makeText(this, "Info request sent", Toast.LENGTH_SHORT).show()
+            },
+            onStatusChanged = { status ->
+                voiceRecognitionStatus = status
+            },
+            onListeningChanged = { isListening ->
+                isVoiceRecognitionInProgress = isListening
+            }
+        )
+        voiceCommandRecognizer = recognizer
+        isVoiceRecognitionAvailable = recognizer.isAvailable
+        if (!recognizer.isAvailable) {
+            voiceRecognitionStatus = "Voice recognition unavailable"
+        }
     }
 
     private fun startCamera(qualityPreset: ImageQualityPreset) {
@@ -146,6 +188,52 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun observeInfoResponses() {
+        lifecycleScope.launch {
+            streamingController.infoResponses.collect { message ->
+                Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+                speakInfoResponse(message)
+            }
+        }
+    }
+
+    private fun initializeTextToSpeech() {
+        textToSpeech = TextToSpeech(this) { status ->
+            if (status != TextToSpeech.SUCCESS) {
+                isTextToSpeechReady = false
+                return@TextToSpeech
+            }
+
+            val tts = textToSpeech ?: return@TextToSpeech
+            val languageResult = tts.setLanguage(Locale.getDefault())
+            isTextToSpeechReady = languageResult != TextToSpeech.LANG_MISSING_DATA &&
+                languageResult != TextToSpeech.LANG_NOT_SUPPORTED
+        }
+    }
+
+    private fun speakInfoResponse(message: String) {
+        if (!isTextToSpeechReady) return
+
+        textToSpeech?.speak(
+            message,
+            TextToSpeech.QUEUE_FLUSH,
+            null,
+            INFO_RESPONSE_UTTERANCE_ID
+        )
+    }
+
+    private fun startVoiceCommandRecognition() {
+        if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(
+                arrayOf(android.Manifest.permission.RECORD_AUDIO),
+                RECORD_AUDIO_PERMISSION_REQUEST_CODE
+            )
+            return
+        }
+
+        voiceCommandRecognizer?.startListening()
+    }
+
     private fun scanForServerInLan() {
         if (isScanInProgress) {
             Log.d(MDNS_LOG_TAG, "Scan ignored: already in progress.")
@@ -188,8 +276,43 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        voiceCommandRecognizer?.dispose()
+        textToSpeech?.stop()
+        textToSpeech?.shutdown()
         streamingController.dispose()
         cameraAnalysisExecutor.shutdown()
         super.onDestroy()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        when (requestCode) {
+            CAMERA_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+                    initializeApp()
+                } else {
+                    Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+            RECORD_AUDIO_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+                    startVoiceCommandRecognition()
+                } else {
+                    voiceRecognitionStatus = "Microphone permission denied"
+                    Toast.makeText(this, "Microphone permission denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val CAMERA_PERMISSION_REQUEST_CODE = 1001
+        private const val RECORD_AUDIO_PERMISSION_REQUEST_CODE = 1002
+        private const val INFO_RESPONSE_UTTERANCE_ID = "info-response"
     }
 }

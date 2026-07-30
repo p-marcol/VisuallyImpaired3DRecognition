@@ -29,6 +29,10 @@ class FrameSocketClient(
         session?.send(Frame.Text("stop"))
     }
 
+    suspend fun sendObjectInfoRequest() {
+        session?.send(Frame.Text(INFO_REQUEST_KEY))
+    }
+
     suspend fun awaitNextTextMessage(): String? {
         val activeSession = session ?: return null
 
@@ -47,4 +51,7 @@ class FrameSocketClient(
         client.close()
     }
 
+    companion object {
+        const val INFO_REQUEST_KEY = "info-request"
+    }
 }

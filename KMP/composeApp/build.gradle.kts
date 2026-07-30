@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.gradle.api.tasks.Exec
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -88,4 +89,80 @@ android {
 
 dependencies {
     debugImplementation(libs.compose.uiTooling)
+}
+
+if (System.getProperty("os.name").lowercase().contains("mac")) {
+    fun registerAppleDoubleCleanupTask(
+        name: String,
+        vararg mustRunAfterTasks: String
+    ) = tasks.register<Exec>(name) {
+        commandLine(
+            "/bin/sh",
+            "-c",
+            "if [ -d \"\$1\" ]; then /usr/bin/find \"\$1\" -name '._*' -exec /bin/rm -f {} + 2>/dev/null || true; fi",
+            "removeAppleDouble",
+            layout.buildDirectory.get().asFile.absolutePath
+        )
+        isIgnoreExitValue = true
+        outputs.upToDateWhen { false }
+        mustRunAfterTasks.forEach { mustRunAfter(it) }
+    }
+
+    val removeAppleDoubleBeforeCommonResourceAccessors =
+        registerAppleDoubleCleanupTask("removeAppleDoubleBeforeCommonResourceAccessors")
+    val removeAppleDoubleBeforeDebugGeneratedOutputs =
+        registerAppleDoubleCleanupTask("removeAppleDoubleBeforeDebugGeneratedOutputs")
+    val removeAppleDoubleBeforeDebugKotlinCompile =
+        registerAppleDoubleCleanupTask("removeAppleDoubleBeforeDebugKotlinCompile", "processDebugResources")
+    val removeAppleDoubleBeforeDebugResourceParsing =
+        registerAppleDoubleCleanupTask("removeAppleDoubleBeforeDebugResourceParsing", "packageDebugResources")
+    val removeAppleDoubleBeforeDebugResourceLinking =
+        registerAppleDoubleCleanupTask(
+            "removeAppleDoubleBeforeDebugResourceLinking",
+            "mergeDebugResources",
+            "parseDebugLocalResources"
+        )
+    val removeAppleDoubleBeforeDebugDexing =
+        registerAppleDoubleCleanupTask(
+            "removeAppleDoubleBeforeDebugDexing",
+            "compileDebugKotlinAndroid",
+            "processDebugResources"
+        )
+    val removeAppleDoubleBeforeDebugDexMerging =
+        registerAppleDoubleCleanupTask("removeAppleDoubleBeforeDebugDexMerging", "dexBuilderDebug")
+
+    listOf(
+        "createDebugCompatibleScreenManifests",
+        "generateComposeResClass",
+        "generateExpectResourceCollectorsForCommonMain",
+        "generateResourceAccessorsForCommonMain"
+    ).forEach { taskName ->
+        tasks.matching { it.name == taskName }.configureEach {
+            dependsOn(removeAppleDoubleBeforeDebugGeneratedOutputs)
+        }
+    }
+
+    tasks.matching { it.name == "generateResourceAccessorsForCommonMain" }.configureEach {
+        dependsOn(removeAppleDoubleBeforeCommonResourceAccessors)
+    }
+
+    tasks.matching { it.name == "parseDebugLocalResources" }.configureEach {
+        dependsOn(removeAppleDoubleBeforeDebugResourceParsing)
+    }
+
+    tasks.matching { it.name == "processDebugResources" }.configureEach {
+        dependsOn(removeAppleDoubleBeforeDebugResourceLinking)
+    }
+
+    tasks.matching { it.name == "compileDebugKotlinAndroid" }.configureEach {
+        dependsOn(removeAppleDoubleBeforeDebugKotlinCompile)
+    }
+
+    tasks.matching { it.name == "dexBuilderDebug" }.configureEach {
+        dependsOn(removeAppleDoubleBeforeDebugDexing)
+    }
+
+    tasks.matching { it.name == "mergeProjectDexDebug" }.configureEach {
+        dependsOn(removeAppleDoubleBeforeDebugDexMerging)
+    }
 }
