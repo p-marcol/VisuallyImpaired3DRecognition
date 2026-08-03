@@ -158,16 +158,31 @@ zapewni akceptowalny czas odpowiedzi również na słabszych komputerach.  Zasto
 
 Istotnym czynnikiem argumentującym za wyborem detekcji obiektów w miejscu klasyfikacji całego obrazu jest zachodząca potrzeba dokładnego określenia położenia bryły. Detektorów podczas działania zwraca nie tylko informację o klasie, ale przede wszystkim o jego położeniu. Określona ramka ograniczająca umożliwia określenie obszaru obrazu w którym znajduje się obiekt, co przy analizie ograniczy wpływ tła i innych elementów sceny. Informacja o położeniu obiektu jest następnie wykorzystywana do rozpoznania widocznej części bryły i przygotowania komunikatu.
 
-Spośród dostępnych modeli rodziny YOLO rozwijanych przez Ultralytics zdecydowano się na wykorzystanie najnowszego wariantu YOLO26, a do badań wykorzystano jego warianty \texttt{nano} (n) i \texttt{small} (s). Różnią się one liczbą parametrów oraz złożonością modelu, a co za tym idzie, również skutecznością detekcji, czasem inferencji i kosztem obliczeniowym. Porównanie obu modeli pozwoli ocenić, czy zwiększenie złożoności modelu będzie prowadziło do poprawy jakości wyników uzasadniającej jego użycie w systemie, czy też wystarczające będzie użycie modelu o mniejszej liczbie parametrów. Ostateczny wybór modelu detekcji musi zostać dokonany na podstawie wyników badań eksperymentalnych, które zostaną przedstawione w rozdziale \ref{chap:badania}. Uwzględnić przy tym należy nie tylko skuteczność detekcji, ale również czas odpowiedzi i zapotrzebowanie na zasoby obliczeniowe.
+Spośród dostępnych modeli rodziny YOLO rozwijanych przez Ultralytics zdecydowano się na wykorzystanie najnowszego wariantu YOLO26, a do badań wykorzystano jego warianty \texttt{nano} (n) i \texttt{small} (s). Różnią się one liczbą parametrów oraz złożonością modelu, a co za tym idzie, również skutecznością detekcji, czasem inferencji i kosztem obliczeniowym. Porównanie obu modeli pozwoli ocenić, czy zwiększenie złożoności modelu będzie prowadziło do poprawy jakości wyników uzasadniającej jego użycie w systemie, czy też wystarczające będzie użycie modelu o mniejszej liczbie parametrów. Ostateczny wybór modelu detekcji musi zostać dokonany na podstawie wyników badań eksperymentalnych, które zostaną przedstawione w rozdziale \ref{c:badania}. Uwzględnić przy tym należy nie tylko skuteczność detekcji, ale również czas odpowiedzi i zapotrzebowanie na zasoby obliczeniowe.
 
 \section{Przepływ danych w systemie}
-\note{
+\note[hide]{
     Od obrazu z telefonu, przez detekcję, po komunikat dla użytkownika.
 }
 
+Przepływ danych projektowanego rozwiązania rozpoczyna się w aplikacji mobilnej rejestrującej obraz obejmujący dłonie użytkownika i eksplorowaną bryłę. Kolejne klatki są przesyłane przez sieć bezprzewodową do części serwerowej. Transmisja realizowana jest w sposób ciągły, co sprawia, że serwer otrzymuje aktualny obraz niezależnie od działań użytkownika. 
 
+Po odebraniu klatki serwer przystępuje do jego analizy przekazując ją do modułu detekcji. Wynikiem jego przetworzenia jest przewidywana klasa obiektu, jego ramka ograniczająca oraz wartość pewności wykonanej predykcji. Wynik detekcji aktualizowany jest po przetworzeniu każdej klatki obrazu, dzięki czemu część serwerowa przechowuje możliwie aktualną informację o rozpoznanym obiekcie. Predykcja nie powoduje automatycznego przygotowania komunikatu informacyjnego, a proces ten rozpoczyna się dopiero gdy użytkownik zażąda informacji.
 
-% Brak poprawnej detekcji lub zbyt niska pewność wyniku skutkuje przygotowaniem komunikatu informującego o tym fakcie użytkownika i zachęcającego go do zmiany ułożenia dłoni lub obiektu. Aby ograniczyć konsekwencje błędnego rozpoznania obiektu z dużą pewnością, na początku każdego komunikatu znajduje się informacja o nazwie klasie obiektu, umożliwiając użytkownikowi ocenę, czy treść komunikatu dotyczy aktualnie eksplorowanego obiektu.
+Komenda głosowa jest rozpoznawana przez aplikację mobilną, a następnie do serwera wysyłany jest komunikat sterujący, który uruchamia część interpretującą ostatnie wyniki detekcji. W momencie jego otrzymania serwer zachowuje najnowszą klatkę wraz z dokonaną predykcją. Dzięki temu analiza i predykcja dotyczy tego samego obrazu, nawet jeżeli serwer w międzyczasie otrzymał kolejne klatki. Na czas analizy wyników detekcji i przygotowania komunikatu informacyjnego nie jest przerywana transmisja kolejnych klatek obrazu. 
+
+Następnie sprawdzane jest, czy ostatni wynik predykcji może zostać wykorzystany do przygotowania komunikatu informacyjnego. Jeżeli model nie wykrył żadnego przedmiotu lub wartość pewności predykcji jest niższa od przyjętego progu, zwracany jest komunikat informujący o konieczności zmiany ułożenia dłoni lub obiektu. Jeżeli wynik spełnia kryteria poprawnej detekcji, system analizuje wycinek obrazu wyznaczony ramką ograniczającą. Celem tego jest określenie widocznej ścianki bryły, i jej orientacji, między innymi wykorzystując oznaczenia kolorystyczne. Na podstawie analizy przygotowywany jest komunikat informacyjny, zawierający informacje zawarte w bazie wiedzy o bryłach, a następnie przekazywany jest do aplikacji mobilnej poprzez zwrotny komunikat sterujący.
+
+Przekazanie komunikatu informacyjnego użytkownikowi odbywa się poprzez odczytanie tekstu przez syntezator mowy. W tym czasie system wciąż odbiera kolejne klatki i dokonuje detekcji obiektów, a użytkownik może kontynuować eksplorację obiektu i ponownie żądać informacji.
+
+Opisywany przepływ danych w systemie przedstawiono na diagramie sekwencji na rysunku \ref{fig:przeplyw_danych}. 
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{./graf/sekwencja_przeplyw.png}
+    \caption{Diagram sekwencji przepływu danych w projektowanym systemie}
+    \label{fig:przeplyw_danych}
+\end{figure}
 
 \section{Ograniczenia przyjętej koncepcji}
 \note{

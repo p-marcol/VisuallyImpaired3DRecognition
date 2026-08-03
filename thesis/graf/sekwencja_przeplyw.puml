@@ -1,0 +1,38 @@
+@startuml
+hide footbox
+
+actor Użytkownik as User
+participant "Aplikacja mobilna" as App
+participant "Część serwerowa" as Server
+participant "Model detekcji" as Model
+participant "Moduł analizy\nbryły" as Analysis
+database "Baza wiedzy\no bryłach" as Database
+participant "Syntezator mowy" as TTS
+
+par Ciągła transmisja i detekcja
+    loop Dla każdej odebranej klatki
+        App -> Server: Klatka obrazu
+        Server -> Model: Przekazanie klatki
+        Model --> Server: Klasa, ramka, pewność
+        Server -> Server: Zapis klatki i odpowiadającego jej\nwyniku jako najnowszej pary
+    end
+
+else Obsługa żądania informacji
+    User -> App: Komenda głosowa
+    App -> Server: Żądanie informacji
+    Server -> Server: Skopiowanie najnowszej kompletnej\npary:klatka + wynik detekcji
+
+    alt Brak poprawnej detekcji
+        Server --> App: Komunikat o braku rozpoznania
+    else Poprawna detekcja
+        Server -> Analysis: Wycinek zachowanej klatki\nwyznaczony ramką
+        Analysis --> Server: Rozpoznana część bryły
+        Server -> Database: Pobranie informacji
+        Database --> Server: Treść komunikatu
+        Server --> App: Komunikat informacyjny
+    end
+
+    App -> TTS: Tekst komunikatu
+    TTS --> User: Informacja głosowa
+end
+@enduml
