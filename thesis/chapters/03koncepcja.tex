@@ -1,10 +1,6 @@
 \chapter{Koncepcja systemu rozpoznawania dotykanych obiektów 3D}
 \label{c:koncepcja}
 
-\note[hide]{
-    To odpowiada wymaganej części „przedmiot pracy”: rozwiązanie zaproponowane przez dyplomanta, analiza teoretyczna, uzasadnienie metod, algorytmów i narzędzi.
-}
-
 Przed przystąpieniem do implementacji systemu rozpoznawania dotykanych obiektów 3D, konieczne jest określenie jego koncepcji i wykonanie projektu. Analiza literatury naukowej pozwoliła nakreślić główne wymagania jakie spełniać powinien projektowany system. Najważniejszymi z nich są: rozpoznawanie dotykanych brył, również częściowo zasłoniętych, działanie w czasie zbliżonym do rzeczywistego, jednoznaczne, wspierające użytkownika informacje zwrotne i możliwość uruchomienia części obliczeniowej na powszechnie dostępnych komputerach, również tych o ograniczonych zasobach. Niniejszy rozdział przedstawia proponowaną koncepcję systemu, jego sposób działania, architekturę, sposób przepływu danych oraz najważniejsze decyzje projektowe.
 
 System zaprojektowany jest w architekturze klient-serwer, gdzie klientem jest aplikacja mobilna, która rejestruje dane i przekazuje je do serwera uruchomionego na komputerze. Ten przetwarza dane, wykonuje detekcję obiektów i zwraca wynik. Wybór takiej architektury umożliwia użycie bardziej wymagających modeli niż byłoby to możliwe w przypadku uruchomienia ich na urządzeniu mobilnym.
@@ -16,39 +12,39 @@ System zaprojektowany jest w architekturze klient-serwer, gdzie klientem jest ap
 
 \note{\LARGE! Wróć do mnie po napisaniu rozdziału o koncepcji systemu, a potem implementacji, żeby zweryfikować!!!}
 
-Poprzez pogłębione studium literatury naukowej oraz analizę wymagań użytkowników określono główne założenia funkcjonalne i niefunkcjonalne projektowanego systemu. Wynikają one z celu pracy, sposobów działania podobnych systemów oraz potrzeb, jakie zauważono przy analizie potrzeb użytkowników niewidomych.
+Na podstawie celu pracy i wniosków wynikających z analizy literatury naukowej określono założenia funkcjonalne i niefunkcjonalne projektowanego systemu. Pierwsza grupa opisuje działania, które powinny być realizowane przez poszczególne części rozwiązania, a druga koncentruje się na oczekiwanej jakości działania oraz ograniczeniach mających wpływ na architekturę i sposób implementacji systemu. 
 
 \subsubsection{Założenia funkcjonalne}
 \label{ssec:założenia-funkcjonalne}
 
-Projekt systemu zakłada spełnienie następujących założeń funkcjonalnych.
+Podstawowym zadaniem systemu jest rozpoznanie bryły eksplorowanej przez użytkownika i przekazanie mu informacji o niej oraz o jej widocznej części. W tym celu przyjęto następujące założenia funkcjonalne:
 
 \begin{itemize}
-    \item Rejestracja obrazu dłoni i dotykanego obiektu przy pomocy kamery urządzenia mobilnego.
-    \item Przesyłanie zarejestrowanych klatek obrazu do części obliczeniowej systemu uruchomionej na komputerze.
-    \item Wykrycie obiektu znajdującego się w dłoniach użytkownika i rozpoznanie jego klasy przy pomocy modelu detekcji obiektów.
-    \item Udostępnienie użytkownikowi informacji zwrotnej o rozpoznanym obiekcie i aktualnie eksplorowanej ściance w formie komunikatu głosowego.
-    \item Dostępność interakcji i informacji zwrotnej.
-    \item Wykrywanie obiektu przy zróżnicowanych ułożeniach dłoni i obiektu, w tym przy częściowym zasłonięciu obiektu.
-    \item Obsługa sytuacji, gdy system nie rozpozna obiektu lub detekcja zakończy się wynikiem o zbyt niskiej pewności. Użytkownik powinien zostać poinformowany o tym fakcie i zachęcony do zmiany ułożenia dłoni lub obiektu.
-    \item Aktywacja modułu głosowego bez odrywania dłoni od przedmiotu, poprzez komendę głosową.
-    \item Detekcja działające bez przerwy, umożliwiająca ciągłe rozpoznawanie obiektów.
-    \item Otrzymanie informacji na żądanie użytkownika.
+    \item rejestrowanie obrazu obejmującego dłonie użytkownika i eksplorowaną bryłę za pomoca kamery urządzenia mobilnego,
+    \item ciągłe przesyłanie klatek do części serwerowej przez sieć bezprzewodową,
+    \item wykonanie detekcji obiektów dla odebranych klatek i określenie klasy obiektu, ramki ograniczającej oraz wartości pewności predykcji,
+    \item umożliwienie użytkownikowi zażądania informacji o aktualnie eksplorowanym obiekcie za pomocą komendy głosowej,
+    \item analiza obszaru obrazu zawierającego wykrytą bryłę, po otrzymaniu żądania informacji, w celu określenia widocznej części bryły,
+    \item przygotowanie komunikatu na podstawie rozpoznanej klasy obiektu, analizy jego powierzchni i danych zawartych w bazie informacji o bryłach,
+    \item przesłanie komunikatu do aplikacji mobilnej i odczytanie go użytkownikowi,
+    \item obsługa sytuacji braku wykrycia obiektu lub niskiej wartości pewności predykcji przez przygotowanie odpowiedniego komunikatu i przekazanie go użytkownikowi.
 \end{itemize}
+
+Transmisja obrazu i detekcja powinny być kontynuowane niezależnie od pozostałych działań systemu, aby mógł pozostać gotowym do przyjęcia kolejnego żądania od użytkownika. 
 
 \subsubsection{Założenia niefunkcjonalne}
 \label{ssec:założenia-niefunkcjonalne}
 
-Założenia niefunkcjonalne projektowanego systemu skupiają się na zapewnieniu odpowiedniej jakości jego działania. Ich wyznaczenie ma skutkować wytworzeniem systemu, który będzie użyteczny i wygodny w codziennym użytkowaniu. Wyszczególniono następujące założenia niefunkcjonalne.
+Sposób działania systemu powinien uwzględniać potrzeby użytkowników niewidomych, warunki jego wykorzystania i dostępność infrastruktury komputerowej. Na tej podstawie przyjęto następujące założenia niefunkcjonalne:
 
 \begin{itemize}
-    \item Krótki czas odpowiedzi -- wynik powinien być dostępny w jak najkrótszym czasie, zbliżonym do rzeczywistego.
-    \item Działanie w warunkach obniżonej mocy obliczeniowej -- część obliczeniowa systemu powinna móc być uruchomiona i działać na komputerach o ograniczonych zasobach, np. laptopach.
-    \item Prostota obsługi -- system nie powinien wymagać od użytkownika wykonywania skomplikowanych czynności, a jego obsługa nie powinna wymagać specjalistycznej wiedzy.
-    \item Mobilność -- urządzenie rejestrujące dane powinno dać się swobodnie przenosić i używać w różnych miejscach, np. w domu, w szkole czy w pracy i nie powinno wymagać specjalistycznego przygotowania miejsca pracy.
-    \item Odporność na zmiany warunków -- system powinien oferować porównywalną jakość działania w różnych warunkach oświetleniowych.
-    \item Brak konieczności korzystania z specjalistycznego sprzętu -- system powinien działać przy użyciu powszechnie dostępnych urządzeń, takich jak smartfony i komputery osobiste.
-    \item Rozszerzalność -- architektura systemu powinna umożliwiać wymianę części obliczeniowej na inną, np. w celu porównania różnych metod detekcji czy aktualizacji modelu.
+    \item krótki czas odpowiedzi -- czas pomiędzy wydaniem komendy a odczytaniem komunikatu powinien być na tyle krótki, aby odpowiedź odnosiła się do aktualnej orientacji i położenia obiektu.
+    \item możliwość działania na powszechnie dostępnym sprzęcie -- część serwerowa powinna móc być uruchomiona na komputerze osobistym, bez stosowania specjalistycznej jednostki obliczeniowej.
+    \item mobilność części klienckiej -- urządzenie rejestrujące obraz nie powinno wymagać przewodowego połączenia z komputerem ani wyspecjalizowanego stanowiska pracy.
+    \item odporność na sposób eksploracji -- detekcja powinna uwzględniać różne orientacje brył, ułożenia dłoni i częściowe zasłonięcia obiektu.
+    \item stabilne działanie w zmiennych warunkach -- system powinien rozpoznawać bryły i działać niezależnie od zmian oświetlenia lub tła.
+    \item modułowość -- elementy systemu powinny być od siebie rozdzielone tak, aby możliwa była ich niezależna modyfikacja.
+    \item rozszerzalność --system powinien umożliwiać dodanie kolejnych klas obiektów po przygotowaniu dodatkowych danych, wymianę modelu detekcji na inny oraz uzupełnienie bazy informacji o bryłach.
 \end{itemize}
 
 \section{Architektura systemu}
@@ -118,66 +114,56 @@ Jako system rozpoznawania dotykanych obiektów 3D rozumie się zestaw powiązany
     \label{fig:architektura}
 \end{figure}
 
-Zastosowanie komunikacji bezprzewodowej umożliwia użytkownikowi swobodną eksplorację obiektu bez ograniczania jego ruchów przewodami. Pozwala to również na fizyczne rozdzielenie urządzenia rejestrującego dane od komputera wykonującego obliczenia. Komputer uruchamiający część serwerową nie musi znajdować się przy użytkowniku, a może zostać umieszczony w dowolnym miejscu z dostępem do tej samej sieci lokalnej co klient. Umożliwia to wykorzystanie istniejącej infrastruktury komputerowej bez konieczności przygotowywania specjalistycznego stanowiska pracy dla użytkownika. Takie rozwiązanie wprowadza jednakże zależność czasu komunikacji od jakości połączenia sieciowego. 
+Zastosowanie komunikacji bezprzewodowej umożliwia użytkownikowi swobodną eksplorację obiektu bez ograniczania jego ruchów przewodami. Pozwala to również na fizyczne rozdzielenie urządzenia rejestrującego dane od komputera wykonującego obliczenia. Komputer, na którym uruchomiono część serwerową, nie musi znajdować się przy użytkowniku, a może zostać umieszczony w dowolnym miejscu z dostępem do tej samej sieci lokalnej co klient. Umożliwia to wykorzystanie istniejącej infrastruktury komputerowej bez konieczności przygotowywania specjalistycznego stanowiska pracy dla użytkownika. Takie rozwiązanie wprowadza jednakże zależność czasu komunikacji od jakości połączenia sieciowego. 
 
-Aplikacja mobilna jest częścią systemu, z którą użytkownik wchodzi w bezpośrednią interakcję. Jej podstawowym zadaniem jest rejestracja obrazu obejmującego dłonie użytkownika oraz eksplorowany obiekt, a następnie przekazywanie go do części serwerowej systemu. Umożliwia ona również zainicjowanie żądania informacji o aktualnie eksplorowanym obiekcie. Po otrzymaniu z serwera komunikatu informacyjnego, aplikacja odczytuje go użytkownikowi za pomocą syntezatora mowy. Część mobilna nie odpowiada więc za interpretację wyników ani wybieranie informacji, a pełni rolę pośrednika między użytkownikiem a częścią obliczeniową systemu.
+Aplikacja mobilna jest częścią systemu, z którą użytkownik wchodzi w bezpośrednią interakcję. Jej podstawowym zadaniem jest rejestracja obrazu obejmującego dłonie użytkownika oraz eksplorowany obiekt, a następnie przekazywanie go do części serwerowej systemu. Umożliwia ona również zainicjowanie żądania informacji o aktualnie eksplorowanym obiekcie. Po otrzymaniu z serwera komunikatu informacyjnego aplikacja odczytuje go użytkownikowi za pomocą syntezatora mowy. Część mobilna nie odpowiada więc za interpretację wyników ani wybieranie informacji, lecz pełni rolę pośrednika między użytkownikiem a częścią obliczeniową systemu.
 
-Do odpowiedzialności serwera należą wszelkie zadania związane z przetwarzaniem obrazu i przygotowaniem informacji zwrotnej. W jego skład wchodzą moduły odpowiedzialne za komunikację z aplikacją, detekcję obiektów, interpretację wyników i generowanie komunikatów informacyjnych. Model detekcji analizuje przesłane klatki i określa najbardziej prawdopodobną klasę obiektu na obrazie wraz z wartością pewności predykcji. Następnie wynik detekcji jest udostępniany pozostałym modułom części serwerowej, które aktualizują informacje, przygotowują tekst na podstawie bazy informacji, a następnie przekazują go do odczytania w części klienckiej. Możliwe jest wielokrotne zapytanie o informacje o tym samym obiekcie bez konieczności zmiany jego położenia, ani orientacji względem kamery.
+Do odpowiedzialności serwera należą wszelkie zadania związane z przetwarzaniem obrazu i przygotowaniem informacji zwrotnej. W jego skład wchodzą moduły odpowiedzialne za komunikację z aplikacją, detekcję obiektów, interpretację wyników i generowanie komunikatów informacyjnych. Model detekcji analizuje przesłane klatki i określa najbardziej prawdopodobną klasę obiektu na obrazie wraz z wartością pewności predykcji i jego ramką ograniczającą. Następnie wynik detekcji jest udostępniany pozostałym modułom części serwerowej, które aktualizują informacje, przygotowują tekst na podstawie bazy informacji, a następnie przekazują go do odczytania w części klienckiej. Możliwe jest wielokrotne zapytanie o informacje o tym samym obiekcie bez konieczności zmiany jego położenia, ani orientacji względem kamery.
 
 Projekt zakłada również utworzenie narzędzi służących do przygotowania danych treningowych i uczenia modeli detekcji. Są to elementy, które nie są niezbędne do działania systemu, ale pełnią istotną rolę w jego rozwoju. Wśród nich znajdują się skrypty tworzące zbiory danych treningowych z zarejestrowanych filmów, dzielące istniejące zbiory danych na podzbiory treningowe, walidacyjne i testowe oraz uczące modele detekcji. Dzięki nim możliwe jest również zestawienie wyników treningu umożliwiając ich porównanie i wybór najlepszego modelu.
 
 \section{Dobór klas rozpoznawanych obiektów}
-\note[hide]{
-    Cube, sphere, cylinder, cuboid, tetrahedron, cone. Tu warto uzasadnić, że są to podstawowe bryły geometryczne, możliwe do wydruku 3D i łatwe do kontrolowanego oznaczania.
-}
 
-System przewiduje rozpoznanie sześciu klas obiektów, będących podstawowymi bryłami geometrycznymi: sześcianu, kuli, walca, prostopadłościanu, czworościanu i stożka. Przyjęto, że przyjęty zestaw klas jest wystarczający do realizacji założonego zakresu edukacyjnego oraz weryfikacji zaproponowanej koncepcji. Taki wybór klas umożliwia użytkownikowi zapoznanie się z podstawowymi pojęciami związanymi z geometrią przestrzenną, jak ściana, powierzchnia boczna, krawędź czy wierzchołek. Bryły stanowią również podstawowe formy przestrzenne, z których możliwa jest budowa bardziej złożonych obiektów w wyniku ich łączenia, przekształcania i modyfikowania. Poznanie właściwości prostych brył może stanowić podstawę do rozumienia bardziej złożonych kształtów. Celem systemu nie jest więc pokrycie całego zakresu nauki stereometrii, lecz wsparcie użytkownika w nauce podstawowych pojęć i zależności geometrycznych. Znaczenie budowy skomplikowanych brył z prostych elementów ukazuje praca Figueiras i Arcavi \cite{bib:learningToSee} opisana w sekcji \ref{s:perspektywa}.
+System przewiduje rozpoznanie sześciu klas obiektów, będących podstawowymi bryłami geometrycznymi: sześcianu, kuli, walca, prostopadłościanu, czworościanu i stożka. Przyjęto, że wybrany zestaw klas jest wystarczający do realizacji założonego zakresu edukacyjnego oraz weryfikacji zaproponowanej koncepcji. Taki wybór klas umożliwia użytkownikowi zapoznanie się z podstawowymi pojęciami związanymi z geometrią przestrzenną, takimi jak ściana, powierzchnia boczna, krawędź czy wierzchołek. Bryły stanowią również podstawowe formy przestrzenne, z których możliwa jest budowa bardziej złożonych obiektów w wyniku ich łączenia, przekształcania i modyfikowania. Poznanie właściwości prostych brył może stanowić podstawę do rozumienia bardziej złożonych kształtów. Celem systemu nie jest więc objęcie całego zakresu nauki stereometrii, lecz wsparcie użytkownika w nauce podstawowych pojęć i zależności geometrycznych. Znaczenie stopniowego budowania bardziej złożonych brył z prostszych elementów ukazuje praca Figueiras i Arcavi \cite{bib:learningToSee} opisana w sekcji \ref{s:perspektywa}.
 
-\begin{figure}
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=0.85\textwidth]{example-image-duck}
     \caption{Bryły geometryczne wykorzystywane w projektowanym systemie}
     \label{fig:bryly_geometryczne}
 \end{figure}
 
-Na rysunku \ref{fig:bryly_geometryczne} przedstawiono fizyczne modele brył wykorzystanych do przygotowania danych treningowych. Ich powierzchnie zostały pomalowane przy użyciu stałej palety maksymalnie sześciu kolorów. Pozwala to na rozpoznanie przez system poszczególnych części bryły, a także przypisanie każdej z nich informacji, która ma być przekazana użytkownikowi. Kolor jednak nie definiuje bryły, a służy jedynie rozpoznaniu jej części. Mimo że poszczególne zestawy brył mogą mieć inne kolory od zestawu przedstawionego na rysunku, nie powinno to mieć wpływu na działanie systemu. W środowisku szkolnym mogą być wykorzystywane zestawy brył przygotowanych niezależnie, których kolorystyka może różnić się od zestawu użytego w pracach badawczych. Przez to model powinien rozpoznawać bryły na podstawie ich cech geometrycznych, a nie koloru.
+Na rysunku \ref{fig:bryly_geometryczne} przedstawiono fizyczne modele brył wykorzystanych do przygotowania danych treningowych. Ich powierzchnie zostały pomalowane przy użyciu stałej palety maksymalnie sześciu kolorów. Pozwala to na rozpoznawanie przez system poszczególnych części bryły, a także przypisanie każdej z nich informacji, która ma być przekazana użytkownikowi. Kolor jednak nie definiuje bryły, a służy jedynie rozpoznaniu jej części. W środowisku szkolnym mogą być wykorzystywane zestawy brył przygotowanych niezależnie, których kolorystyka będzie różnić się od zestawu użytego w pracach badawczych. Założeniem projektu jest więc, aby system rozpoznawał bryły na podstawie ich cech geometrycznych, a nie zastosowanej kolorystyki. Odporność modelu na zmianę kolorystyki wymaga osobnej analizy i weryfikacji eksperymentalnej/
 
-Wybrane klasy obejmują obiekty o zróżnicowanej budowie, lecz posiadające wspólne cechy. Sześcian, prostopadłościan i czworościan posiadają ściany płaskie i wyraźne krawędzie, a kula, stożek oraz walec mają co najmniej jedną powierzchnię zakrzywioną. Te podobieństwa mogą skutkować podobnym wyglądem poszczególnych brył w zależności od ich orientacji względem kamery. Predykcja może okazać się szczególnie trudna w przypadku, gdy obiekt jest w dużej części zasłonięty przez dłoń użytkownika. Uwzględnienie takich przypadków w zbiorze uczącym jest istotne dla uczenia modelu detekcji w trudnych warunkach. Pomyślne rozpoznanie  częściowo zasłoniętego obiektu pozwala ocenić odporność modelu na zasłonięcia bryły.
+Wybrane klasy obejmują obiekty o zróżnicowanej budowie, lecz posiadające wspólne cechy. Sześcian, prostopadłościan i czworościan posiadają ściany płaskie i wyraźne krawędzie, a kula, stożek oraz walec mają co najmniej jedną powierzchnię zakrzywioną. Te podobieństwa mogą skutkować podobnym wyglądem poszczególnych brył w zależności od ich orientacji względem kamery. Predykcja może okazać się szczególnie trudna w przypadku, gdy obiekt jest w dużej części zasłonięty przez dłoń użytkownika. Uwzględnienie takich przypadków w zbiorze uczącym jest istotne dla uczenia modelu detekcji w trudnych warunkach. Pomyślne rozpoznanie częściowo zasłoniętego obiektu pozwala ocenić odporność modelu na zasłonięcia bryły.
 
-Każda klasa odpowiada jednemu modelowi bryły, niezależnie od jej orientacji oraz aktualnie widocznej powierzchni. Kolor, orientacja i widoczna część obiektu nie stanowią osobnych klas, a są one analizowane dopiero po rozpoznaniu klasy przez model i zażądaniu informacji przez użytkownika. Po przeanalizowaniu wyników detekcji system przygotowuje odpowiedni komunikat informacyjny. Architektura systemu umożliwia późniejsze rozszerzenie zbioru rozpoznawalnych klas o kolejne obiekty po przygotowaniu dodatkowych danych treningowych.
+Każda klasa odpowiada jednemu rodzajowi bryły, niezależnie od jej orientacji oraz aktualnie widocznej powierzchni. Kolor, orientacja i widoczna część obiektu nie stanowią osobnych klas, a są one analizowane dopiero po rozpoznaniu klasy przez model i zażądaniu informacji przez użytkownika. Po przeanalizowaniu wyników detekcji system przygotowuje odpowiedni komunikat informacyjny. Architektura systemu umożliwia późniejsze rozszerzenie zbioru rozpoznawalnych klas o kolejne obiekty po przygotowaniu dodatkowych danych treningowych.
 
 \section{Uzasadnienie wyboru metody detekcji}
-\note[hide]{
-    Dlaczego YOLO: szybkość, popularność, gotowe narzędzia treningowe, możliwość porównania wariantów n/s, metryki.
-}
 
-Po przeprowadzeniu analizy literatury naukowej przedstawionej w rozdziale \ref{c:analiza} zdecydowano się na wykorzystanie detektorów obiektów z rodziny YOLO. Ich sposób działania najlepiej pasuje do systemu, w którym zależy nam na krótkim czasie odpowiedzi i możliwości uruchomienia modelu detekcji na komputerach o ograniczonych zasobach obliczeniowych. Kompromis między skutecznością detekcji a szybkością działania modelu był najistotniejszym kryterium wyboru tej metody.
+Po przeprowadzeniu analizy literatury naukowej przedstawionej w rozdziale \ref{c:analiza} zdecydowano się na wykorzystanie detektorów obiektów z rodziny YOLO. Ich sposób działania najlepiej pasuje do systemu, w którym istotne są krótki czas odpowiedzi i możliwości uruchomienia modelu detekcji na komputerach o ograniczonych zasobach obliczeniowych. Kompromis między skutecznością detekcji a szybkością działania modelu był najistotniejszym kryterium wyboru tej metody.
 
-Na sposób funkcjonowania systemu szczególny wpływ ma szybkość działania modelu detekcji. Obraz przesyłany z aplikacji mobilnej do części serwerowej jest analizowany w sposób ciągły, gdy użytkownik eksploruje obiekt. Wynik detekcji powinien więc być dostępny w jak najkrótszym czasie, aby wynik odpowiadał bieżącej orientacji i położeniu obiektu względem kamery. Zbyt długi czas odpowiedzi może skutkować podaniem użytkownikowi informacji, która jest już nieaktualna. Jednocześnie, na czas odpowiedzi duży wpływ może mieć zdolność jednostki obliczeniowej do przetwarzania danych, a więc wymagane jest użycie modelu, który 
-zapewni akceptowalny czas odpowiedzi również na słabszych komputerach.  Zastosowanie bardziej złożonych detektorów mogłoby prowadzić do zwiększenia czasu odpowiedzi prowadząc do przekazania nieaktualnej informacji użytkownikowi. 
+Na sposób funkcjonowania systemu szczególny wpływ ma szybkość działania modelu detekcji. Obraz przesyłany z aplikacji mobilnej do części serwerowej jest analizowany w sposób ciągły, gdy użytkownik eksploruje obiekt. Wynik detekcji powinien więc być dostępny w jak najkrótszym czasie, by odpowiadał bieżącej orientacji i położeniu obiektu względem kamery. Zbyt długi czas odpowiedzi może skutkować podaniem użytkownikowi informacji, która jest już nieaktualna. Jednocześnie, na czas odpowiedzi duży wpływ może mieć zdolność jednostki obliczeniowej do przetwarzania danych, a więc wymagane jest użycie modelu, który zapewni akceptowalny czas odpowiedzi również na słabszych komputerach.  Zastosowanie bardziej złożonych detektorów mogłoby wydłużyć czas odpowiedzi prowadząc do przekazania nieaktualnej informacji użytkownikowi. 
 
-Istotnym czynnikiem argumentującym za wyborem detekcji obiektów w miejscu klasyfikacji całego obrazu jest zachodząca potrzeba dokładnego określenia położenia bryły. Detektorów podczas działania zwraca nie tylko informację o klasie, ale przede wszystkim o jego położeniu. Określona ramka ograniczająca umożliwia określenie obszaru obrazu w którym znajduje się obiekt, co przy analizie ograniczy wpływ tła i innych elementów sceny. Informacja o położeniu obiektu jest następnie wykorzystywana do rozpoznania widocznej części bryły i przygotowania komunikatu.
+Istotną przesłanką wyboru detekcji obiektów w miejsce klasyfikacji jest zachodząca potrzeba dokładnego określenia położenia bryły na obrazie. Detektor podczas działania zwraca informację o klasie, położeniu obiektu i wartości pewności predykcji. Określona ramka ograniczająca umożliwia następnie wyodrębnienie obszaru obrazu w którym znajduje się obiekt, co przy dalszej analizie ograniczy wpływ tła i innych elementów sceny. Informacja o położeniu obiektu jest następnie wykorzystywana do rozpoznania widocznej części bryły i przygotowania komunikatu.
 
-Spośród dostępnych modeli rodziny YOLO rozwijanych przez Ultralytics zdecydowano się na wykorzystanie najnowszego wariantu YOLO26, a do badań wykorzystano jego warianty \texttt{nano} (n) i \texttt{small} (s). Różnią się one liczbą parametrów oraz złożonością modelu, a co za tym idzie, również skutecznością detekcji, czasem inferencji i kosztem obliczeniowym. Porównanie obu modeli pozwoli ocenić, czy zwiększenie złożoności modelu będzie prowadziło do poprawy jakości wyników uzasadniającej jego użycie w systemie, czy też wystarczające będzie użycie modelu o mniejszej liczbie parametrów. Ostateczny wybór modelu detekcji musi zostać dokonany na podstawie wyników badań eksperymentalnych, które zostaną przedstawione w rozdziale \ref{c:badania}. Uwzględnić przy tym należy nie tylko skuteczność detekcji, ale również czas odpowiedzi i zapotrzebowanie na zasoby obliczeniowe.
+Spośród dostępnych modeli rodziny YOLO rozwijanych przez Ultralytics zdecydowano się na wykorzystanie najnowszego wariantu YOLO26, a do badań wykorzystano jego warianty \texttt{nano} (n) i \texttt{small} (s). Różnią się one liczbą parametrów oraz kosztem obliczeniowym, co może wpływać na poprawę skutecznością detekcji, ale też wydłuzenie czasu inferencji. Porównanie obu modeli pozwoli ocenić, czy zwiększenie złożoności modelu będzie rzeczywiście prowadziło do poprawy jakości wyników, uzasadniającej jego użycie w systemie, czy też wystarczające będzie użycie modelu o mniejszej liczbie parametrów. Ostateczny wybór modelu detekcji musi zostać dokonany na podstawie wyników badań eksperymentalnych, które zostaną przedstawione w rozdziale \ref{c:badania}. Uwzględnić przy tym należy nie tylko skuteczność detekcji, ale również czas odpowiedzi i zapotrzebowanie na zasoby obliczeniowe.
 
 \section{Przepływ danych w systemie}
-\note[hide]{
-    Od obrazu z telefonu, przez detekcję, po komunikat dla użytkownika.
-}
 
 Przepływ danych projektowanego rozwiązania rozpoczyna się w aplikacji mobilnej rejestrującej obraz obejmujący dłonie użytkownika i eksplorowaną bryłę. Kolejne klatki są przesyłane przez sieć bezprzewodową do części serwerowej. Transmisja realizowana jest w sposób ciągły, co sprawia, że serwer otrzymuje aktualny obraz niezależnie od działań użytkownika. 
 
 Po odebraniu klatki serwer przystępuje do jego analizy przekazując ją do modułu detekcji. Wynikiem jego przetworzenia jest przewidywana klasa obiektu, jego ramka ograniczająca oraz wartość pewności wykonanej predykcji. Wynik detekcji aktualizowany jest po przetworzeniu każdej klatki obrazu, dzięki czemu część serwerowa przechowuje możliwie aktualną informację o rozpoznanym obiekcie. Predykcja nie powoduje automatycznego przygotowania komunikatu informacyjnego, a proces ten rozpoczyna się dopiero gdy użytkownik zażąda informacji.
 
-Komenda głosowa jest rozpoznawana przez aplikację mobilną, a następnie do serwera wysyłany jest komunikat sterujący, który uruchamia część interpretującą ostatnie wyniki detekcji. W momencie jego otrzymania serwer zachowuje najnowszą klatkę wraz z dokonaną predykcją. Dzięki temu analiza i predykcja dotyczy tego samego obrazu, nawet jeżeli serwer w międzyczasie otrzymał kolejne klatki. Na czas analizy wyników detekcji i przygotowania komunikatu informacyjnego nie jest przerywana transmisja kolejnych klatek obrazu. 
+Komenda głosowa jest rozpoznawana przez aplikację mobilną, a następnie do serwera wysyłany jest komunikat sterujący, który uruchamia część interpretującą ostatnie wyniki detekcji. W momencie jego otrzymania serwer kopiuje najnowszą przetworzoną klatkę wraz z wynikiem dokonanej na niej predykcji. Dzięki temu dalsza analiza wykorzystuje obraz którego dotyczy wynik zachowanej detekcji, nawet jeżeli serwer w międzyczasie otrzymał kolejne klatki. Na czas analizy wyników detekcji i przygotowania komunikatu informacyjnego nie jest przerywana transmisja kolejnych klatek obrazu, a serwer wciąż dokonuje detekcji obiektów. Nowsze wyniki nie wpływają na aktualnie przygotowywaną odpowiedź.
 
-Następnie sprawdzane jest, czy ostatni wynik predykcji może zostać wykorzystany do przygotowania komunikatu informacyjnego. Jeżeli model nie wykrył żadnego przedmiotu lub wartość pewności predykcji jest niższa od przyjętego progu, zwracany jest komunikat informujący o konieczności zmiany ułożenia dłoni lub obiektu. Jeżeli wynik spełnia kryteria poprawnej detekcji, system analizuje wycinek obrazu wyznaczony ramką ograniczającą. Celem tego jest określenie widocznej ścianki bryły, i jej orientacji, między innymi wykorzystując oznaczenia kolorystyczne. Na podstawie analizy przygotowywany jest komunikat informacyjny, zawierający informacje zawarte w bazie wiedzy o bryłach, a następnie przekazywany jest do aplikacji mobilnej poprzez zwrotny komunikat sterujący.
+Następnie sprawdzane jest, czy ostatni wynik predykcji może zostać wykorzystany do przygotowania komunikatu informacyjnego. Jeżeli model nie wykrył żadnego przedmiotu lub wartość pewności predykcji jest niższa od przyjętego progu, zwracany jest komunikat informujący o konieczności zmiany ułożenia dłoni lub obiektu. Jeżeli wynik spełnia kryteria poprawnej detekcji, system analizuje wycinek obrazu wyznaczony ramką ograniczającą. Celem tego etapu jest określenie widocznej powierzchni bryły i jej orientacji, między innymi wykorzystując oznaczenia kolorystyczne. Na podstawie analizy przygotowywany jest komunikat informacyjny, zawierający informacje zawarte w bazie informacji o bryłach, a następnie przekazywany jest do aplikacji mobilnej poprzez komunikat odpowiedzi.
 
 Przekazanie komunikatu informacyjnego użytkownikowi odbywa się poprzez odczytanie tekstu przez syntezator mowy. W tym czasie system wciąż odbiera kolejne klatki i dokonuje detekcji obiektów, a użytkownik może kontynuować eksplorację obiektu i ponownie żądać informacji.
 
-Opisywany przepływ danych w systemie przedstawiono na diagramie sekwencji na rysunku \ref{fig:przeplyw_danych}. 
+Równoległe działanie procesu transmisji i detekcji oraz procesu przygotowania komunikatu informacyjnego zostało przedstawione na diagramie sekwencji, na rysunku \ref{fig:przeplyw_danych}. 
 
-\begin{figure}[ht]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{./graf/sekwencja_przeplyw.png}
     \caption{Diagram sekwencji przepływu danych w projektowanym systemie}
@@ -185,129 +171,15 @@ Opisywany przepływ danych w systemie przedstawiono na diagramie sekwencji na ry
 \end{figure}
 
 \section{Ograniczenia przyjętej koncepcji}
-\note{
-    Na przykład: kontrolowany zestaw obiektów, zależność od oświetlenia, ograniczony dataset, problem z generalizacją na inne dłonie/osoby/tła.
-}
 
-% tekst
+Przyjęta koncepcja systemu pozwala spełnić założone wymagania funkcjonalne i niefunkcjonalne, ale wiąże się również z pewnymi ograniczeniami wynikającymi z zakresu pracy, sposobu przygotowania danych oraz zastosowanej architektury.
 
-% \section{[Tytuł podrozdziału]}
+Możliwości rozpoznawania brył są ograniczone wyłącznie do wcześniej zdefiniowanych klas obiektów, dla których wcześniej zostały przygotowane dane treningowe. Obiekty nienależące do żadnej z klas nie zostaną poprawnie rozpoznane, a podobieństwo ich kształtu do jednej z istniejących klas może skutkować błędnym przypisaniem etykiety. Rozszerzenie zbioru klas wymaga zebrania i przygotowania dodatkowych danych uczących oraz ponownego wytrenowania modelu detekcji. Koncepcja zakłada również, że pojedyncza klatka obrazu przedstawia wyłącznie jedną bryłę, która aktualnie jest eksplorowana przez użytkownika. W przypadku wykrycia kilku obiektów system nie dysponuje mechanizmem pozwalającym na określenie którego z nich dotyczy żądanie informacji. Może to skutkować przygotowaniem komunikatu o niepoprawnej treści. System nie pokrywa również całego zakresu stereometrii, a koncentruje się jedynie na podstawowych bryłach geometrycznych, wykorzystywanych w edukacji i nauce pojęć związanych z geometrią przestrzenną. 
 
-% \section{[Tytuł podrozdziału]}
+Podstawowym źródłem danych jest obraz RGB rejestrowany przez kamerę urządzenia mobilnego. Jego jakość zależy od warunków oświetleniowych, tła, odległości od kamery i stopnia zasłonięcia. W pojedynczej klatce część cech charakterystycznych bryły może być niewidoczna przez zasłonięcia, co może znacznie utrudnić lub uniemożliwić poprawną detekcję. Zastosowanie wyłącznie ramek ograniczających do określenia położenia nie wyklucza udziału dłoni lub tła w analizie wycinku obrazu. Zastosowanie segmentacji umożliwiłoby dokładniejsze oddzielenie obiektu od tła i dłoni, ale wymagałoby przygotowania dodatkowych masek dla danych uczących. Należy również zwrócić uwagę na różnorodność urządzeń mobilnych, które mogą znacznie różnić się jakością rejestrowanego obrazu. 
 
-% W całym dokumencie powinny znajdować się odniesienia do zawartych w nim ilustracji (rys. \ref{fig:2}).
+Kolejne ograniczenie wynika z przyjętych oznaczeń kolorystycznych na powierzchniach brył. Modele użyte w pracy zostały pomalowane przy użyciu stałej palety barw, natomiast w środowisku szkolnym mogą wystąpić zestawy o innej kolorystyce. Detektor powinien więc rozpoznawać bryły przede wszystkim na podstawie ich cech charakterystycznych. W przypadku pojedynczego zestawu brył w zbiorze uczącym może zaistnieć znacząca podatność polegająca na tym, że model nauczy się rozpoznawać bryły na podstawie koloru. Jednocześnie moduł analizy wycinka obrazu wymaga, aby kolory były łatwo odróżnialne, a ich układ był zgodny z układem dostarczonym w bazie informacji. Wykorzystanie zestawu brył o innej kolorystyce wymaga przygotowania dodatkowej konfiguracji, która pozwoli na przypisanie odpowiednich powierzchni do informacji znajdujących się w systemie. Zmiany palety, odcieni, połysku czy balansu bieli mogą skutkować błędami na etapie określania widocznej części bryły i przygotowywania komunikatu informacyjnego. 
 
-% \begin{figure}
-% \centering
-% \begin{tikzpicture}
-% \begin{axis}[
-%     y tick label style={
-%         /pgf/number format/.cd,
-%             fixed,   % po zakomentowaniu os rzednych jest indeksowana wykladniczo
-%             fixed zerofill, % 1.0 zamiast 1
-%             precision=1,
-%         /tikz/.cd
-%     },
-%     x tick label style={
-%         /pgf/number format/.cd,
-%             fixed,
-%             fixed zerofill,
-%             precision=2,
-%         /tikz/.cd
-%     }
-% ]
-% \addplot [domain=0.0:0.1] {rnd};
-% \end{axis}
-% \end{tikzpicture}
-% \caption{Wykres przebiegu funkcji.} % Podpis jest zawsze POD rysunkiem.
-% \label{fig:2}
-% \end{figure}
+Przyjęta architektura klient--serwer wymaga, aby oba urządzenia miały stałe połączenie z tą samą siecią lokalną. Jakość połączenia może mieć wpływ na jakość, prędkość przesyłanych obrazów i czas odpowiedzi systemu. Rozdzielenie odpowiedzialności wymaga również uruchomienia części serwerowej, co sprawia, że system nie jest w pełni autonomiczny i wymaga obecności osoby obsługującej komputer. Aplikacja mobilna nie posiada wbudowanego modułu detekcji, a więc nie jest możliwe jej autonomiczne działanie. Żądanie głosowe uruchamiające przesłanie komunikatu sterującego do serwera wymaga od aplikacji mobilnej zdolności do rozpoznawania mowy, wymagając dostępu do mikrofonu i braku znacznego hałasu w tle. Dodatkowe opóźnienie odpowiedzi serwera może wynikać z wielu czynników, takich jak obciążenie sieci, inferencji modelu czy zdolności obliczeniowej jednostki serwerowej. 
 
-
-% %%%%%%%%%%%%%%%%%%%%%
-% %% RYSUNEK Z PLIKU
-% %
-% %\begin{figure}
-% %\centering
-% %\includegraphics[width=0.5\textwidth]{./graf/politechnika_sl_logo_bw_pion_pl.pdf}
-% %\caption{Podpis rysunku zawsze pod rysunkiem.}
-% %\label{fig:etykieta-rysunku}
-% %\end{figure}
-% %Rys. \ref{fig:etykieta-rysunku} przestawia …
-% %%%%%%%%%%%%%%%%%%%%%
-% %
-% %%%%%%%%%%%%%%%%%%%%%
-% %% WIELE RYSUNKÓW
-% %
-% %\begin{figure}
-% %\centering
-% %\begin{subfigure}{0.4\textwidth}
-% %    \includegraphics[width=\textwidth]{./graf/politechnika_sl_logo_bw_pion_pl.pdf}
-% %    \caption{Lewy górny rysunek.}
-% %    \label{fig:lewy-gorny}
-% %\end{subfigure}
-% %\hfill
-% %\begin{subfigure}{0.4\textwidth}
-% %    \includegraphics[width=\textwidth]{./graf/politechnika_sl_logo_bw_pion_pl.pdf}
-% %    \caption{Prawy górny rysunek.}
-% %    \label{fig:prawy-gorny}
-% %\end{subfigure}
-% %
-% %\begin{subfigure}{0.4\textwidth}
-% %    \includegraphics[width=\textwidth]{./graf/politechnika_sl_logo_bw_pion_pl.pdf}
-% %    \caption{Lewy dolny rysunek.}
-% %    \label{fig:lewy-dolny}
-% %\end{subfigure}
-% %\hfill
-% %\begin{subfigure}{0.4\textwidth}
-% %    \includegraphics[width=\textwidth]{./graf/politechnika_sl_logo_bw_pion_pl.pdf}
-% %    \caption{Prawy dolny rysunek.}
-% %    \label{fig:prawy-dolny}
-% %\end{subfigure}
-% %
-% %\caption{Wspólny podpis kilku rysunków.}
-% %\label{fig:wiele-rysunkow}
-% %\end{figure}
-% %Rys. \ref{fig:wiele-rysunkow} przestawia wiele ważnych informacji, np. rys. \ref{fig:prawy-gorny} jest na prawo u góry.
-% %%%%%%%%%%%%%%%%%%%%%
-
-
-% Tekst dokumentu powinien również zawierać odniesienia do tabel (tab. \ref{id:tab:wyniki}).
-
-% \begin{table}
-% \centering
-% \caption{Opis tabeli nad nią.}
-% \label{id:tab:wyniki}
-% \begin{tabular}{rrrrrrrr}
-% \toprule
-% 	         &                                     \multicolumn{7}{c}{metoda}                                      \\
-% 	         \cmidrule{2-8}
-% 	         &         &         &        \multicolumn{3}{c}{alg. 3}        & \multicolumn{2}{c}{alg. 4, $\gamma = 2$} \\
-% 	         \cmidrule(r){4-6}\cmidrule(r){7-8}
-% 	$\zeta$ &     alg. 1 &   alg. 2 & $\alpha= 1.5$ & $\alpha= 2$ & $\alpha= 3$ &   $\beta = 0.1$  &   $\beta = -0.1$ \\
-% \midrule
-% 	       0 &  8.3250 & 1.45305 &       7.5791 &    14.8517 &    20.0028 & 1.16396 &                       1.1365 \\
-% 	       5 &  0.6111 & 2.27126 &       6.9952 &    13.8560 &    18.6064 & 1.18659 &                       1.1630 \\
-% 	      10 & 11.6126 & 2.69218 &       6.2520 &    12.5202 &    16.8278 & 1.23180 &                       1.2045 \\
-% 	      15 &  0.5665 & 2.95046 &       5.7753 &    11.4588 &    15.4837 & 1.25131 &                       1.2614 \\
-% 	      20 & 15.8728 & 3.07225 &       5.3071 &    10.3935 &    13.8738 & 1.25307 &                       1.2217 \\
-% 	      25 &  0.9791 & 3.19034 &       5.4575 &     9.9533 &    13.0721 & 1.27104 &                       1.2640 \\
-% 	      30 &  2.0228 & 3.27474 &       5.7461 &     9.7164 &    12.2637 & 1.33404 &                       1.3209 \\
-% 	      35 & 13.4210 & 3.36086 &       6.6735 &    10.0442 &    12.0270 & 1.35385 &                       1.3059 \\
-% 	      40 & 13.2226 & 3.36420 &       7.7248 &    10.4495 &    12.0379 & 1.34919 &                       1.2768 \\
-% 	      45 & 12.8445 & 3.47436 &       8.5539 &    10.8552 &    12.2773 & 1.42303 &                       1.4362 \\
-% 	      50 & 12.9245 & 3.58228 &       9.2702 &    11.2183 &    12.3990 & 1.40922 &                       1.3724 \\
-% \bottomrule
-% \end{tabular}
-% \end{table}
-
-% %\chapter{[Przedmiot pracy]}
-% %
-% %\begin{itemize}
-% %\item  Jak ja rozwiązuję problem?
-% %\begin{itemize}
-% %\item rozwiązanie zaproponowane przez dyplomanta
-% %\item analiza teoretyczna rozwiązania
-% %\item uzasadnienie wyboru zastosowanych metod, algorytmów, narzędzi
-% %\end{itemize}
-% %\end{itemize}
+Wymienione ograniczenia nie wykluczają możliwości weryfikacji przyjętej koncepcji, ale wyznaczają zakres, w którym ma być zastosowana. Wpływ ograniczeń powinien zostać uwzględniony w analizie wyników badań eksperymentalnych, a wnioski powinny być uwzględnione przy formułowaniu dalszych kierunków rozwoju systemu.
