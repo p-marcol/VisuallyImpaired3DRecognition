@@ -77,7 +77,6 @@ Detekcja jest zadaniem trudniejszym od klasyfikacji obrazu, ponieważ oprócz ok
 \begin{equation}
 	D = \left\{ \left(c_i, b_i, p_i\right) \right\}_{i=1}^{N},
 \end{equation}
-
 gdzie $N$ jest liczbą wykrytych obiektów, $c_i$ to przewidywana klasa $i$-tego obiektu, $b_i$ opisuje jego ramkę, a $p_i$ jest wartością pewności predykcji.
 
 Ramka ograniczająca najczęściej jest prostokątem opisanym współrzędnymi dwóch przeciwległych narożników lub częściej współrzędnymi środka, szerokości i wysokości:
@@ -85,7 +84,6 @@ Ramka ograniczająca najczęściej jest prostokątem opisanym współrzędnymi d
 \begin{equation}
 	b_i = \left(x_i, y_i, w_i, h_i\right),
 \end{equation}
-
 gdzie $x_i$ i $y_i$ określają położenie środka ramki, a $w_i$ i $h_i$ jej szerokość oraz wysokość. Zależnie od implementacji każda z tych wartości może być wyrażona w pikselach lub znormalizowana względem rozmiaru obrazu. Drugie podejście uniezależnia reprezentację ramki od rozdzielczości obrazu wejściowego i jest powszechnie stosowane przy adnotacjach i predykcji.
 
 Wartość pewności predykcji, w zależności od implementacji, określa stopień przekonania modelu, że dany obszar zawiera obiekt przewidywanej klasy. Jeżeli ta wartość nie przekracza przyjętego progu, wynik wykonanej predykcji może zostać odrzucony. Jest to więc istotny parametr, jednak nie przesądza on poprawności predykcji. Przy ocenie należy również spojrzeć na zgodność klasy przewidywanej ze stanem faktycznym oraz na stopień pokrywania się ich ramek ograniczających (ang. \english{bounding box}). Zagadnienia te są szczegółowo opisane w podrozdziale~\ref{s:metryki}, dotyczącym metryk oceny detekcji.
@@ -196,7 +194,6 @@ Ocena modeli detekcji obiektów wymaga zastosowania odpowiednich metryk, które 
 \begin{equation}
 	IoU = \frac{|B_p \cap B_{gt}|}{|B_p \cup B_{gt}|},
 \end{equation}
-
 gdzie $B_p$ jest ramką przewidywaną przez model, a $B_{gt}$ jest ramką referencyjną (ang. \english{ground truth}). Im większa wartość IoU, tym lepsze dopasowanie ramki przewidywanej do ramki rzeczywistej. W praktyce najczęściej stosuje się progi, np. $IoU \geq 0,5$, aby zdecydować, czy dana detekcja może być uznana za poprawną. Próg ten został wykorzystany w wielu klasycznych procedurach oceny detekcji, takich jak PASCAL VOC \cite{bib:PASCALVOCChallenge}, i jest nadal powszechnie stosowany w wielu benchmarkach. Na podstawie wartości IoU oraz zgodności klasy obiektu możliwe jest przypisanie wyników detekcji do jednej z kategorii: prawdziwych pozytywów (TP, ang. \english{true positive}), fałszywych pozytywów (FP, ang. \english{false positive}) i fałszywych negatywów (FN, ang. \english{false negative}). Detekcja jest traktowana jako TP, jeżeli model poprawnie rozpoznał klasę obiektu, a przewidywana ramka spełnia zadany próg IoU względem ramki referencyjnej. FP to detekcja błędna, w której model przewidział klasę obiektu, ale nie spełnił progu IoU lub przewidziana klasa była błędna. FN natomiast to sytuacja, w której model nie wykrył obiektu, który rzeczywiście był na obrazie.
 
 Jedną z podstawowych metryk oceny jest precyzja (ang. \english{precision}), określająca udział poprawnych detekcji modelu wśród wszystkich detekcji, jakie zwrócił:
@@ -204,7 +201,6 @@ Jedną z podstawowych metryk oceny jest precyzja (ang. \english{precision}), okr
 \begin{equation}
 	Precision = \frac{TP}{TP + FP}.
 \end{equation}
-
 Wysoka precyzja oznacza, że model generuje niewiele fałszywych pozytywów. Drugą, powiązaną z nią metryką, jest czułość (ang. \english{recall}), określająca, jaki jest udział poprawnych detekcji wśród wszystkich rzeczywistych obiektów:
 
 \begin{equation}
@@ -218,7 +214,6 @@ W przypadku detekcji wieloklasowej używa się średniej wartości AP obliczonej
 \begin{equation}
 	mAP = \frac{1}{N} \sum_{i=1}^{N} AP_i,
 \end{equation}
-
 gdzie $N$ jest liczbą klas, a $AP_i$ jest wartością AP dla $i$-tej klasy. W praktyce najczęściej wykorzystuje się dwie wersje tej metryki: $mAP50$, gdzie detekcję uznaje się za poprawną przy progu $IoU \geq 0,5$, oraz $mAP50\text{-}95$, gdzie wynik jest uśredniany dla progów $IoU$ z zakresu od $0,5$ do $0,95$ ze skokiem $0,05$. Pierwsza z nich jest bardziej liberalna i pozwala określić ogólną zdolność modelu do wykrycia obiektu. Druga natomiast jest bardziej rygorystyczna, ponieważ wymaga dokładniejszego dopasowania ramek ograniczających, dzięki czemu lepiej pokazuje zarówno skuteczność klasyfikacji, jak i lokalizacji obiektu. Uśrednianie wyników dla wielu progów zostało szeroko zastosowane m.in. w metodyce oceny detekcji zbioru Microsoft COCO \cite{bib:microsoftCOCO} i jest obecnie standardem w wielu benchmarkach detekcji obiektów.
 
 Dodatkowo, w pracy wykorzystano metrykę $F1$-score, będącą średnią harmoniczną precyzji i czułości:
@@ -226,7 +221,6 @@ Dodatkowo, w pracy wykorzystano metrykę $F1$-score, będącą średnią harmoni
 \begin{equation}
 	F_1 = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall}.
 \end{equation}
-
 Metryka ta umożliwia przedstawienie kompromisu pomiędzy liczbą fałszywych detekcji a liczbą pominiętych obiektów. Może być szczególnie przydatna, gdy sama precyzja lub czułość nie dają pełnego obrazu jakości modelu. W niniejszej pracy metrykę $F1$-score wykorzystano jako metrykę pomocniczą względem podstawowych metryk $mAP50$ i $mAP50\text{-}95$, aby lepiej zrozumieć kompromis pomiędzy precyzją a czułością w kontekście detekcji obiektów dotykanych przez użytkownika.
 
 Oprócz wartości liczbowych wykorzystano również macierze pomyłek (ang. \english{confusion matrix}), pozwalające przeanalizować, które klasy obiektów są najczęściej mylone przez model. Są one przedstawiane w formie tabel, w których jedna oś odpowiada rzeczywistym klasom, a druga klasom przewidywanym przez model. Dla dobrze działającego modelu większość wartości powinna znajdować się na przekątnej macierzy, co wskazuje na poprawną klasyfikację obiektów. Macierze pomyłek są szczególnie istotne przy rozpoznawaniu brył geometrycznych o podobnych kształtach, np. sześcianu i prostopadłościanu, ponieważ sama wartość mAP nie wskazuje bezpośrednio, pomiędzy którymi klasami model popełnia najwięcej błędów. Analiza macierzy pomyłek może również pomóc w identyfikacji problemów z danymi treningowymi, np. niedostatecznej liczby przykładów dla wybranych klas lub błędów w oznaczeniach.
@@ -506,13 +500,11 @@ Po przetworzeniu obraz RGB może być reprezentowany w postaci macierzy trójwym
 \begin{equation}
 	M \times N \times 3,
 \end{equation}
-
 gdzie $M$ i $N$ to liczba wierszy i kolumn obrazu, a trzeci wymiar odpowiada kanałom barwnym: czerwonemu, zielonemu i niebieskiemu. Wartość pojedynczego piksela jest więc krotką trzech wartości, które można zapisać jako
 
 \begin{equation}
 	I(i,j) = (R, G, B).
 \end{equation}
-
 Pojedynczy piksel zawiera jedynie informację o wartościach trzech składowych koloru, ale zależności przestrzenne pomiędzy wieloma pikselami pozwalają odwzorować strukturę obserwowanej sceny. Lokalne zmiany wartości pikseli pozwalają m.in. wyznaczać gradienty obrazu, które mogą posłużyć do wykrywania krawędzi i innych strukturalnie ważnych elementów \cite{bib:sobel2014isotropic}. Jednakże, pomimo bogactwa informacji dostępnych do odczytu w samym obrazie, reprezentacja ta ma również istotne ograniczenia. Przede wszystkim, wygląd obserwowanego obiektu zależy znacząco od warunków oświetleniowych i stopnia zasłonięcia. Zmiana tych warunków może doprowadzić do różnic w kolorach, kontraście czy widoczności jego krawędzi, tym samym wpływając na skuteczność jego rozpoznawania \cite{bib:szeliski2021cvalgorithms}. Brak informacji o odległości punktu od kamery jest również istotnym ograniczeniem.
 
 Projekcja dwuwymiarowa skutkuje utratą części informacji przestrzennej, przez co różne obiekty lub ich różne orientacje mogą prowadzić do podobnych obrazów. Dodatkowym utrudnieniem może być częściowe zasłonienie obiektów. Istnieją modele estymujące głębię, np. YOLO26*-depth \ref{ssec:warianty_zadanie}, opisany w sekcji \ref{ssec:warianty_zadanie}, jednak otrzymane z nich wartości nie stanowią pomiaru odległości, a ich dokładność zależy od wielu czynników. Z tego względu uzupełnienie obrazu o informację dotyczącą odległości punktów od kamery wydaje się przydatne podczas procesu rozpoznania brył trójwymiarowych.
@@ -524,7 +516,6 @@ Informacja dotycząca głębi opisuje położenie aktualnie obserwowanych punkt�
 \begin{equation}
 	D(i,j) = d,
 \end{equation}
-
 gdzie $d$ to głębokość sceny odpowiadająca pikselowi $(i,j)$. Dzisiejsza technika pozwala na określanie głębi na kilka sposobów.
 
 Najprostsza ze względu na wymaganą infrastrukturę jest estymacja głębi z pojedynczego obrazu RGB. Określana jest ona jako \english{monocular depth estimation}, a jej działanie opiera się na wyznaczeniu struktury przestrzennej na podstawie cech obrazu. Przykładami tej techniki są: rozwiązanie zaproponowane przez Ranftla et al. oraz Monodepth2 opracowane przez zespół Godarda \cite{bib:ranftl2022towards, bib:godard2019digging}. Te metody umożliwiają uzyskanie mapy głębi bez stosowania dodatkowych urządzeń. Należy jednak pamiętać, że wynik stanowi jedynie estymację odległości, a nie jest jej pomiarem.
@@ -540,7 +531,6 @@ Dane pozyskane z czujnika LiDAR mogą być wykorzystane do zbudowania reprezenta
 \begin{equation}
 	P = \{p_i\}_{i=1}^{N},
 \end{equation}
-
 gdzie każdy punkt $p_i$ jest reprezentowany jako wektor
 
 \begin{equation}
