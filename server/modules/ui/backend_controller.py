@@ -6,6 +6,7 @@ from concurrent.futures import TimeoutError as FutureTimeoutError
 
 from PySide6.QtCore import QObject, Signal
 
+from modules.detection import DetectionResult
 from modules.runtime import ApplicationRuntime
 from settings import HOST, PORT
 
@@ -43,6 +44,7 @@ class BackendController(QObject):
         self._detection_message = "Detection is starting."
         self._detection_label = ""
         self._detection_confidence = 0.0
+        self._detection_box = None
         self._preview_frame = ""
         self._frame_width = 0
         self._frame_height = 0
@@ -92,6 +94,7 @@ class BackendController(QObject):
                 "detection_message": self._detection_message,
                 "detection_label": self._detection_label,
                 "detection_confidence": self._detection_confidence,
+                "detection_box": self._detection_box,
                 "preview_frame": self._preview_frame,
                 "frame_width": self._frame_width,
                 "frame_height": self._frame_height,
@@ -244,8 +247,12 @@ class BackendController(QObject):
 
         self._safe_emit(self.previewFrameChanged, data_url, width, height)
 
-    def _handle_detection_result(self, label: str, confidence: float):
-        self._set_detection_result(label, confidence)
+    def _handle_detection_result(self, detection: DetectionResult):
+        self._set_detection_result(
+            detection.label,
+            detection.confidence,
+            detection.box.as_tuple() if detection.box is not None else None,
+        )
 
     def _handle_detection_model_loaded(self, future):
         try:
@@ -280,7 +287,13 @@ class BackendController(QObject):
             message,
         )
 
-    def _set_detection_result(self, label: str, confidence: float, force: bool = False):
+    def _set_detection_result(
+        self,
+        label: str,
+        confidence: float,
+        box=None,
+        force: bool = False,
+    ):
         now = time.monotonic()
         normalized_label = label or ""
         normalized_confidence = max(0.0, min(float(confidence or 0.0), 1.0))
@@ -289,6 +302,7 @@ class BackendController(QObject):
             unchanged = (
                 self._detection_label == normalized_label
                 and abs(self._detection_confidence - normalized_confidence) < 0.005
+                and self._detection_box == box
             )
             should_throttle = (
                 not force
@@ -299,6 +313,7 @@ class BackendController(QObject):
 
             self._detection_label = normalized_label
             self._detection_confidence = normalized_confidence
+            self._detection_box = box
             self._last_detection_result_push_at = now
             emitted_label = self._detection_label
             emitted_confidence = self._detection_confidence

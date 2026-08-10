@@ -1,5 +1,63 @@
 import asyncio
+from dataclasses import dataclass
 import threading
+
+
+@dataclass(frozen=True)
+class DetectionBox:
+    x1: int
+    y1: int
+    x2: int
+    y2: int
+
+    @property
+    def width(self) -> int:
+        return max(0, self.x2 - self.x1)
+
+    @property
+    def height(self) -> int:
+        return max(0, self.y2 - self.y1)
+
+    @property
+    def is_empty(self) -> bool:
+        return self.width == 0 or self.height == 0
+
+    def as_tuple(self) -> tuple[int, int, int, int]:
+        return self.x1, self.y1, self.x2, self.y2
+
+    @classmethod
+    def from_xyxy(cls, xyxy, frame_shape) -> "DetectionBox":
+        height, width = frame_shape[:2]
+        x1, y1, x2, y2 = [int(round(float(value))) for value in xyxy]
+        return cls(
+            x1=max(0, min(x1, width)),
+            y1=max(0, min(y1, height)),
+            x2=max(0, min(x2, width)),
+            y2=max(0, min(y2, height)),
+        )
+
+
+@dataclass(frozen=True)
+class DetectionResult:
+    label: str
+    confidence: float
+    box: DetectionBox | None = None
+
+    @property
+    def has_detection(self) -> bool:
+        return bool(self.label and self.box is not None and not self.box.is_empty)
+
+    def crop_from(self, frame, copy: bool = True):
+        if not self.has_detection:
+            return None
+
+        crop = frame[self.box.y1 : self.box.y2, self.box.x1 : self.box.x2]
+        if crop.size == 0:
+            return None
+        return crop.copy() if copy else crop
+
+
+EMPTY_DETECTION = DetectionResult("", 0.0)
 
 
 class YOLODetector:
@@ -20,6 +78,8 @@ class YOLODetector:
         self.result_callback = result_callback
         self._model = None
         self._model_lock = threading.Lock()
+        self._last_detection = EMPTY_DETECTION
+        self._last_detection_lock = threading.Lock()
 
     async def start(self):
         if not self.enabled or self._model is not None:
@@ -68,25 +128,46 @@ class YOLODetector:
                 verbose=False,
             )
         if not results:
-            self._emit_best_detection("", 0.0)
+            self._emit_best_detection(EMPTY_DETECTION)
             return frame
 
         result = results[0]
-        label, confidence = self._extract_best_detection(result)
-        self._emit_best_detection(label, confidence)
+        detection = self._extract_best_detection(result, frame)
+        self._emit_best_detection(detection)
         return result.plot(boxes=True, labels=True, conf=True)
 
-    def _extract_best_detection(self, result) -> tuple[str, float]:
+    def _extract_best_detection(self, result, frame) -> DetectionResult:
         boxes = getattr(result, "boxes", None)
         confidences = getattr(boxes, "conf", None)
         classes = getattr(boxes, "cls", None)
         if confidences is None or classes is None or len(confidences) == 0:
-            return "", 0.0
+            return EMPTY_DETECTION
 
         best_index = int(confidences.argmax().item())
         confidence = float(confidences[best_index].item())
         class_id = int(classes[best_index].item())
-        return self._format_class_name(result, class_id), confidence
+        box = self._extract_detection_box(boxes, best_index, frame)
+        return DetectionResult(
+            label=self._format_class_name(result, class_id),
+            confidence=confidence,
+            box=box,
+        )
+
+    @staticmethod
+    def _extract_detection_box(boxes, index: int, frame) -> DetectionBox | None:
+        xyxy_boxes = getattr(boxes, "xyxy", None)
+        if xyxy_boxes is None or len(xyxy_boxes) <= index:
+            return None
+
+        xyxy = xyxy_boxes[index]
+        if hasattr(xyxy, "detach"):
+            xyxy = xyxy.detach()
+        if hasattr(xyxy, "cpu"):
+            xyxy = xyxy.cpu()
+        if hasattr(xyxy, "tolist"):
+            xyxy = xyxy.tolist()
+
+        return DetectionBox.from_xyxy(xyxy, frame.shape)
 
     @staticmethod
     def _format_class_name(result, class_id: int) -> str:
@@ -97,6 +178,13 @@ class YOLODetector:
             return str(names[class_id])
         return str(class_id)
 
-    def _emit_best_detection(self, label: str, confidence: float):
+    def get_last_detection(self) -> DetectionResult:
+        with self._last_detection_lock:
+            return self._last_detection
+
+    def _emit_best_detection(self, detection: DetectionResult):
+        with self._last_detection_lock:
+            self._last_detection = detection
+
         if self.result_callback is not None:
-            self.result_callback(label, confidence)
+            self.result_callback(detection)

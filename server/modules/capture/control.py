@@ -9,9 +9,17 @@ TEXT_MESSAGE_SEPARATOR = ":"
 
 
 class ControlMessageRouter:
-    def __init__(self, info_provider: Callable | None = None, event_callback=None):
+    def __init__(
+        self,
+        info_provider: Callable | None = None,
+        event_callback=None,
+        text_response_sender: Callable | None = None,
+        background_info_handler: Callable | None = None,
+    ):
         self.info_provider = info_provider
         self.event_callback = event_callback
+        self.text_response_sender = text_response_sender
+        self.background_info_handler = background_info_handler
 
     async def handle_text_message(self, ws, message: str) -> bool:
         payload = _decode_control_message(message)
@@ -22,17 +30,23 @@ class ControlMessageRouter:
         self._emit_event("connected", _format_request_for_log(request))
         print(f"info-request received: {request!r}")
 
+        if self.background_info_handler is not None:
+            self.background_info_handler(request)
+            print(f"info-request queued for analysis: {request!r}")
+            return True
+
         if self.info_provider is None:
-            await ws.send(
-                _encode_control_message(
-                    INFO_ERROR_KEY,
-                    {
-                        "code": "info_provider_missing",
-                        "message": "No info provider is configured on the server.",
-                        "request": request,
-                    },
-                )
+            response = _encode_control_message(
+                INFO_ERROR_KEY,
+                {
+                    "code": "info_provider_missing",
+                    "message": "No info provider is configured on the server.",
+                    "request": request,
+                },
             )
+            print(f"info-request failed: no provider for {request!r}")
+            await ws.send(response)
+            print(f"info-error sent: {response}")
             return True
 
         try:
@@ -40,27 +54,41 @@ class ControlMessageRouter:
             if inspect.isawaitable(data):
                 data = await data
         except Exception as err:
-            await ws.send(
-                _encode_control_message(
-                    INFO_ERROR_KEY,
-                    {
-                        "code": "info_request_failed",
-                        "message": str(err),
-                        "request": request,
-                    },
-                )
-            )
-            return True
-
-        await ws.send(
-            _encode_control_message(
-                INFO_RESPONSE_KEY,
+            response = _encode_control_message(
+                INFO_ERROR_KEY,
                 {
+                    "code": "info_request_failed",
+                    "message": str(err),
                     "request": request,
-                    "data": data,
                 },
             )
+            print(f"info-request failed: {err}")
+            await ws.send(response)
+            print(f"info-error sent: {response}")
+            return True
+
+        if isinstance(data, str):
+            response = encode_plain_info_response(data)
+            print(f"info-response generated: {data!r}")
+            if self.text_response_sender is not None:
+                sent = self.text_response_sender(data)
+                if inspect.isawaitable(sent):
+                    await sent
+            else:
+                await ws.send(response)
+            print(f"info-response sent: {response}")
+            return True
+
+        response = _encode_control_message(
+            INFO_RESPONSE_KEY,
+            {
+                "request": request,
+                "data": data,
+            },
         )
+        print(f"info-response generated for request {request!r}: {data!r}")
+        await ws.send(response)
+        print(f"info-response sent: {response}")
         return True
 
     def _emit_event(self, state: str, message: str):

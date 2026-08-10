@@ -1,3 +1,3 @@
-from .yolo import YOLODetector
+from .yolo import DetectionBox, DetectionResult, YOLODetector
 
-__all__ = ["YOLODetector"]
+__all__ = ["DetectionBox", "DetectionResult", "YOLODetector"]

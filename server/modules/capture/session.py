@@ -1,9 +1,12 @@
 import asyncio
+import inspect
 import time
 
 import cv2
 import numpy as np
 import websockets
+
+from modules.analysis import AnalysisWorker
 
 from .control import ControlMessageRouter, encode_plain_info_response
 from .protocol import CLIENT_STOP_COMMAND, is_jpeg_frame, is_stop_command
@@ -31,16 +34,29 @@ class CaptureSession:
         self.frame_callback = frame_callback
         self.frame_callback_interval_seconds = frame_callback_interval_seconds
         self.frame_processor = frame_processor
+        self.info_provider = info_provider
+        self.analysis_worker = (
+            AnalysisWorker(self._provide_info_response)
+            if info_provider is not None
+            else None
+        )
         self.session_event_callback = session_event_callback
         self.session_metrics_callback = session_metrics_callback
         self.control_router = ControlMessageRouter(
-            info_provider=info_provider,
             event_callback=session_event_callback,
+            text_response_sender=self.send_info_response_text,
+            background_info_handler=(
+                self._queue_info_response_analysis
+                if self.analysis_worker is not None
+                else None
+            ),
         )
         self.last_resolution = None
         self.last_fps_at = time.time()
         self.fps = 0
         self.client_ip = self._extract_client_ip()
+        self._last_frame = None
+        self._analysis_tasks = set()
         self._last_frame_callback_at = 0.0
 
     async def run(self):
@@ -73,6 +89,10 @@ class CaptureSession:
                 except Exception as err:
                     print(f"frame processing error: {err}")
         finally:
+            for task in list(self._analysis_tasks):
+                task.cancel()
+            if self.analysis_worker is not None:
+                self.analysis_worker.shutdown()
             if self.preview is not None:
                 self.preview.close()
             self._emit_session_event("disconnected", "Session closed")
@@ -119,6 +139,7 @@ class CaptureSession:
             print("unsupported frame")
             return True
 
+        self._last_frame = frame
         width, height = self._log_resolution(frame)
         self._log_performance(width, height, payload, frame)
         preview_frame = await self._process_frame(frame)
@@ -206,6 +227,58 @@ class CaptureSession:
         except Exception as err:
             print(f"detection error: {err}")
             return frame
+
+    def _provide_info_response(self, request, frame=None):
+        if self.info_provider is None:
+            return None
+
+        analysis_frame = self._last_frame if frame is None else frame
+
+        signature = inspect.signature(self.info_provider)
+        if any(
+            parameter.kind == inspect.Parameter.VAR_POSITIONAL
+            for parameter in signature.parameters.values()
+        ):
+            return self.info_provider(request, analysis_frame)
+
+        positional_parameters = [
+            parameter
+            for parameter in signature.parameters.values()
+            if parameter.kind
+            in (
+                inspect.Parameter.POSITIONAL_ONLY,
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            )
+        ]
+        if len(positional_parameters) >= 2:
+            return self.info_provider(request, analysis_frame)
+
+        return self.info_provider(request)
+
+    def _queue_info_response_analysis(self, request):
+        task = asyncio.create_task(self._run_info_response_analysis(request, self._last_frame))
+        self._analysis_tasks.add(task)
+        task.add_done_callback(self._analysis_tasks.discard)
+
+    async def _run_info_response_analysis(self, request, frame):
+        if self.analysis_worker is None:
+            return
+
+        try:
+            data = await self.analysis_worker.analyze(request, frame)
+        except asyncio.CancelledError:
+            raise
+        except Exception as err:
+            print(f"info-request analysis failed: {err}")
+            return
+
+        if isinstance(data, str):
+            print(f"info-response generated: {data!r}")
+            await self.send_info_response_text(data)
+            print(f"info-response sent: {encode_plain_info_response(data)}")
+            return
+
+        print(f"info-request analysis returned unsupported response: {data!r}")
 
     @staticmethod
     def _encode_frame(frame):

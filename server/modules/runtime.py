@@ -4,6 +4,7 @@ from model_loader import load_model
 from mdns_publisher import MDNSPublisher
 from settings import HOST, PORT
 
+from .analysis import SliceAnalyzer
 from .capture import CaptureServer
 
 
@@ -28,10 +29,11 @@ class ApplicationRuntime:
             port=port,
             preview_enabled=preview_enabled,
             frame_callback=frame_callback,
-            info_provider=self.provide_client_info,
+            info_provider=self.provide_analysis_response,
             session_event_callback=capture_event_callback,
             session_metrics_callback=capture_metrics_callback,
         )
+        self.slice_analyzer = SliceAnalyzer()
         self.detector = load_model()
         self.detector.result_callback = detection_result_callback
         self._running = False
@@ -87,6 +89,15 @@ class ApplicationRuntime:
             "enabled": self.detector.enabled,
             "model_path": self.detector.model_path,
         }
+
+    def get_last_detection(self):
+        return self.detector.get_last_detection()
+
+    def provide_analysis_response(self, request, frame=None) -> str:
+        detection = self.get_last_detection()
+        crop = detection.crop_from(frame) if frame is not None else None
+        result = self.slice_analyzer.analyze(crop, detection, request=request)
+        return result.text
 
     def provide_client_info(self, request):
         topics = self._normalize_info_topics(request)
