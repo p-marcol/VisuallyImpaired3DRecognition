@@ -80,6 +80,20 @@
 \usepackage{tabularx}
 \usepackage{array}
 \usepackage{float}
+\usepackage{pdflscape}
+\usepackage{caption}
+\usepackage{rotating}
+\usepackage{makecell}
+% \usepackage{showframe} % ! Disable in the final version of the document
+
+% ?: Tabele
+
+\AddToHook{env/table/begin}{%
+  \setlength{\tabcolsep}{4pt}%
+  \renewcommand{\arraystretch}{1.25}%
+}
+
+% ?: Rysunki
 
 \usetikzlibrary{positioning}
 
