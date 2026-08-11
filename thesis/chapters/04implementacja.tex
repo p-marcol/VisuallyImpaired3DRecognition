@@ -84,7 +84,7 @@ Aplikacja mobilna stanowi część kliencką systemu. Do jej zadań należy reje
 
 Implementacja aplikacji mobilnej została zrealizowana z wykorzystaniem technologii Kotlin Multiplatform i Compose Multiplatform. Kod aplikacji umieszczono w module \texttt{composeApp} i podzielono na pakiety odpowiadające częściom wspólnym i zależnym od platformy. W katalogu \texttt{commonMain} znajduje się kod współdzielony obsługujący logikę zarządzania stanem aplikacji, komunikację z serwerem, obsługę połączenia oraz wspólne elementy interfejsu użytkownika. Katalogi \texttt{androidMain} i \texttt{iosMain} zawierają implementacje korzystające z natywnych funkcji systemów Android i iOS, takich jak rejestrowanie obrazu, obsługa komend głosowych i odczytywanie komunikatów z serwera.
 
-Centralny punkt aplikacji stanowi klasa \texttt{StreamingController}, zarządzająca stanem połączenia i transmisji. Kontroluje ona również częstotliwość przesyłania kolejnych klatek oraz obsługuje żądania użytkownika i odpowiedzi serwera. Stan kontrolerze wykorzystywany jest przez interfejs użytkownika przygotowany w technologii Compose Multiplatform. Do współdzielonego interfejsu użytkownika dołączany jest natywny podgląd z kamery urządzenia.
+Centralny punkt aplikacji stanowi klasa \texttt{StreamingController}, zarządzająca stanem połączenia i transmisji. Kontroluje ona również częstotliwość przesyłania kolejnych klatek oraz obsługuje żądania użytkownika i odpowiedzi serwera. Stan kontrolera wykorzystywany jest przez interfejs użytkownika przygotowany w technologii Compose Multiplatform. Do współdzielonego interfejsu użytkownika dołączany jest natywny podgląd z kamery urządzenia.
 
 Zastosowanie technologii Kotlin Multiplatform umożliwiło rozpoczęcie prac nad aplikacją mobilną jednocześnie dla systemów Android i iOS. Wstępne testy implementacji ukazały jednak istotne problemy ze stabilnością i wydajnością aplikacji na systemie iOS. Z tego względu dalsze prace skupiono wyłącznie na aplikacji dla systemu Android, dla której zaimplementowano wszystkie funkcjonalności systemu. Kod aplikacji dla systemu iOS pozostawiono w repozytorium aby umożliwić dalszy rozwój tej gałęzi w przyszłości.
 
@@ -92,7 +92,7 @@ Zastosowanie technologii Kotlin Multiplatform umożliwiło rozpoczęcie prac nad
 
 Punktem wejścia do aplikacji jest klasa \texttt{MainActivity}, która uruchamia interfejs użytkownika i konfiguruje elementy wymagające dostępu do natywnych mechanizmów systemu: kamery, mikrofonu i syntezatora mowy. Rejestrowanie obrazu z kamery realizowane jest przy użyciu biblioteki CameraX, która udostępnia strumień kolejnych klatek. Ten obsługiwany jest mechanizmem \texttt{ImageAnalysis}, korzystając ze strategii \texttt{STRATEGY\_KEEP\_ONLY\_LATEST}. Przyjęcie jej sprawia, że w przypadku w którym aplikacja nie zdąży przetworzyć wszystkich klatek, zostaną one pominięte, a do przetwarzania zostanie wybrana najnowsza z nich. To podejście sprawia, że aplikacja nie generuje dodatkowego narzutu związanego z rosnącą długością kolejki obrazów i ogranicza opóźnienia pomiędzy pozycją bryły, a danymi przesyłanymi do serwera.
 
-Klatki zarejestrowane z kamery są przetwarzane w klasie \texttt{CameraAnalyzer}. Dane przekazywane przez CameraX są konwertowane z formatu \texttt{YUV\_420\_888} do układu \texttt{NV21}, a następnie kompresowane do formatu JPEG. Wykorzystanie sieci bezprzewodowej do przesyłania danych premiuje kompresję danych, ponieważ obniża to wymagania dotyczące przepustowości łącza i zmniejsza opóźnienia w transmisji. Po zakończeniu przygotowania klatki, jest ona przekazywana do dalszej obsługi, a obiekt \texttt{ImageProxy} jest zwalniany, by możliwe było przyjęcie kolejnych danych.
+Klatki zarejestrowane z kamery są przetwarzane w klasie \texttt{CameraAnalyzer}. Dane przekazywane przez CameraX są konwertowane z formatu \texttt{YUV\_420\_888} do układu \texttt{NV21}, a następnie kompresowane do formatu JPEG. Wykorzystanie sieci bezprzewodowej do przesyłania danych premiuje kompresję danych, ponieważ obniża to wymagania dotyczące przepustowości łącza i zmniejsza opóźnienia w transmisji. Po zakończeniu przygotowania klatki jest ona przekazywana do dalszej obsługi, a obiekt \texttt{ImageProxy} jest zwalniany, by możliwe było przyjęcie kolejnych danych.
 
 \subsection{Zarządzanie transmisją}
 \label{ssec:zarzadzanie_transmisja}
@@ -111,9 +111,9 @@ Interfejs użytkownika umożliwia włączanie i wyłączanie transmisji obrazu o
 \subsection{Obsługa interakcji głosowej}
 \label{ssec:interakcja_glosowa}
 
-Interakcja z systemem została zrealizowana w sposób, który nie wymaga od użytkownika niewidomego korzystania z ekranu dotykowego. Wersja aplikacji dla systemu Android wykorzystuje wbudowane mechanizmy rozpoznawania mowy za pomocą mechanizmu \texttt{SpeechRecognizer} w klasie \texttt{VoiceCommandRecognizer}. Rozpoznany tekst analizowany pod kątem występowania komendy głosowej, a w przypadku jej wykrycia, kontroler aplikacji wysyła do serwera odpowiednie żądanie. Obecna wersja aplikacji obsługuje jedynie komendy żądania informacji i nie przewiduje możliwości sterowania transmisją obrazu. Przyszłe wersje systemu mogą zostać rozbudowane o te funkcjonalności, ale założenie projektowe przewiduje, że osoba niewidoma będzie korzystała z systemu w towarzystwie osoby widzącej, mogącej sterować transmisją obrazu.
+Interakcja z systemem została zrealizowana w sposób, który nie wymaga od użytkownika niewidomego korzystania z ekranu dotykowego. Wersja aplikacji dla systemu Android wykorzystuje wbudowane mechanizmy rozpoznawania mowy za pomocą mechanizmu \texttt{SpeechRecognizer} w klasie \texttt{VoiceCommandRecognizer}. Rozpoznany tekst analizowany jest pod kątem występowania komendy głosowej, a w przypadku jej wykrycia, kontroler aplikacji wysyła do serwera odpowiednie żądanie. Obecna wersja aplikacji obsługuje jedynie komendy żądania informacji i nie przewiduje możliwości sterowania transmisją obrazu. Przyszłe wersje systemu mogą zostać rozbudowane o te funkcjonalności, ale założenie projektowe przewiduje, że osoba niewidoma będzie korzystała z systemu w towarzystwie osoby widzącej, mogącej sterować transmisją obrazu.
 
-Odpowiedzi otrzymywane z serwera są zapisywane w stanie aplikacji, a następnie przekazywane do mechanizmu \texttt{TextToSpeech}. Syntezator mowy odczytuje komunikaty z serwera w języku urządzenia. Jego wykorzystanie uniezależnia użytkownika od konieczności wejścia w interakcję z ekranem dotykowym, tym samym oferując pełną obsługę w trybie bezdotykowym.
+Odpowiedzi otrzymywane z serwera są zapisywane w stanie aplikacji, a następnie przekazywane do mechanizmu \texttt{TextToSpeech}. Syntezator mowy odczytuje komunikaty z serwera w języku urządzenia. Jego wykorzystanie uniezależnia użytkownika od konieczności wejścia w interakcję z ekranem dotykowym podczas żądania i odbierania informacji.
 
 Mechanizmy rozpoznawania i syntezy mowy są silnie zależne od platformy i systemu operacyjnego. Inicjacja żądania i obsługa treści odpowiedzi odbywa się jednak w części wspólnej aplikacji. Umożliwia to w przyszłości rozszerzenie aplikacji o kolejne systemy, bez konieczności ponownej implementacji sposobu komunikacji z serwerem.
 
@@ -128,18 +128,18 @@ Głównym punktem wejścia do serwera jest klasa \texttt{ApplicationRuntime}, kt
 
 Kod odpowiedzialny za połączenia został rozdzielony na dwa poziomy. Serwer WebSocket jest zarządzany przez klasę \texttt{CaptureServer}, która odpowiada również za kontrolę aktywnej sesji. Dla każdego klienta jest natomiast tworzona instancja klasy \texttt{CaptureSession}, odpowiadajaca za obsługę wiadomości i przetwarzanie przychodzących obrazów.
 
-Ustawienia serwera zgromadzono w pliku \texttt{settings.py}, gdzie możliwe jest wprowadzenie zmian dotyczących adresu i portu serwera, parametrów kolejki, konfiguracji mDNS oraz modelu detekcji. Wstawienia dotyczące bezpośrednio detekcji, jak jej próg pewnosci, rozmiar obrazu wejściowego i urządzenie wykorzystywane do obliczeń są przekazywane do modułu detekcji w momencie jego tworzenia. Zmiana tych parametrów wymaga ponownego uruchomienia serwera.
+Ustawienia serwera zgromadzono w pliku \texttt{settings.py}, gdzie możliwe jest wprowadzenie zmian dotyczących adresu i portu serwera, parametrów kolejki, konfiguracji mDNS oraz modelu detekcji. Ustawienia dotyczące bezpośrednio detekcji, jak jej próg pewności, rozmiar obrazu wejściowego i urządzenie wykorzystywane do obliczeń są przekazywane do modułu detekcji w momencie jego tworzenia. Zmiana tych parametrów wymaga ponownego uruchomienia serwera.
 
 Możliwa jest wymiana modelu detekcji na inny bez konieczności modyfikacji pozostałych elementów systemu. Wariant z interfejsem użytkownika umożliwia wybranie modelu z pliku \texttt{.pt}, korzystając z systemowego okna dialogowego. Jest on następnie ładowany przez klasę \texttt{YOLODetector}. Obiekt detektora nie jest zmieniany, więc sesje odwołują się do tej samej funkcji przetwarzającej, ale kolejne iteracje detekcji wykonywane są na nowym modelu. Wariant konsolowy wymaga podania ścieżki do modelu w pliku konfiguracyjnym i ponownego uruchomienia serwera.
 
 \subsection{Odbieranie i przygotowanie obrazu}
 \label{ssec:odb_prz_obrazu}
 
-Po zawarciu połączenia z klientem klasa \texttt{CaptureServer} tworzy obiekt \texttt{CaptureSession} do którego przekazuje funkcję wykonującą detekcję. Uruchomiona zostaje asynchroniczna pętla odbioru wiadomości. Jeżeli serwer rozpozna wiadomość binarną, jest ona traktowana jako klatka obrazu i przekazywana do dalszej obsługi.
+Po nawiązaniu połączenia z klientem klasa \texttt{CaptureServer} tworzy obiekt \texttt{CaptureSession} do którego przekazuje funkcję wykonującą detekcję. Uruchomiona zostaje asynchroniczna pętla odbioru wiadomości. Jeżeli serwer rozpozna wiadomość binarną, jest ona traktowana jako klatka obrazu i przekazywana do dalszej obsługi.
 
 Aby ograniczyć liczbę zaległych klatek, rozmiar kolejki wejściowej ustawiono na pojedynczą wiadomość. Metoda \texttt{\_drain\_to\_latest\_frame} sprawdza, czy w kolejce znajdują się kolejne dane binarne, a jeżeli tak, to zastępuje starszy obraz nowszym. Taki mechanizm nie gwarantuje zachowania wszystkich klatek, ale zmniejsza ryzyko wykonania detekcji na obrazie, który nie jest już aktualny i nie odpowiada aktualnemu położeniu bryły. Jeżeli serwer nie zdąży przetworzyć starszych klatek są one pomijane, a do detekcji przekazywana jest najnowsza z nich.
 
-Wiadomości są wstępnie sprawdzane pod kątem występowania plików JPEG na podstawie dwóch pierwszych bajtów \texttt{FF D8}. Następnie są one przekazywane do tablicy \texttt{NumPy}, gdzie dekodowane są do formatu z kanałami BGR korzystając z funkcji \texttt{cv2.imdecode}. W przypadku niepowodzenia dana wiadomość zostaje pominięta bez przerywania sesji. Poprawnie zdekodowany obraz jest zapamiętywany przez \texttt{CaptureSession}, a następnie przekazywany do modelu detekcji, dzięki czemu możliwe jest jego ponowne wykorzystanie. W chwili otrzymania żądania informacji zapamiętana klatka zostaje wysłana do zadania analizy, dzięki czemu kolejne obrazy mogą być odbierane przez serwer i przetwarzane w tle.
+Wiadomości binarne są wstępnie sprawdzane pod kątem występowania plików JPEG na podstawie dwóch pierwszych bajtów \texttt{FF D8}. Następnie są one przekazywane do tablicy \texttt{NumPy}, gdzie dekodowane są do formatu z kanałami BGR korzystając z funkcji \texttt{cv2.imdecode}. W przypadku niepowodzenia dana wiadomość zostaje pominięta bez przerywania sesji. Poprawnie zdekodowany obraz jest zapamiętywany przez \texttt{CaptureSession}, a następnie przekazywany do modelu detekcji, dzięki czemu możliwe jest jego ponowne wykorzystanie. W chwili otrzymania żądania informacji zapamiętana klatka zostaje wysłana do zadania analizy, dzięki czemu kolejne obrazy mogą być w tym czasie odbierane przez serwer i przetwarzane niezależnie.
 
 Wynikiem przetwarzania, zwracanym przez model, jest między innymi klatka z naniesionymi ramkami detekcji, która wykorzystywana jest w oknie podglądu. Częstotliwość z jaką aktualizowany jest podgląd nie jest zależna od inferencji. Brak aktualizacji podglądu nie oznacza, że nie została wykonana detekcja, a jedynie, że nie zdążyła ona zostać wyświetlona w interfejsie.
 
@@ -147,7 +147,7 @@ Wynikiem przetwarzania, zwracanym przez model, jest między innymi klatka z nani
 
 Ładowaniem i wykonywaniem detekcji obiektów zajmuje się klasa \texttt{YOLODetector}. W momencie jej inicjalizacji otrzymuje ona ścieżkę do modelu, minimalną wartość pewności detekcji, rozmiar obrazu wejściowego oraz urządzenie wykorzystywane do obliczeń. Model jest ładowany przy użyciu klasy \texttt{YOLO} z biblioteki \texttt{Ultralytics}. Wśród dostępnych urządzeń do obliczeń można wybrać warianty udostępniane przez bibliotekę \texttt{PyTorch}, w tym CPU, GPU i \texttt{MPS}. Domyślnie, w przypadku braku wyboru urządzenia, ten zostaje wybrany automatycznie przez biblioteki. Inferencja modelu odbywa się poprzez uruchomienie metody \texttt{annotate} w której obraz przekazywany jest do funkcji \texttt{model.predict} razem z parametrami wynikającymi z konfiguracji.
 
-Istnieje możliwość, że w wyniku detekcji na obrazie zostanie oznaczonych wiele obiektów. W takim przypadku wykorzystywana jest metoda \texttt{\_extract\_best\_detection}, która wybiera detekcję o najwyższej pewności detekcji. Następnie pobiera z niej informacje o klasie obiektu oraz jego współrzędnych na obrazie w postaci
+Istnieje możliwość, że w wyniku detekcji na obrazie zostanie oznaczonych wiele obiektów. W takim przypadku wykorzystywana jest metoda \texttt{\_extract\_best\_detection}, która wybiera detekcję o najwyższej wartości pewności. Następnie pobiera z niej informacje o klasie obiektu oraz jego współrzędnych na obrazie w postaci
 
 \begin{equation}
     B = (x_1,y_1,x_2,y_2)
@@ -164,7 +164,7 @@ Szczegółowa analiza obiektu jest wykonywana wyłącznie po otrzymaniu żądani
 
 Analiza wykonywana jest używając klasy \texttt{AnalysisWorker}. Wykorzystuje ona osobny wątek w obiekcie \texttt{ThreadPoolExecutor}, dzięki czemu może wykonywać obliczenia poza pętlą zdarzeń serwera. Takie rozdzielenie jest kluczowe szczególnie z punktu widzenia algorytmu analizy, którego czas działania może być dłuższy niż pozostałe operacje serwera.
 
-Zadanie analizy rozpoczyna się od pobrania aktualnie dostępnego wyniku detekcji i wyodrębnieniu z klatki wycinka odpowiadającego ramce detekcji. Dalsze przetwarzanie odbywa się w module \texttt{SliceAnalyzer}, gdzie po odebraniu wycinka i danych z modelu detekcji, przygotowywany jest tekst do przekazania użytkownikowi.
+Zadanie analizy rozpoczyna się od pobrania aktualnie dostępnego wyniku detekcji i wyodrębnienia z klatki wycinka odpowiadającego ramce detekcji. Dalsze przetwarzanie odbywa się w module \texttt{SliceAnalyzer}, gdzie po odebraniu wycinka i danych z modelu detekcji, przygotowywany jest tekst do przekazania użytkownikowi.
 
 \note{
     \LARGE DO OGARNIĘCIA!!!
@@ -180,7 +180,7 @@ Po zakończeniu analizy, tekst przygotowany przez moduł jest przekazywany do za
 
 Obsługa serwera i sesji odbywa się w pętli zdarzeń biblioteki \texttt{asyncio}. Operacje sieciowe realizowane są w sposób asynchroniczny, dzięki czemu oczekiwanie na nie nie blokuje procesu serwera.
 
-Operacje, które spodziewa się, że mogą trwać dłużej niż pozostałe i blokować pętlę zdarzeń są wykonywane poza głównym wątkiem serwera. Wykorzystują one mechanizm \texttt{asyncio.to\_thread}, a należą do nich: ładowanie modelu, inferencja, rejestrowanie i wyrejestrowanie usługi w sieci lokalnej. Inferencja, mimo oddzielnego wątku, pozostaje operacją sekwencyjnego przepływu obrazu -- sesja oczekuje na jej zakończeniem zanim rozpocznie kolejną iterację.
+Operacje, których wykonanie może trwać dłużej od pozostałych, a tym samym mogące blokować pętlę zdarzeń są wykonywane poza głównym wątkiem serwera. Wykorzystują one mechanizm \texttt{asyncio.to\_thread}, a należą do nich: ładowanie modelu, inferencja, rejestrowanie i wyrejestrowanie usługi w sieci lokalnej. Inferencja, mimo oddzielnego wątku, pozostaje operacją sekwencyjnego przepływu obrazu -- sesja oczekuje na jej zakończenie zanim rozpocznie kolejną iterację.
 
 Odmienne podejście przyjęto w przypadku analizy wycinka obrazu uruchamianej na żądanie klienta. Tutaj, po otrzymaniu żądania, jest ono przekazywane do nowego zadania, a obliczenia są delegowane do klasy workera, dzięki czemu nie jest blokowana główna pętla zdarzeń serwera. Umożliwia to wykonanie analizy w chwili żądania niezależnie od pracy sesji. Wynik jest zwracany do pętli zdarzeń, gdzie następuje jego dalsza obsługa. Zamknięcie sesji skutkuje anulowaniem wszystkich zadań analizy, które nie zostały jeszcze zakończone.
 
@@ -190,7 +190,7 @@ Wariant desktopowy dzieli przetwarzanie na dwa wątki wykonania. Główny wątek
 
 Do przygotowania interfejsu graficznego wykorzystano bibliotekę \texttt{PySide6}, Qt WebEngine i mechanizm \texttt{QWebChannel}. Warstwa prezentacji przygotowana jest w technologiach webowych: HTML, CSS i JavaScript. Komunikacja między interfejsem a backendem jest realizowana przez obiekt \texttt{DesktopBridge}.
 
-Klasą utrzymującą informacje dotyczące działania serwera jest \texttt{BackendController}, która pośredniczy w wymianie danych między interfejsem Qt a backendem. Do jej zadań należy odbiór obrazu podglądu, klasy obiektu, wartości pewności detekcji, stanu sesji i metryki transmisji. Dane, które mają zostać zaprezentowane użytkownikowi są następnie przekazywane do warstwy JavaScript z wykorzystaniem sygnałów Qt.
+Klasą utrzymującą informacje dotyczące działania serwera jest \texttt{BackendController}, która pośredniczy w wymianie danych między interfejsem Qt a backendem. Do jej zadań należy odbiór obrazu podglądu, klasy obiektu, wartości pewności detekcji, stanu sesji i metryk transmisji. Dane, które mają zostać zaprezentowane użytkownikowi są następnie przekazywane do warstwy JavaScript z wykorzystaniem sygnałów Qt.
 
 Obraz podglądu jest kodowany do JPEG i przekazywany do interfejsu w formie adresu danych w formacie Base64. Takie podejście niweluje konieczność zapisu danych na dysku. Informacje o wynikach detekcji są przekazywane oddzielnie, a częstotliwość ich aktualizacji została ograniczona w celu zmniejszenia narzutu związanego z renderowaniem interfejsu.
 
@@ -217,7 +217,7 @@ Rozłączeniu klienta towarzyszy zamknięcie podglądu w interfejsie serwera, wy
 \section{Komunikacja klient--serwer}
 \label{s:komunikacja}
 
-Komunikacja z serwerem, zgodnie z założeniami projektowymi, odbywa się w architekturze klient--serwer. Do jej realizacji wykorzystano protokół WebSocket, umożliwiający stałą komunikację dwukierunkową. Dzięki wykorzystaniu tego protokołu, możliwe jest przesyłanie ciągłego strumienia klatek oraz komunikatów sterujących pojedynczym kanałem komunikacyjnym, bez konieczności ponownego nawiązywania połączenia dla każdej wiadomości.
+Komunikacja z serwerem, zgodnie z założeniami projektowymi, odbywa się w architekturze klient--serwer. Do jej realizacji wykorzystano protokół WebSocket, umożliwiający stałą komunikację dwukierunkową. Dzięki wykorzystaniu tego protokołu, możliwe jest przesyłanie kolejnych klatek oraz komunikatów sterujących pojedynczym kanałem komunikacyjnym, bez konieczności ponownego nawiązywania połączenia dla każdej wiadomości.
 
 Do implementacji komunikacji aplikacja mobilna wykorzystuje bibliotekę \texttt{Ktor}, a część serwerowa bibliotekę \texttt{websockets}. Szczegóły implementacyjne przygotowania i przetwarzania obrazu przedstawiono w sekcjach \ref{s:implementacja_aplikacji} i \ref{s:implementacja_serwera}. Niniejsza sekcja skupia się na opisie wymiany danych pomiędzy rozproszonymi modułami systemu.
 
@@ -225,9 +225,9 @@ Do implementacji komunikacji aplikacja mobilna wykorzystuje bibliotekę \texttt{
 
 Aby możliwe było połączenie z serwerem konieczna jest znajomość jego adresu IP i portu. Można je wprowadzić ręcznie korzystając z pól interfejsu użytkownika, lub skorzystać z mechanizmu wykrywania usług w sieci lokalnej.
 
-Aplikacja przeznaczona na system Android wykorzystuje mechanizm Network Service Discovery (NSD), oparty na protokole mDNS. Serwer publikuje usługę typu \texttt{\_vi3dr.\_tcp.local.} w sieci lokalnej pod nazwą \texttt{VI3DR Server}. Po uruchomieniu wyszukiwania w aplikacji mobilnej i odnalezieniu usługi, pobrane zostają przypisany do niej adres IP i numer portu, które następnie przekazane do kontrolera transmisji automatycznie uzupełniają konfigurację połaczenia.
+Aplikacja przeznaczona na system Android wykorzystuje mechanizm Network Service Discovery (NSD), oparty na protokole mDNS. Serwer publikuje usługę typu \texttt{\_vi3dr.\_tcp.local.} w sieci lokalnej pod nazwą \texttt{VI3DR Server}. Po uruchomieniu wyszukiwania w aplikacji mobilnej i odnalezieniu usługi, pobrane zostają przypisane do niej adres IP i numer portu, które następnie przekazane do kontrolera transmisji automatycznie uzupełniają konfigurację połaczenia.
 
-Realizacja publikacji usługi po stronie serwera realizowana jest za pomocą biblioteki \texttt{zeroconf}. W rekordzie zawarte są również dodatkowe informacje dotyczące protokołu, wersji i ścieżki połączenia, aczkolwiek aktualna implementacja nie wykorzystuje ich w żaden sposób. W przyszłości mogą one zostać użyte do weryfikacji zgodności wersji i umożliwienia współpracy różnych wersji poszczególnych komponentów systemu.
+Publikacji usługi po stronie serwera realizowana jest za pomocą biblioteki \texttt{zeroconf}. W rekordzie zawarte są również dodatkowe informacje dotyczące protokołu, wersji i ścieżki połączenia, aczkolwiek aktualna implementacja nie wykorzystuje ich w żaden sposób. W przyszłości mogą one zostać użyte do weryfikacji zgodności wersji i umożliwienia współpracy różnych wersji poszczególnych komponentów systemu.
 
 Na podstawie odczytanych parametrów tworzony jest adres serwera w postaci \texttt{ws://<adres\_ip>:<port>}. Po rozpoczęciu transmisji aplikacja nawiązuje połączenie z serwerem i tworzy sesję obsługiwaną w klasie \texttt{FrameSocketClient}. Poprawne ustanowienie sesji skutkuje zmianą stanu na \textit{połączony} i od tego momentu możliwe jest wysyłanie kolejnych klatek obrazu oraz równoległa wymiana komunikatów sterujących w postaci wiadomości tekstowych.
 
@@ -240,7 +240,7 @@ W ramach połączenia, pomiędzy klientem a serwerem, wymieniane są wiadomości
 \begin{table}[htbp]
     \centering
     \caption{Podstawowe komunikaty protokołu klient--serwer}
-    \label{t:komunikaty_protokolu}
+    \label{tab:komunikaty_protokolu}
     \begin{tabularx}{\textwidth}{lllX}
 
         \toprule
@@ -290,7 +290,7 @@ W ramach połączenia, pomiędzy klientem a serwerem, wymieniane są wiadomości
     \end{tabularx}
 \end{table}
 
-Wiadomość binarna zawiera wyłącznie bajty obrazu zakodowanego w formacie JPEG. Zrezygnowano z dodatkowego nagłówka warstwy aplikacji i metadanych, mogących zawierać informacje o rozdzielczości obrazu, numerze klatki czy znaczniku czasu. Dodatkowy narzut związany z przesyłaniem tych danych mógłby spowodować zwiększenie opóźnień w transmisji, a nie są to informacje krytyczne z punktu widzenia działania systemu. Typ wiadomości protokołu WebSocket pozwala na odróżnienie danych obrazu od komunikatów sterujących, jednakże po stronie serwera sprawdzane są dwa początkowe bajty obrazu -- charakterystyczne dla formatu JPEG. Zawartość wiadomości jest następnie przekazywana do dalszego przetwarzania.
+Wiadomość binarna zawiera wyłącznie bajty obrazu zakodowanego w formacie JPEG. Zrezygnowano z dodatkowego nagłówka warstwy aplikacji i metadanych, mogących zawierać informacje o rozdzielczości obrazu, numerze klatki czy znaczniku czasu, ponieważ nie są one wymagane do prawidłowego działania systemu. Typ wiadomości protokołu WebSocket pozwala na odróżnienie danych obrazu od komunikatów sterujących, jednakże po stronie serwera sprawdzane są dwa początkowe bajty obrazu -- charakterystyczne dla formatu JPEG. Zawartość wiadomości jest następnie przekazywana do dalszego przetwarzania.
 
 Komunikaty sterujące mają postać tekstową i są przesyłane w formacie UTF-8. Rozwiązanie to ogranicza złożoność protokołu i pozwala na łatwe rozróżnienie poszczególnych operacji.
 
@@ -300,7 +300,7 @@ Po przygotowaniu obrazu przez aplikację mobilną, jest on przechowywany w formi
 
 Serwer, po odebraniu wiadomości binarnej, przekazuje ją do obiektu \texttt{CaptureSession}. W przypadku nagromadzenia wielu klatek preferowana jest najnowsza z nich. Szczegóły implementacyjne tego mechanizmu zostały opisane w sekcji \ref{ssec:odb_prz_obrazu}.
 
-Warstwa aplikacji nie implementuje ponownego przetwarzania pominiętych klatek -- nie jest to wymagane, ponieważ nowsze latki zastępują starsze. Protokół WebSocket korzysta z transportu TCP, zapewniającego uporządkowanie dostarczenia przesyłanych wiadomości.
+Warstwa aplikacji nie implementuje ponownego przetwarzania pominiętych klatek -- nie jest to wymagane, ponieważ nowsze klatki zastępują starsze. Protokół WebSocket korzysta z transportu TCP, zapewniającego uporządkowanie dostarczenia przesyłanych wiadomości.
 
 \subsection{Obsługa komunikatów sterujących}
 
@@ -312,9 +312,9 @@ Końcowym etapem analizy obiektu jest przekazanie przygotowanego tekstu z powrot
 
 \subsection{Cykl życia połączenia i obsługa błędów}
 
-Po ustanowieniu sesji aplikacja może rozpocząć się komunikacja aplikacji z serwerem, umożliwiając przekaz kolejnych klatek obrazu i wymianę komunikatów sterujących. Jeżeli użytkownik pragnie zakończyć transmisję, aplikacja wysyła do serwera wiadomość \texttt{stop} inicjując zamknięcie sesji. Połączenie może również zostać zakończone przez serwer poprzez wysłanie do aplikacji komunikatu \texttt{client\_stop}. Stosuje się go w przypadku próby połączenia kolejnego klienta lub zamknięcia procesu serwera. W obu przypadkach aplikacja mobilna zmienia stan na \textit{rozłączony} i wyświetla komunikat o zakończeniu sesji.
+Po ustanowieniu sesji możliwe jest rozpoczęcie komunikacji aplikacji z serwerem, poprzez przekaz kolejnych klatek obrazu i wymianę komunikatów sterujących. Jeżeli użytkownik pragnie zakończyć transmisję, aplikacja wysyła do serwera wiadomość \texttt{stop} inicjując zamknięcie sesji. Połączenie może również zostać zakończone przez serwer poprzez wysłanie do aplikacji komunikatu \texttt{client\_stop}. Stosuje się go w przypadku próby połączenia kolejnego klienta lub zamknięcia procesu serwera. W obu przypadkach aplikacja mobilna zmienia stan na \textit{rozłączony} i wyświetla komunikat o zakończeniu sesji.
 
-Błąd łączenia z serwerem powoduje przejście aplikacji do stanu błędu i wyświetlenie komunikatu. Nie są wykonywane automatyczne próby ponownego połączenia, więc wznowienie transmisji wymaga ręcznej interwencji użytkownika.
+Błąd podczas łączenia z serwerem powoduje przejście aplikacji do stanu błędu i wyświetlenie komunikatu. Nie są wykonywane automatyczne próby ponownego połączenia, więc wznowienie transmisji wymaga ręcznej interwencji użytkownika.
 
 Błędy pojedynczych wiadomości są izolowane i nie powodują przerwania sesji. Niepoprawne dane binarne są pomijane, a szczegółowe informacje dotyczące zachowania serwera w przypadku błędów zostały opisane w sekcji \ref{ssec:bledy}.
 
@@ -330,9 +330,9 @@ Do ekstrakcji klatek z nagrań wideo przygotowano skrypt znajdujący się w kata
 
 Nagranie otwierane jest przez klasę \texttt{VideoCapture}, a następnie odczytywane są jego kolejne klatki. Użytkownik może określić częstotliwość zapisu klatek za pomocą parametru wejściowego. Dla wartości $n$ zapisywana jest pierwsza klatka, a następnie co $n$-ta klatka. Jeżeli nie zostanie podana wartość parametru, zachowana zostaje każda klatka filmu.
 
-Obrazy zapisywane są zgodnie ze schematem \texttt{frame\_<n>} w formacie JPEG. Jeżeli w katalogu docelowym znajdują się już jakieś pliki, narzędzie sprawdza ich nazwy i kontynuuje numerację od najwyższego numeru. Umożliwia to wielokrotne uruchamianie ekstrakcji z różnych nagrań w tym samym katalogu, bez ryzyka nadpisania istniejących plików.
+Obrazy zapisywane są zgodnie ze schematem \texttt{frame\_<n>.jpeg} w formacie JPEG. Jeżeli w katalogu docelowym znajdują się już jakieś pliki, narzędzie sprawdza ich nazwy i kontynuuje numerację od najwyższego numeru. Umożliwia to wielokrotne uruchamianie ekstrakcji z różnych nagrań w tym samym katalogu, bez ryzyka nadpisania istniejących plików.
 
-Narzędzie nie modyfikuje w żaden sposób ekstrahowanych klatek, a zwraca obrazy bezpośrednio odczytane przez biblioteke. Nie są generowane również żadne adnotacje, a ich przygotowanie odbywa się w osobnym procesie.
+Narzędzie nie modyfikuje w żaden sposób ekstrahowanych klatek, a zwraca obrazy bezpośrednio odczytane przez bibliotekę. Nie generuje również żadnych adnotacji, ponieważ ich przygotowanie odbywa się w osobnym procesie.
 
 \subsection{Narzędzie do podziału zbioru danych}
 
@@ -351,26 +351,26 @@ Domyślny sposób działania narzędzia przewiduje kopiowanie plików do katalog
 
 \subsection{Narzędzia do treningu i testowania modeli}
 
-Najbardziej rozbudowanym narzędziem pomocniczym jest zestaw skryptów do treningu i testowania modeli detekcji, znajdujące się w katalogu \texttt{training}. Jego głównym punktem wejścia jest skrypt \texttt{train.py}, który uruchamia proces uczenia modelu wykorzystując bibliotekę \texttt{Ultralytics}.
+Najbardziej rozbudowanym narzędziem pomocniczym jest zestaw skryptów do treningu i testowania modeli detekcji, znajdujący się w katalogu \texttt{training}. Jego głównym punktem wejścia jest skrypt \texttt{train.py}, który uruchamia proces uczenia modelu wykorzystując bibliotekę \texttt{Ultralytics}.
 
 Skrypt umożliwia wskazanie pliku konfiguracji zbioru danych oraz modelu używanego jako punkt początkowy. Możliwe jest użycie istniejących wag modelu, zapisanych w pliku \texttt{.pt}, lub rozpoczęcie treningu od zera, na podstawie architektury opisanej w pliku \texttt{.yaml}. Istnieje również możliwość kontynuowania treningu na podstawie wcześniej zapisanego punktu kontrolnego. Parametry uczenia mogą zostać zmienione przy uruchomieniu skryptu korzystając z argumentów wiersza poleceń. Zmianie podlegają między innymi: rozmiar obrazu wejściowego, rozmiar batcha, liczba epok, liczba procesów roboczych, wartość patience, urządzenie obliczeniowe oraz ścieżka katalogu wynikowego. Brak podania parametrów skutkuje uruchomieniem treningu z wartościami domyślnymi. Urządzenie wykorzystywane do obliczeń jest wybierane na podstawie dostępności technologii: CUDA, MPS, a następnie CPU.
 
 Przed rozpoczęciem treningu sprawdzana jest poprawność konfiguracji zbioru danych w której wymagane są informacje o klasach oraz ścieżkach do katalogów z obrazami i adnotacjami dla zbiorów treningowego i walidacyjnego. Na potrzeby biblioteki tworzona jest następnie znormalizowana wersja konfiguracji, zapisywana w katalogu wynikowym.
 
-Nieprawidłowości przy konfiguracji skutkują przerwaniem skryptu uniemożliwiając rozpoczęcie treningu. Możliwe jest sprawdzenie poprawności konfiguracji bez uruchamiania procesu uczenia korzystajac z flagi \texttt{--dry-run}.
+Nieprawidłowości przy konfiguracji skutkują przerwaniem skryptu uniemożliwiając rozpoczęcie treningu. Możliwe jest sprawdzenie poprawności konfiguracji bez uruchamiania procesu uczenia korzystając z flagi \texttt{--dry-run}.
 
 Uczenie modelu wykonywane jest przez metodę \texttt{model.train} z biblioteki \texttt{Ultralytics}. Odpowiada ona za kolejne epoki treningowe, walidację, tworzenie punktów kontrolnych i zapisywanie wyników. Główne pliki tworzone podczas uczenia to \texttt{results.csv}, wagi \texttt{best.pt} i \texttt{last.pt} oraz wykresy przebiegu uczenia.
 
-Ocena modelu na wydzielonym zbiorze testującym jest realizowana przez skrypt \texttt{test.py}. Wykorzystuje on metodę walidacji z biblioteki \texttt{Ultralytics} z ustawieniem \texttt{split=test}. Wynikiem działania skryptu jest katalog \texttt{test} zawierający artefakty generowane przez bibliotekę, wśród których znajdują się między innymi macierze pomyłek i krzywe zależności.
+Ocena modelu na wydzielonym zbiorze testowym jest realizowana przez skrypt \texttt{test.py}. Wykorzystuje on metodę walidacji z biblioteki \texttt{Ultralytics} z ustawieniem \texttt{split=test}. Wynikiem działania skryptu jest katalog \texttt{test} zawierający artefakty generowane przez bibliotekę, wśród których znajdują się między innymi macierze pomyłek i krzywe zależności.
 
-Narzędzie udostępnia również skrypt \texttt{predict.py}, który umożliwia wykonanie predykcji na pojedynczym obrazie. Służy ono przede wszystkim do wizualnej kontroli wyników detekcji i nie wykonuje pełnej oceny modelu.
+Narzędzie udostępnia również skrypt \texttt{predict.py}, który umożliwia wykonanie predykcji na pojedynczym obrazie. Służy on przede wszystkim do wizualnej kontroli wyników detekcji i nie wykonuje pełnej oceny modelu.
 
 \subsection{Filtry wejściowe i zapis wyników}
 
-Mechanizm treningu umożliwia wprowadzenie dodatkowego przetwarzania obrazów przed ich przekazaniem do modelu. Moduł \texttt{filtered\_dataset} tworzy przetworzoną wersję zbioru danych, w której obrazy poddawane zostały filtrowaniu. Projekt zawiera dwa filtry: \texttt{GrayscaleFilter} i \texttt{SobelFilter}, jednakże możliwe jest przygotowanie własnych filtrów. Działają one jako niezależne moduły, przez co możliwe jest ich wskazanie przez narzędzie treningowe bez wprowadzania zmian w jego kodzie źródłowym. Istnieje również narzędzie umożliwiające podgląd działania filtrów na wybranych obrazach zbioru danych, bez ich zapisywania.
+Mechanizm treningu umożliwia wprowadzenie dodatkowego przetwarzania obrazów przed ich przekazaniem do modelu. Moduł \texttt{filtered\_dataset} tworzy przetworzoną wersję zbioru danych, w której obrazy poddawane zostały filtrowaniu. Projekt zawiera dwa filtry: \texttt{GrayscaleInputFilter} i \texttt{SobelInputFilter}, jednakże możliwe jest przygotowanie własnych filtrów. Działają one jako niezależne moduły, przez co możliwe jest ich wskazanie przez narzędzie treningowe bez wprowadzania zmian w jego kodzie źródłowym. Istnieje również narzędzie umożliwiające podgląd działania filtrów na wybranych obrazach zbioru danych, bez ich zapisywania.
 
 Uczenie odbywa się na przetworzonych obrazach, a po zakończeniu treningu zapisywany jest dodatkowy plik wag zawierający warstwę filtrującą na wejściu modelu. Dzięki temu nie jest konieczne przetwarzanie obrazów w aplikacji mobilnej ani w serwerze, a model może być używany wprost na obrazach kolorowych.
 
-Oprócz plików domyślnie zapisywanych przez bibliotekę \texttt{Ultralytics} projekt generuje również dodatkowe artefakty, podsumowujące przebieg uczenia. Odpowiedni moduł odczytuje z wyników wartości metryk, na których podstawie oblicza dodatkowo wartość F1-score. Ponadto w trakcie treningu śledzona jest najlepsza epoka na podstawie wartości metryki \texttt{mAP50-95}, której wyniki zapisywane są w osobnym pliku \texttt{run\_stats.json}.
+Oprócz plików domyślnie zapisywanych przez bibliotekę \texttt{Ultralytics} projekt generuje również dodatkowe artefakty, podsumowujące przebieg uczenia. Odpowiedni moduł odczytuje z wyników wartości metryk, na których podstawie oblicza dodatkowo wartość F1-score. Ponadto skanuje plik z wynikami poszczególnych epok i zapisuje wyniki najlepszej epoki w formie pliku \texttt{run\_stats.json}.
 
-Aktualna implementacja nie umożliwia wykonania automatycznego zestawienia wyników wielu niezależnych eksperymentów. Każde uruchomienie jest zapisywane w osobnym katalogu, które następnie mogą zostać wykorzystane do ręcznej analizy. W przyszłości możliwe jest przygotowanie dodatkowego narzędzia, dedykowanego do tego celu.
+Aktualna implementacja nie umożliwia wykonania automatycznego zestawienia wyników wielu niezależnych eksperymentów. Każde uruchomienie jest zapisywane w osobnym katalogu, którego zawartość może następnie zostać wykorzystana do ręcznej analizy. W przyszłości możliwe jest przygotowanie dodatkowego narzędzia, dedykowanego do tego celu.
