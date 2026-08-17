@@ -144,7 +144,7 @@ Skrypt treningowy \texttt{train.py} umożliwia konfigurację wielu parametrów t
           % \item \textbf{urządzenie} -- urządzenie, na którym przeprowadzono trening: NVIDIA A100, NVIDIA L40S, NVIDIA RTX 4060
           % \item \textbf{system operacyjny} -- system operacyjny, na którym przeprowadzono trening: Ubuntu 22.04, Windows 11.
 \end{itemize}
-Łącznie wytrenowano 8 modeli, które pozwoliły na przeprowadzenie eksperymentów i porównanie jakości detekcji pomiędzy nimi.
+Łącznie wytrenowano 7 modeli, które pozwoliły na przeprowadzenie eksperymentów i porównanie jakości detekcji pomiędzy nimi.
 
 Urządzenia wykorzystane do treningu były wybierane według dostępności w danym momencie, a nie według ich wydajności. Trening na karcie graficznej NVIDIA RTX 4060 był wykonywany na lokalnym komputerze z systemem Windows~11, a treningi na pozostałych kartach odbywały się w chmurze za pomocą platformy RunPod z systemem Ubuntu~22.04. Wybór urządzenia i systemu operacyjnego miał wpływ jedynie na czas treningu, a nie na jakość detekcji.
 
@@ -175,9 +175,12 @@ Najważniejszą z używanych metryk jest $mAP50\text{-}95$, ponieważ uwzględni
 
 Do porównania należy wykorzystać metryki, które zostały wyznaczone na zbiorze testowym, a nie na zbiorze walidacyjnym. Zbiór walidacyjny służy wyłącznie do oceny jakości predykcji podczas treningu do wyznaczenia najlepszej epoki treningu, podczas gdy zbiór testowy jest wykorzystywany do końcowej oceny modelu. Ważne jest również, aby przy każdym eksperymencie używać dokładnie tego samego zbioru testowego, aby zachować miarodajne porównanie poszczególnych modeli. Wyniki tej oceny stanowią podstawę do porównania modeli przedstawionego w rozdziale~\ref{c:badania}.
 
-Nie porównywano czasu inferencji, zużycia pamięci ani liczby możliwych do przetworzenia klatek na sekundę, ponieważ są to wartości silnie zależne od używanego urządzenia obliczeniowego, przepustowości sieci oraz obciążenia systemu operacyjnego. Każdy przypadek wdrożenia systemu należy oceniać indywidualnie, a nie na podstawie wyników eksperymentów. Wartości te nie wpływają na ocenę jakości detekcji, a jedynie na kulturę pracy systemu.
+Oprócz metryk jakości detekcji przy końcowym porównaniu modeli uwzględniono liczbę ich parametrów, koszt obliczeniowy wyrażony w GFLOPs, rozmiar pliku modelu oraz czas inferencji i wynikającą z niego liczbę przetwarzanych klatek na sekundę. Wartości te zebrano w dwóch niezależnych seriach pomiarowych na pojedynczym urządzeniu.
+
+Nie porównywano pełnego czasu odpowiedzi ponieważ jest on silnie zależny od używanego urządzenia obliczeniowego, przepustowości sieci oraz obciążenia systemu operacyjnego. Każdy przypadek wdrożenia systemu należy oceniać indywidualnie, na podstawie wyników eksperymentów przeprowadzonych na docelowym sprzęcie i w docelowych warunkach pracy.
 
 \subsection{Procedura eksperymentalna}
+\label{ssec:procedure}
 
 Aby móc dokonać porównania jakości detekcji pomiędzy poszczególnymi wariantami modeli należy podzielić je na eksperymenty. Każdy z nich polegał na wytrenowaniu kilku, porównywalnych modeli, które różniły się pojedynczym parametrem. Wykonano następujące eksperymenty:
 

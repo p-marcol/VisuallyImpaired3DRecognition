@@ -75,14 +75,14 @@ Mimo że dzisiejsza technika detekcji obiektów w obrazach opiera się głównie
 Detekcja jest zadaniem trudniejszym od klasyfikacji obrazu, ponieważ oprócz określenia, jakie obiekty znajdują się na obrazie, musi również wskazać ich położenie. Sama klasyfikacja opiera się na przypisaniu jednej lub kilku etykiet do całego obrazu, co w wielu przypadkach może być niewystarczające. Lokalizacja rozszerza klasyfikację o wyznaczenie ramki ograniczającej (ang. \english{bounding box}) określającej położenie obiektu, najczęściej zakładając pojedynczą instancję. Zadaniem detekcji jest więc odnalezienie wszystkich istotnych obiektów na obrazie, a następnie przypisanie odpowiadających im klas i określenie ich położenia \cite{bib:redmon2016lookonceunifiedrealtime}. Wynik działania detektora może być przedstawiony jako zbiór predykcji:
 
 \begin{equation}
-	D = \left\{ \left(c_i, b_i, p_i\right) \right\}_{i=1}^{N},
+    D = \left\{ \left(c_i, b_i, p_i\right) \right\}_{i=1}^{N},
 \end{equation}
 gdzie $N$ jest liczbą wykrytych obiektów, $c_i$ to przewidywana klasa $i$-tego obiektu, $b_i$ opisuje jego ramkę, a $p_i$ jest wartością pewności predykcji.
 
 Ramka ograniczająca najczęściej jest prostokątem opisanym współrzędnymi dwóch przeciwległych narożników lub częściej współrzędnymi środka, szerokości i wysokości:
 
 \begin{equation}
-	b_i = \left(x_i, y_i, w_i, h_i\right),
+    b_i = \left(x_i, y_i, w_i, h_i\right),
 \end{equation}
 gdzie $x_i$ i $y_i$ określają położenie środka ramki, a $w_i$ i $h_i$ jej szerokość oraz wysokość. Zależnie od implementacji każda z tych wartości może być wyrażona w pikselach lub znormalizowana względem rozmiaru obrazu. Drugie podejście uniezależnia reprezentację ramki od rozdzielczości obrazu wejściowego i jest powszechnie stosowane przy adnotacjach i predykcji.
 
@@ -125,59 +125,59 @@ Pierwszą propozycją zastosowania tego podejścia w detekcji obiektów jest mod
 Przytoczone metody detekcji obiektów różnią się od siebie przede wszystkim sposobem wyznaczania położenia obiektów na obrazie, złożonością obliczeniową oraz ich stosunkiem pomiędzy dokładnością a szybkością działania. Zestawienie ich najważniejszych właściwości, ważnych z punktu widzenia systemu, przedstawiono w tabeli~\ref{tab:porownanie_metod_detekcji}.
 
 \begin{table}[ht]
-	\centering
-	\small
-	\setlength{\tabcolsep}{4pt}
-	\renewcommand{\arraystretch}{1.25}
-	\caption{Porównanie wybranych metod detekcji obiektów}
-	\label{tab:porownanie_metod_detekcji}
-	\begin{tabularx}{\textwidth}{
-		>{\raggedright\arraybackslash}p{1.8cm}
-		>{\raggedright\arraybackslash}p{3.3cm}
-		>{\raggedright\arraybackslash}X
-		>{\raggedright\arraybackslash}X
-		}
-		\toprule
-		\textbf{Metoda}                                                                                            &
-		\textbf{Charakterystyka}                                                                                   &
-		\textbf{Atuty}                                                                                             &
-		\textbf{Ograniczenia}                                                                                                   \\
-		\midrule
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \renewcommand{\arraystretch}{1.25}
+    \caption{Porównanie wybranych metod detekcji obiektów}
+    \label{tab:porownanie_metod_detekcji}
+    \begin{tabularx}{\textwidth}{
+        >{\raggedright\arraybackslash}p{1.8cm}
+        >{\raggedright\arraybackslash}p{3.3cm}
+        >{\raggedright\arraybackslash}X
+        >{\raggedright\arraybackslash}X
+        }
+        \toprule
+        \textbf{Metoda}                                                                                            &
+        \textbf{Charakterystyka}                                                                                   &
+        \textbf{Atuty}                                                                                             &
+        \textbf{Ograniczenia}                                                                                                   \\
+        \midrule
 
-		Metody klasyczne                                                                                           &
-		Ręcznie projektowane cechy i osobne etapy przetwarzania                                                    &
-		Niewielkie wymagania obliczeniowe, interpretowalność i możliwość działania w kontrolowanych warunkach      &
-		Konieczność ręcznego określania cech, wrażliwość na zmianę oświetlenia, tła, orientacji i częściowe zasłonięcie obiektu \\
+        Metody klasyczne                                                                                           &
+        Ręcznie projektowane cechy i osobne etapy przetwarzania                                                    &
+        Niewielkie wymagania obliczeniowe, interpretowalność i możliwość działania w kontrolowanych warunkach      &
+        Konieczność ręcznego określania cech, wrażliwość na zmianę oświetlenia, tła, orientacji i częściowe zasłonięcie obiektu \\
 
-		\addlinespace
+        \addlinespace
 
-		Faster R-CNN                                                                                               &
-		Dwuetapowe generowanie propozycji regionów, ich klasyfikacja i dopasowanie ramek                           &
-		Wysoka skuteczność i dokładne określenie położenia obiektów                                                &
-		Większa złożoność obliczeniowa i opóźnienie wynikające z przetwarzania dwuetapowego                                     \\
-		\addlinespace
+        Faster R-CNN                                                                                               &
+        Dwuetapowe generowanie propozycji regionów, ich klasyfikacja i dopasowanie ramek                           &
+        Wysoka skuteczność i dokładne określenie położenia obiektów                                                &
+        Większa złożoność obliczeniowa i opóźnienie wynikające z przetwarzania dwuetapowego                                     \\
+        \addlinespace
 
-		SSD                                                                                                        &
-		Jednoetapowe predykcje na mapach cech o różnych rozdzielczościach                                          &
-		Krótki czas odpowiedzi i możliwość wykrywania obiektów o różnych rozmiarach                                &
-		Zależność od konfiguracji ramek domyślnych i gorsze wyniki dla małych obiektów                                          \\
+        SSD                                                                                                        &
+        Jednoetapowe predykcje na mapach cech o różnych rozdzielczościach                                          &
+        Krótki czas odpowiedzi i możliwość wykrywania obiektów o różnych rozmiarach                                &
+        Zależność od konfiguracji ramek domyślnych i gorsze wyniki dla małych obiektów                                          \\
 
-		\addlinespace
+        \addlinespace
 
-		YOLO                                                                                                       &
-		Jednoetapowa predykcja klas i ramek ograniczających                                                        &
-		Szybkie działanie, możliwość pracy w czasie rzeczywistym i dostępność wariantów modelu                     &
-		Konieczny kompromis pomiędzy szybkością a skutecznością, szczególnie przy małych lub częściowo zasłoniętych obiektach   \\
+        YOLO                                                                                                       &
+        Jednoetapowa predykcja klas i ramek ograniczających                                                        &
+        Szybkie działanie, możliwość pracy w czasie rzeczywistym i dostępność wariantów modelu                     &
+        Konieczny kompromis pomiędzy szybkością a skutecznością, szczególnie przy małych lub częściowo zasłoniętych obiektach   \\
 
-		\addlinespace
+        \addlinespace
 
-		DETR                                                                                                       &
-		Bezpośrednia predykcja zbioru obiektów z wykorzystaniem transformera i mechanizmu uwagi                    &
-		Modelowanie globalnych zależności w scenie i brak konieczności używania ramek domyślnych ani algorytmu NMS &
-		Długi trening i trudniejsza optymalizacja                                                                               \\
+        DETR                                                                                                       &
+        Bezpośrednia predykcja zbioru obiektów z wykorzystaniem transformera i mechanizmu uwagi                    &
+        Modelowanie globalnych zależności w scenie i brak konieczności używania ramek domyślnych ani algorytmu NMS &
+        Długi trening i trudniejsza optymalizacja                                                                               \\
 
-		\bottomrule
-	\end{tabularx}
+        \bottomrule
+    \end{tabularx}
 \end{table}
 
 Zestawienie nie wskazuje jednego najlepszego rozwiązania, ale przedstawia zalety i wady poszczególnych metod. Wybór podejścia zależy od nałożonych wymagań oraz ograniczeń sprzętowych i środowiskowych. W projektowanym systemie szczególnie ważny jest krótki czas reakcji, odporność na zmieniające się warunki środowiskowe oraz zachowanie odpowiedniej skuteczności. Tych założeń -- w większości -- nie spełniają, mimo niewielkich wymagań, rozwiązania klasyczne będąc silnie zależnymi od ręcznie dobieranych cech i warunków. Detektory dwuetapowe mogą natomiast osiągać wysoką skuteczność, ale oddzielne generowanie i przetwarzanie skutkuje zwiększeniem ich złożoności obliczeniową i czasu uzyskania odpowiedzi. Z tych względów uwagę należy kierować na detektory jednoetapowe, które oferują kompromis między czasem i skutecznością detekcji. Predykcje o wartości pewności niższej od ustalonego progu mogą zostać odrzucone, ograniczając ryzyko przekazania użytkownikowi wyników, których model nie jest dostatecznie pewny \cite{bib:pratap2025adaptiveobjectdetectionindoor}.
@@ -192,19 +192,19 @@ Wykorzystanie detektora opartego na architekturze transformera nie jest w tym wy
 Ocena modeli detekcji obiektów wymaga zastosowania odpowiednich metryk, które pozwalają na porównanie uzyskanych wyników. Metryki te powinny uwzględniać zarówno poprawność klasyfikacji, jak i dokładność lokalizacji obiektu na obrazie. W przeciwieństwie do klasyfikacji obrazów, przy detekcji nie wystarczy, aby model poprawnie rozpoznał klasę obiektu. Równie istotne jest, aby poprawnie wyznaczył ramkę ograniczającą wokół wykrytego obiektu. Jedną z najczęściej stosowanych metryk jest IoU (ang. \english{Intersection over Union}), określająca stopień pokrycia między ramką obiektu przewidywaną przez model a ramką rzeczywistą \cite{bib:detectionMetrics}. Wartość IoU obliczana jest jako stosunek pola części wspólnej obu ramek do pola ich części łącznej:
 
 \begin{equation}
-	IoU = \frac{|B_p \cap B_{gt}|}{|B_p \cup B_{gt}|},
+    IoU = \frac{|B_p \cap B_{gt}|}{|B_p \cup B_{gt}|},
 \end{equation}
 gdzie $B_p$ jest ramką przewidywaną przez model, a $B_{gt}$ jest ramką referencyjną (ang. \english{ground truth}). Im większa wartość IoU, tym lepsze dopasowanie ramki przewidywanej do ramki rzeczywistej. W praktyce najczęściej stosuje się progi, np. $IoU \geq 0,5$, aby zdecydować, czy dana detekcja może być uznana za poprawną. Próg ten został wykorzystany w wielu klasycznych procedurach oceny detekcji, takich jak PASCAL VOC \cite{bib:PASCALVOCChallenge}, i jest nadal powszechnie stosowany w wielu benchmarkach. Na podstawie wartości IoU oraz zgodności klasy obiektu możliwe jest przypisanie wyników detekcji do jednej z kategorii: prawdziwych pozytywów (TP, ang. \english{true positive}), fałszywych pozytywów (FP, ang. \english{false positive}) i fałszywych negatywów (FN, ang. \english{false negative}). Detekcja jest traktowana jako TP, jeżeli model poprawnie rozpoznał klasę obiektu, a przewidywana ramka spełnia zadany próg IoU względem ramki referencyjnej. FP to detekcja błędna, w której model przewidział klasę obiektu, ale nie spełnił progu IoU lub przewidziana klasa była błędna. FN natomiast to sytuacja, w której model nie wykrył obiektu, który rzeczywiście był na obrazie.
 
 Jedną z podstawowych metryk oceny jest precyzja (ang. \english{precision}), określająca udział poprawnych detekcji modelu wśród wszystkich detekcji, jakie zwrócił:
 
 \begin{equation}
-	Precision = \frac{TP}{TP + FP}.
+    Precision = \frac{TP}{TP + FP}.
 \end{equation}
 Wysoka precyzja oznacza, że model generuje niewiele fałszywych pozytywów. Drugą, powiązaną z nią metryką, jest czułość (ang. \english{recall}), określająca, jaki jest udział poprawnych detekcji wśród wszystkich rzeczywistych obiektów:
 
 \begin{equation}
-	Recall = \frac{TP}{TP + FN}.
+    Recall = \frac{TP}{TP + FN}.
 \end{equation}
 
 Obie metryki pozostają ze sobą w relacji kompromisu, ponieważ zwiększenie progu pewności detekcji może ograniczyć liczbę fałszywych pozytywów, ale jednocześnie prowadzić do pominięcia części rzeczywistych obiektów. Z kolei obniżenie tego progu może zwiększyć liczbę detekcji, ale równocześnie powodować wzrost liczby fałszywych detekcji. Z tego względu, przy analizie detektorów często łączy się je w jedną metrykę -- krzywą PR (precyzja-czułość, ang. \english{precision-recall curve}), przedstawiającą zależność pomiędzy nimi dla różnych wartości progu decyzyjnego. Na jej podstawie wyznacza się metrykę AP (ang. \english{Average Precision}), odpowiadającą polu pod krzywą PR.
@@ -212,18 +212,26 @@ Obie metryki pozostają ze sobą w relacji kompromisu, ponieważ zwiększenie pr
 W przypadku detekcji wieloklasowej używa się średniej wartości AP obliczonej dla wszystkich klas, określanej jako $mAP$ (ang. \english{mean Average Precision}):
 
 \begin{equation}
-	mAP = \frac{1}{N} \sum_{i=1}^{N} AP_i,
+    mAP = \frac{1}{N} \sum_{i=1}^{N} AP_i,
 \end{equation}
 gdzie $N$ jest liczbą klas, a $AP_i$ jest wartością AP dla $i$-tej klasy. W praktyce najczęściej wykorzystuje się dwie wersje tej metryki: $mAP50$, gdzie detekcję uznaje się za poprawną przy progu $IoU \geq 0,5$, oraz $mAP50\text{-}95$, gdzie wynik jest uśredniany dla progów $IoU$ z zakresu od $0,5$ do $0,95$ ze skokiem $0,05$. Pierwsza z nich jest bardziej liberalna i pozwala określić ogólną zdolność modelu do wykrycia obiektu. Druga natomiast jest bardziej rygorystyczna, ponieważ wymaga dokładniejszego dopasowania ramek ograniczających, dzięki czemu lepiej pokazuje zarówno skuteczność klasyfikacji, jak i lokalizacji obiektu. Uśrednianie wyników dla wielu progów zostało szeroko zastosowane m.in. w metodyce oceny detekcji zbioru Microsoft COCO \cite{bib:microsoftCOCO} i jest obecnie standardem w wielu benchmarkach detekcji obiektów.
 
 Dodatkowo, w pracy wykorzystano metrykę $F1$-score, będącą średnią harmoniczną precyzji i czułości:
 
 \begin{equation}
-	F_1 = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall}.
+    F_1 = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall}.
 \end{equation}
 Metryka ta umożliwia przedstawienie kompromisu pomiędzy liczbą fałszywych detekcji a liczbą pominiętych obiektów. Może być szczególnie przydatna, gdy sama precyzja lub czułość nie dają pełnego obrazu jakości modelu. W niniejszej pracy metrykę $F1$-score wykorzystano jako metrykę pomocniczą względem podstawowych metryk $mAP50$ i $mAP50\text{-}95$, aby lepiej zrozumieć kompromis pomiędzy precyzją a czułością w kontekście detekcji obiektów dotykanych przez użytkownika.
 
 Oprócz wartości liczbowych wykorzystano również macierze pomyłek (ang. \english{confusion matrix}), pozwalające przeanalizować, które klasy obiektów są najczęściej mylone przez model. Są one przedstawiane w formie tabel, w których jedna oś odpowiada rzeczywistym klasom, a druga klasom przewidywanym przez model. Dla dobrze działającego modelu większość wartości powinna znajdować się na przekątnej macierzy, co wskazuje na poprawną klasyfikację obiektów. Macierze pomyłek są szczególnie istotne przy rozpoznawaniu brył geometrycznych o podobnych kształtach, np. sześcianu i prostopadłościanu, ponieważ sama wartość mAP nie wskazuje bezpośrednio, pomiędzy którymi klasami model popełnia najwięcej błędów. Analiza macierzy pomyłek może również pomóc w identyfikacji problemów z danymi treningowymi, np. niedostatecznej liczby przykładów dla wybranych klas lub błędów w oznaczeniach.
+
+Skuteczność detekcji w systemach czasu rzeczywistego nie zależy jednak wyłącznie od dokładności predykcji, ale również od czasu potrzebnego na jej uzyskanie i kosztu obliczeniowego jaki należy ponieść. Podstawowymi metrykami w tym kontekście są liczba parametrów modelu, liczba operacji wykonywanych podczas inferencji oraz czas potrzebny na przetworzenie pojedynczego obrazu. Liczba parametrów modelu wpływa na rozmiar modelu i jego zapotrzebowanie na pamięć, a koszt obliczeniowy może zostać wyrażony w liczbie operacji zmiennoprzecinkowych (ang. \english{floating point operations}, FLOPs). W praktyce miarę wydajności modelu wskazuje czas inferencji, określający czas potrzebny na przetworzenie pojedynczego obrazu.
+
+Powiązana z czasem inferencji jest liczba klatek na sekundę (ang. \english{frames per second}, FPS), określająca liczbę obrazów, które model jest w stanie przetworzyć w ciągu pojedynczej sekundy. Przy sekwencyjnym przetwarzaniu obrazów można ją przybliżyć jako odwrotność czasu inferencji:
+\begin{equation}
+    FPS \approx \frac{1000}{t_{\mathrm{inf}}},
+\end{equation}
+gdzie $t_{\mathrm{inf}}$ stanowi czas inferencji wyrażony w milisekundach. Obie wartości są silnie zależne od zastosowanego sprzętu, oprogramowania, rozmiaru obrazu wejściowego oraz sposobu wykonania pomiaru. Z tego powodu ich bezpośrednie porównanie może zostać wykonane jedynie wtedy, gdy ich wartości zostały uzyskane w jednakowych warunkach. W niniejszej pracy zostały wykorzystane jako metryki pomocnicze przy ocenie kompromisu pomiędzy skutecznością detekcji a kosztem działania modelu.
 
 \section{Rodzina modeli YOLO}
 \label{s:yolo}
@@ -241,31 +249,31 @@ Pierwszy model YOLO składał się z CNN złożonej z 24 warstw konwolucyjnych i
 Dla obrazów ze zbioru PASCAL VOC wejście sieci miało rozmiar $448 \times 448$ pikseli, które następnie były przekształcane w logiczną siatkę o wymiarach $S \times S$. W zastosowanej konfiguracji sieci przyjęto wartość $S=7$ dzielącą obraz na 49 komórek. Wykrycie obiektu następowało w oparciu o komórkę, w której znajdował się środek jego ramki ograniczającej. Każda z komórek mogła przewidzieć $B=2$ ramki, wartości ich pewności i prawdopodobieństwa $C=20$ klas obiektów występujących w zbiorze. Rozmiar tensora był definiowany jako $S \times S \times (B \cdot 5 + C)$, co w omawianym przypadku dawało tensor o wymiarach $7 \times 7 \times 30$. Każda ramka opisana była za pomocą pięciu wartości: współrzędnych środka ramki, jej szerokości i wysokości oraz wartości pewności predykcji. Jednoczesne przewidywanie ramek i klas obiektów w pojedynczym kroku wyeliminowało wymaganie stosowania oddzielnych etapów generowania propozycji regionów i ich klasyfikacji. Schemat przedstawiony na rysunku~\ref{fig:yolov1_architektura} pokazuje uproszczoną architekturę pierwszego modelu YOLO, w której, pomimo stosunkowo prostej budowy, udało się połączyć w jeden model zarówno klasyfikację, jak i lokalizację obiektów.
 
 \begin{figure}[ht] % Uproszczony schemat architektury pierwszego modelu YOLO
-	\centering
-	\begin{tikzpicture}[
-			node distance=0.8cm,
-			block/.style={
-					draw,
-					rounded corners,
-					minimum width=3.2cm,
-					minimum height=0.9cm,
-					align=center
-				},
-			arrow/.style={->, thick}
-		]
+    \centering
+    \begin{tikzpicture}[
+            node distance=0.8cm,
+            block/.style={
+                    draw,
+                    rounded corners,
+                    minimum width=3.2cm,
+                    minimum height=0.9cm,
+                    align=center
+                },
+            arrow/.style={->, thick}
+        ]
 
-		\node[block] (input) {Obraz wejściowy\\$448\times448\times3$};
-		\node[block, right=of input] (conv) {24 warstwy\\konwolucyjne};
-		\node[block, right=of conv] (fc) {2 warstwy\\w pełni połączone};
-		\node[block, right=of fc] (output) {Predykcja\\$7\times7\times30$};
+        \node[block] (input) {Obraz wejściowy\\$448\times448\times3$};
+        \node[block, right=of input] (conv) {24 warstwy\\konwolucyjne};
+        \node[block, right=of conv] (fc) {2 warstwy\\w pełni połączone};
+        \node[block, right=of fc] (output) {Predykcja\\$7\times7\times30$};
 
-		\draw[arrow] (input) -- (conv);
-		\draw[arrow] (conv) -- (fc);
-		\draw[arrow] (fc) -- (output);
+        \draw[arrow] (input) -- (conv);
+        \draw[arrow] (conv) -- (fc);
+        \draw[arrow] (fc) -- (output);
 
-	\end{tikzpicture}
-	\caption{Uproszczony schemat architektury pierwszego modelu YOLO \cite{bib:redmon2016lookonceunifiedrealtime}.}
-	\label{fig:yolov1_architektura}
+    \end{tikzpicture}
+    \caption{Uproszczony schemat architektury pierwszego modelu YOLO \cite{bib:redmon2016lookonceunifiedrealtime}.}
+    \label{fig:yolov1_architektura}
 \end{figure}
 
 % Ewolucja
@@ -273,65 +281,65 @@ Dla obrazów ze zbioru PASCAL VOC wejście sieci miało rozmiar $448 \times 448$
 Kolejne wersje YOLO przyniosły przede wszystkim zmiany w architekturze przez stosowanie coraz wydajniejszych modułów sieci, korzystanie z kilku skal obrazu i modyfikację sposobu generowania ramek ograniczających. Z czasem architekturę opartą na pojedynczej siatce zastąpiono architekturami wykorzystującymi wieloskalowe mapy cech. Zmodernizowano również sposób w jaki łączone są informacje z różnych warstw sieci, a także budowę głowic. Dzięki temu, współczesne modele można przedstawić za pomocą trzech głównych elementów: \english{backbone}, \english{neck} i \english{head}. Najważniejsze wersje i zmiany w ich architekturze zestawiono w tabeli~\ref{tab:porownanie_wersji_YOLO}.
 
 \begin{table}[ht] % Porównanie wybranych wersji modeli YOLO
-	\centering
-	\small
-	\renewcommand{\arraystretch}{1.2}
-	\caption{Wybrane etapy rozwoju architektury modeli YOLO.
-		Opracowanie własne na podstawie
-		\cite{bib:redmon2016lookonceunifiedrealtime,
-			bib:redmon2018yolov3incrementalimprovement,
-			bib:ultralytics_yolo_architecture,
-			bib:jocher2026ultralyticsyolo26}.
-	}
-	\label{tab:porownanie_wersji_YOLO}
-	\begin{tabularx}{\textwidth}{
-		>{\raggedright\arraybackslash}p{2.5cm}
-		>{\raggedright\arraybackslash}X
-		>{\raggedright\arraybackslash}X
-		>{\raggedright\arraybackslash}X
-		}
+    \centering
+    \small
+    \renewcommand{\arraystretch}{1.2}
+    \caption{Wybrane etapy rozwoju architektury modeli YOLO.
+        Opracowanie własne na podstawie
+        \cite{bib:redmon2016lookonceunifiedrealtime,
+            bib:redmon2018yolov3incrementalimprovement,
+            bib:ultralytics_yolo_architecture,
+            bib:jocher2026ultralyticsyolo26}.
+    }
+    \label{tab:porownanie_wersji_YOLO}
+    \begin{tabularx}{\textwidth}{
+        >{\raggedright\arraybackslash}p{2.5cm}
+        >{\raggedright\arraybackslash}X
+        >{\raggedright\arraybackslash}X
+        >{\raggedright\arraybackslash}X
+        }
 
-		\toprule
+        \toprule
 
-		\textbf{Generacja}                           &
-		\textbf{Ekstrakcja cech}                     &
-		\textbf{Sposób detekcji}                     &
-		\textbf{Charakterystyczna zmiana}                                          \\
+        \textbf{Generacja}                           &
+        \textbf{Ekstrakcja cech}                     &
+        \textbf{Sposób detekcji}                     &
+        \textbf{Charakterystyczna zmiana}                                          \\
 
-		\midrule
+        \midrule
 
-		YOLO (v1)                                    &
-		Własna sieć CNN                              &
-		Jedna siatka predykcji                       &
-		Ujęcie detekcji jako pojedynczego problemu regresji                        \\
+        YOLO (v1)                                    &
+        Własna sieć CNN                              &
+        Jedna siatka predykcji                       &
+        Ujęcie detekcji jako pojedynczego problemu regresji                        \\
 
-		YOLOv3                                       &
-		Darknet-53                                   &
-		Detekcja na trzech skalach, ramki kotwiczące &
-		Wprowadzenie wieloskalowej detekcji i architektury FPN                     \\
+        YOLOv3                                       &
+        Darknet-53                                   &
+        Detekcja na trzech skalach, ramki kotwiczące &
+        Wprowadzenie wieloskalowej detekcji i architektury FPN                     \\
 
-		YOLOv5                                       &
-		CSP/C3                                       &
-		Wieloskalowa, ramki kotwiczące               &
-		Rozbudowanie fuzji cech o ścieżkę PAN i moduł SPPF                         \\
+        YOLOv5                                       &
+        CSP/C3                                       &
+        Wieloskalowa, ramki kotwiczące               &
+        Rozbudowanie fuzji cech o ścieżkę PAN i moduł SPPF                         \\
 
-		YOLOv8                                       &
-		C2f                                          &
-		Wieloskalowa, bez ramek kotwiczących         &
-		Przejście na głowicę anchor-free i wykorzystanie DFL                       \\
+        YOLOv8                                       &
+        C2f                                          &
+        Wieloskalowa, bez ramek kotwiczących         &
+        Przejście na głowicę anchor-free i wykorzystanie DFL                       \\
 
-		YOLO11                                       &
-		C3k2, C2PSA                                  &
-		Wieloskalowa, bez ramek kotwiczących         &
-		Wprowadzenie kolejnych mechanizmów uwagi i zmian w blokach ekstrakcji cech \\
+        YOLO11                                       &
+        C3k2, C2PSA                                  &
+        Wieloskalowa, bez ramek kotwiczących         &
+        Wprowadzenie kolejnych mechanizmów uwagi i zmian w blokach ekstrakcji cech \\
 
-		YOLO26                                       &
-		C3k2, C2PSA                                  &
-		Detekcja end-to-end                          &
-		Domyślna detekcja bez NMS oraz rezygnacja z DFL                            \\
+        YOLO26                                       &
+        C3k2, C2PSA                                  &
+        Detekcja end-to-end                          &
+        Domyślna detekcja bez NMS oraz rezygnacja z DFL                            \\
 
-		\bottomrule
-	\end{tabularx}
+        \bottomrule
+    \end{tabularx}
 \end{table}
 
 % \cite{bib:ultralytics_yolo_architecture}
@@ -345,43 +353,43 @@ Co ważne, podczas domyślnego wnioskowania model YOLO26 wykorzystuje głowicę 
 Kolejnym ważnym aspektem wersji 26 jest fakt rezygnacji z użycia DFL (ang. \english{Distribution Focal Loss}) w trakcie regresji ramek, co pozwala zmniejszyć złożoność głowicy detekcyjnej i usunąć ograniczenia wynikające z dyskretnej reprezentacji odległości. Do procesu uczenia wprowadzono mechanizm Progressive Loss, stopniowo zwiększający znaczenie głowicy, oraz STAL (ang. \english{Small-Target-Aware Label Assignment}), poprawiający przypisanie przykładów pozytywnych dla małych obiektów. W procesie optymalizacji wykorzystano optymalizator MuSGD \cite{bib:jocher2026ultralyticsyolo26}.
 
 \begin{figure}[ht] % Uproszczony schemat architektury modelu YOLO26
-	\centering
-	\begin{tikzpicture}[
-			node distance=0.9cm and 1.2cm,
-			block/.style={
-					draw,
-					rounded corners,
-					minimum width=2.8cm,
-					minimum height=0.85cm,
-					align=center
-				},
-			arrow/.style={->, thick}
-		]
+    \centering
+    \begin{tikzpicture}[
+            node distance=0.9cm and 1.2cm,
+            block/.style={
+                    draw,
+                    rounded corners,
+                    minimum width=2.8cm,
+                    minimum height=0.85cm,
+                    align=center
+                },
+            arrow/.style={->, thick}
+        ]
 
-		\node[block] (input) {Obraz wejściowy};
-		\node[block, right=of input] (backbone)
-		{Backbone\\C3k2, SPPF, C2PSA};
-		\node[block, below=of backbone] (neck)
-		{Neck\\FPN + PAN};
+        \node[block] (input) {Obraz wejściowy};
+        \node[block, right=of input] (backbone)
+        {Backbone\\C3k2, SPPF, C2PSA};
+        \node[block, below=of backbone] (neck)
+        {Neck\\FPN + PAN};
 
-		\node[block, below left=0.2cm and 1cm of neck] (o2o)
-		{Głowica one-to-one};
-		\node[block, below right=0.2cm and 1cm of neck] (o2m)
-		{Głowica one-to-many};
+        \node[block, below left=0.2cm and 1cm of neck] (o2o)
+        {Głowica one-to-one};
+        \node[block, below right=0.2cm and 1cm of neck] (o2m)
+        {Głowica one-to-many};
 
-		\node[block, below=1.2cm of o2o] (output)
-		{Klasy i ramki\\ograniczające};
+        \node[block, below=1.2cm of o2o] (output)
+        {Klasy i ramki\\ograniczające};
 
-		\draw[arrow] (input) -- (backbone);
-		\draw[arrow] (backbone) -- (neck);
-		\draw[arrow] (neck) -- (o2o);
-		\draw[arrow] (neck) -- (o2m);
-		\draw[arrow] (o2o) -- (output);
+        \draw[arrow] (input) -- (backbone);
+        \draw[arrow] (backbone) -- (neck);
+        \draw[arrow] (neck) -- (o2o);
+        \draw[arrow] (neck) -- (o2m);
+        \draw[arrow] (o2o) -- (output);
 
-	\end{tikzpicture}
+    \end{tikzpicture}
 
-	\caption{Uproszczony schemat architektury detektora YOLO26 \cite{bib:jocher2026ultralyticsyolo26}.}
-	\label{fig:yolo26_architektura}
+    \caption{Uproszczony schemat architektury detektora YOLO26 \cite{bib:jocher2026ultralyticsyolo26}.}
+    \label{fig:yolo26_architektura}
 \end{figure}
 
 Na rysunku~\ref{fig:yolo26_architektura} przedstawiono uproszczony schemat współczesnej architektury modelu YOLO26. Ukazuje on znaczny rozwój względem pierwszej wersji modelu i wyraźne odejście od przekształcania wejścia w pojedynczą siatkę predykcji. Zastąpiono ją hierarchicznym przetwarzaniem cech, ich wieloskalowym połączeniem i dostosowaną głowicą decyzyjną. Pomimo tych zmian, zachowano główną ideę rodziny, czyli detekcję przez jeden model, bez osobnego etapu generowania propozycji regionów.
@@ -392,52 +400,52 @@ Na rysunku~\ref{fig:yolo26_architektura} przedstawiono uproszczony schemat wspó
 Dzisiejsza implementacja rodziny YOLO przez Ultralytics nie ogranicza się jedynie do klasycznej detekcji, a stara się dostarczać wielu modeli obsługujących różne zadania. Głównym kierunkiem jest wciąż model klasycznej detekcji, ale jego architektura może zostać rozszerzona o dodatkowe głowice przeznaczone do obsługi innych zadań. Obecnie dostępne modele mogą obsługiwać zadania detekcji, klasyfikacji, segmentacji instancji, segmentację semantyczną, estymację głębi, estymację pozy oraz detekcję z obróconymi ramkami \cite{bib:ultralyticsYOLO26} Poszczególne zadania zostały zestawione w tabeli~\ref{tab:yolo26_zadania}.
 
 \begin{table}[ht] % Wybrane zadania obsługiwane przez modele YOLO26
-	\centering
-	\small
-	\renewcommand{\arraystretch}{1.2}
-	\caption{Wybrane zadania obsługiwane przez modele YOLO26}
-	\label{tab:yolo26_zadania}
-	\begin{tabularx}{\textwidth}{
-		>{\raggedright\arraybackslash}p{3.2cm}
-		>{\raggedright\arraybackslash}p{3.2cm}
-		>{\raggedright\arraybackslash}X
-		}
-		\toprule
-		\textbf{Zadanie}              &
-		\textbf{Oznaczenie modelu}    &
-		\textbf{Wynik działania}                                            \\
-		\midrule
+    \centering
+    \small
+    \renewcommand{\arraystretch}{1.2}
+    \caption{Wybrane zadania obsługiwane przez modele YOLO26}
+    \label{tab:yolo26_zadania}
+    \begin{tabularx}{\textwidth}{
+        >{\raggedright\arraybackslash}p{3.2cm}
+        >{\raggedright\arraybackslash}p{3.2cm}
+        >{\raggedright\arraybackslash}X
+        }
+        \toprule
+        \textbf{Zadanie}              &
+        \textbf{Oznaczenie modelu}    &
+        \textbf{Wynik działania}                                            \\
+        \midrule
 
-		Detekcja obiektów             &
-		\texttt{yolo26*.pt}           &
-		Klasy obiektów, wartości pewności i prostokątne ramki ograniczające \\
+        Detekcja obiektów             &
+        \texttt{yolo26*.pt}           &
+        Klasy obiektów, wartości pewności i prostokątne ramki ograniczające \\
 
-		Segmentacja instancji         &
-		\texttt{yolo26*-seg.pt}       &
-		Klasy, ramki ograniczające i osobne maski pikselowe obiektów        \\
+        Segmentacja instancji         &
+        \texttt{yolo26*-seg.pt}       &
+        Klasy, ramki ograniczające i osobne maski pikselowe obiektów        \\
 
-		Segmentacja semantyczna       &
-		\texttt{yolo26*-sem.pt}       &
-		Przypisanie klasy do każdego piksela obrazu                         \\
+        Segmentacja semantyczna       &
+        \texttt{yolo26*-sem.pt}       &
+        Przypisanie klasy do każdego piksela obrazu                         \\
 
-		Estymacja głębi               &
-		\texttt{yolo26*-depth.pt}     &
-		Mapa przewidywanej głębi obrazu                                     \\
+        Estymacja głębi               &
+        \texttt{yolo26*-depth.pt}     &
+        Mapa przewidywanej głębi obrazu                                     \\
 
-		Klasyfikacja obrazu           &
-		\texttt{yolo26*-cls.pt}       &
-		Klasa przypisana do całego obrazu                                   \\
+        Klasyfikacja obrazu           &
+        \texttt{yolo26*-cls.pt}       &
+        Klasa przypisana do całego obrazu                                   \\
 
-		Estymacja pozy                &
-		\texttt{yolo26*-pose.pt}      &
-		Położenie punktów charakterystycznych obiektu lub sylwetki          \\
+        Estymacja pozy                &
+        \texttt{yolo26*-pose.pt}      &
+        Położenie punktów charakterystycznych obiektu lub sylwetki          \\
 
-		Detekcja z ramkami obróconymi &
-		\texttt{yolo26*-obb.pt}       &
-		Klasy i ramki ograniczające rozszerzone o orientację obiektu        \\
+        Detekcja z ramkami obróconymi &
+        \texttt{yolo26*-obb.pt}       &
+        Klasy i ramki ograniczające rozszerzone o orientację obiektu        \\
 
-		\bottomrule
-	\end{tabularx}
+        \bottomrule
+    \end{tabularx}
 \end{table}
 
 Ze względu na specyfikę systemu spośród dostępnych wariantów YOLO26 do dalszej analizy wybrano model przeznaczony do detekcji obiektów. Wynik zawierający klasę obiektu, wartość pewności oraz jego prostokątną ramkę ograniczającą dostarcza wystarczającej liczby informacji o obiekcie by móc zrealizować moduł detekcji. Segmentacja instancji umożliwiłaby dokładne wyodrębnianie obiektu z tła, ale wymagałaby przygotowania masek segmentacyjnych dla zbioru uczącego, a także zwiększyłaby złożoność obliczeniową modelu. Możliwym kierunkiem dalszego rozwoju może być wykorzystanie wariantu z ramkami obróconymi, które mogłyby ograniczyć udział tła w obszarze detekcji.
@@ -447,28 +455,28 @@ Ze względu na specyfikę systemu spośród dostępnych wariantów YOLO26 do dal
 Każdy wariant YOLO26 jest dostępny w kilku skalach różniących się od siebie liczbą parametrów oraz kosztem obliczeniowym. Wybór odpowiedniego wariantu powinien być oparty na wymaganiach systemu oraz ograniczeniach zasobów sprzętowych urządzenia końcowego. Autorzy modelu detekcyjnego przewidzieli pięć wariantów: \texttt{n} (\english{nano}), \texttt{s} (\english{small}), \texttt{m} (\english{medium}), \texttt{l} (\english{large}) oraz \texttt{x} (\english{extra large}). W referencyjnych wynikach każdy kolejny wariant osiąga wyższe wartości $mAP50\text{-}95$, wymagając jednocześnie większej liczby parametrów i operacji \cite{bib:ultralyticsYOLO26}.
 
 \begin{table}[ht] % Porównanie wariantów detekcyjnych modelu YOLO26 na zbiorze COCO
-	\centering
-	\small
-	\renewcommand{\arraystretch}{1.2}
-	\caption{Porównanie wariantów detekcyjnych YOLO26 na zbiorze COCO
-		dla obrazów $640\times640$. Opracowanie własne na podstawie
-		\cite{bib:ultralyticsYOLO26}.}
-	\label{tab:warianty_YOLO}
-	\begin{tabular}{lrrrr}
-		\toprule
-		\textbf{Wariant}         &
-		\textbf{mAP50-95}        &
-		\textbf{Parametry [mln]} &
-		\textbf{GFLOPs}          &
-		\textbf{T4 TensorRT10 [ms]}                           \\
-		\midrule
-		YOLO26n                  & 40,9 & 2,4  & 5,4   & 1,7  \\
-		YOLO26s                  & 48,6 & 9,5  & 20,7  & 2,5  \\
-		YOLO26m                  & 53,1 & 20,4 & 68,2  & 4,7  \\
-		YOLO26l                  & 55,0 & 24,8 & 86,4  & 6,2  \\
-		YOLO26x                  & 57,5 & 55,7 & 193,9 & 11,8 \\
-		\bottomrule
-	\end{tabular}
+    \centering
+    \small
+    \renewcommand{\arraystretch}{1.2}
+    \caption{Porównanie wariantów detekcyjnych YOLO26 na zbiorze COCO
+        dla obrazów $640\times640$. Opracowanie własne na podstawie
+        \cite{bib:ultralyticsYOLO26}.}
+    \label{tab:warianty_YOLO}
+    \begin{tabular}{lrrrr}
+        \toprule
+        \textbf{Wariant}         &
+        \textbf{mAP50-95}        &
+        \textbf{Parametry [mln]} &
+        \textbf{GFLOPs}          &
+        \textbf{T4 TensorRT10 [ms]}                           \\
+        \midrule
+        YOLO26n                  & 40,9 & 2,4  & 5,4   & 1,7  \\
+        YOLO26s                  & 48,6 & 9,5  & 20,7  & 2,5  \\
+        YOLO26m                  & 53,1 & 20,4 & 68,2  & 4,7  \\
+        YOLO26l                  & 55,0 & 24,8 & 86,4  & 6,2  \\
+        YOLO26x                  & 57,5 & 55,7 & 193,9 & 11,8 \\
+        \bottomrule
+    \end{tabular}
 \end{table}
 
 Wyniki, które zostały przedstawione w tabeli~\ref{tab:warianty_YOLO} pokazują kompromis, typowy dla tej rodziny modeli. Wzrost rozmiaru modelu skorelowany jest ze wzrostem wartości $mAP50\text{-}95$, liczby parametrów, liczby wykonywanych operacji, oraz czasem wykonania. Największy wzrost skuteczności pomiędzy sąsiednimi wariantami obserwujemy przy przejściu z modelu YOLO26n do YOLO26s: wartość $mAP50\text{-}95$ wzrasta o $7,7$ punktu. Dalsze zwiększanie rozmiaru przynosi coraz mniejsze przyrosty względem rosnącego kosztu obliczeniowego.
@@ -498,12 +506,12 @@ Rejestracja obrazu przez kamerę cyfrową jest oparta na procesie przejścia św
 Po przetworzeniu obraz RGB może być reprezentowany w postaci macierzy trójwymiarowej o wymiarach
 
 \begin{equation}
-	M \times N \times 3,
+    M \times N \times 3,
 \end{equation}
 gdzie $M$ i $N$ to liczba wierszy i kolumn obrazu, a trzeci wymiar odpowiada kanałom barwnym: czerwonemu, zielonemu i niebieskiemu. Wartość pojedynczego piksela jest więc krotką trzech wartości, które można zapisać jako
 
 \begin{equation}
-	I(i,j) = (R, G, B).
+    I(i,j) = (R, G, B).
 \end{equation}
 Pojedynczy piksel zawiera jedynie informację o wartościach trzech składowych koloru, ale zależności przestrzenne pomiędzy wieloma pikselami pozwalają odwzorować strukturę obserwowanej sceny. Lokalne zmiany wartości pikseli pozwalają m.in. wyznaczać gradienty obrazu, które mogą posłużyć do wykrywania krawędzi i innych strukturalnie ważnych elementów \cite{bib:sobel2014isotropic}. Jednakże, pomimo bogactwa informacji dostępnych do odczytu w samym obrazie, reprezentacja ta ma również istotne ograniczenia. Przede wszystkim, wygląd obserwowanego obiektu zależy znacząco od warunków oświetleniowych i stopnia zasłonięcia. Zmiana tych warunków może doprowadzić do różnic w kolorach, kontraście czy widoczności jego krawędzi, tym samym wpływając na skuteczność jego rozpoznawania \cite{bib:szeliski2021cvalgorithms}. Brak informacji o odległości punktu od kamery jest również istotnym ograniczeniem.
 
@@ -514,7 +522,7 @@ Projekcja dwuwymiarowa skutkuje utratą części informacji przestrzennej, przez
 Informacja dotycząca głębi opisuje położenie aktualnie obserwowanych punktów względem kamery. Jeżeli jej wartości przypiszemy do poszczególnych pikseli, otrzymujemy mapę głębi, którą możemy zapisać jako
 
 \begin{equation}
-	D(i,j) = d,
+    D(i,j) = d,
 \end{equation}
 gdzie $d$ to głębokość sceny odpowiadająca pikselowi $(i,j)$. Dzisiejsza technika pozwala na określanie głębi na kilka sposobów.
 
@@ -529,12 +537,12 @@ Ciekawym podejściem do omawianego problemu jest aktywny pomiar odległości, w 
 Dane pozyskane z czujnika LiDAR mogą być wykorzystane do zbudowania reprezentacji przestrzennej sceny. Jako formę tej reprezentacji często stosuje się chmurę punktów (ang. \english{point cloud}), będącą zbiorem punktów rozmieszczonych w przestrzeni 3D. Można ją przedstawić jako zbiór
 
 \begin{equation}
-	P = \{p_i\}_{i=1}^{N},
+    P = \{p_i\}_{i=1}^{N},
 \end{equation}
 gdzie każdy punkt $p_i$ jest reprezentowany jako wektor
 
 \begin{equation}
-	p_i = (x_i, y_i, z_i).
+    p_i = (x_i, y_i, z_i).
 \end{equation}
 
 Zależnie od źródła danych, do poszczególnych punktów mogą zostać dodane dodatkowe informacje, np. intensywność sygnału, kolor lub wektor normalny. Chmura punktów, w przeciwieństwie do obrazu RGB, nie musi tworzyć regularnej siatki i zazwyczaj traktuje się ją jak nieuporządkowany zbiór punktów. Kolejność punktów w zbiorze nie powinna mieć znaczenia dla reprezentacji geometrii obiektu \cite{bib:qi2017pointnet}.
