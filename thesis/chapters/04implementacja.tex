@@ -325,6 +325,7 @@ Komunikacja odbywa się przy użyciu nieszyfrowanego wariantu protokołu WebSock
 Oprócz aplikacji mobilnej i serwera, aby możliwe było przygotowanie zbioru danych, uczenie modeli i przeprowadzenie eksperymentów, przygotowano zestaw narzędzi pomocniczych. Nie uczestniczą one bezpośrednio w działaniu systemu, ale umożliwiają przygotowanie jego najważniejszego elementu -- modelu detekcji obiektów. Zostały one przygotowane w języku Python i podzielone pomiędzy katalogi \texttt{video\_to\_dataset}, \texttt{dataset\_splitter} oraz \texttt{training}. Większość z nich udostępnia interfejs wiersza poleceń z możliwością podania parametrów działania bez konieczności modyfikacji kodu źródłowego.
 
 \subsection{Ekstrakcja klatek z nagrań}
+\label{ssec:extractor}
 
 Do ekstrakcji klatek z nagrań wideo przygotowano skrypt znajdujący się w katalogu \texttt{video\_to\_dataset}. Jego zadaniem jest załadowanie pliku wideo i zapisanie kolejnych klatek w postaci osobnych plików graficznych. Do realizacji wykorzystano bibliotekę \texttt{OpenCV}.
 
@@ -335,6 +336,7 @@ Obrazy zapisywane są zgodnie ze schematem \texttt{frame\_<n>.jpeg} w formacie J
 Narzędzie nie modyfikuje w żaden sposób ekstrahowanych klatek, a zwraca obrazy bezpośrednio odczytane przez bibliotekę. Nie generuje również żadnych adnotacji, ponieważ ich przygotowanie odbywa się w osobnym procesie.
 
 \subsection{Narzędzie do podziału zbioru danych}
+\label{ssec:dataset_splitter}
 
 Do organizacji zbioru danych przygotowano narzędzie \texttt{dataset\_splitter}. Jego zadaniem jest podział zbioru danych na dwie części: treningową i walidacyjną. Jako dane wejściowe przyjmowany jest katalog z obrazami i odpowiadającymi im adnotacjami w formacie YOLO. Dla każdego obrazu narzędzie wyszukuje odpowiadający mu plik z adnotacją, a jeżeli nie zostanie on odnaleziony obraz traktowany jest jako tło i tworzony jest dla niego pusty plik adnotacji.
 
@@ -371,6 +373,6 @@ Mechanizm treningu umożliwia wprowadzenie dodatkowego przetwarzania obrazów pr
 
 Uczenie odbywa się na przetworzonych obrazach, a po zakończeniu treningu zapisywany jest dodatkowy plik wag zawierający warstwę filtrującą na wejściu modelu. Dzięki temu nie jest konieczne przetwarzanie obrazów w aplikacji mobilnej ani w serwerze, a model może być używany wprost na obrazach kolorowych.
 
-Oprócz plików domyślnie zapisywanych przez bibliotekę \texttt{Ultralytics} projekt generuje również dodatkowe artefakty, podsumowujące przebieg uczenia. Odpowiedni moduł odczytuje z wyników wartości metryk, na których podstawie oblicza dodatkowo wartość F1-score. Ponadto skanuje plik z wynikami poszczególnych epok i zapisuje wyniki najlepszej epoki w formie pliku \texttt{run\_stats.json}.
+Oprócz plików domyślnie zapisywanych przez bibliotekę \texttt{Ultralytics} projekt generuje również dodatkowe artefakty, podsumowujące przebieg uczenia. Odpowiedni moduł odczytuje z wyników wartości metryk, na których podstawie oblicza dodatkowo wartość $F1$-score. Ponadto skanuje plik z wynikami poszczególnych epok i zapisuje wyniki najlepszej epoki w formie pliku \texttt{run\_stats.json}.
 
 Aktualna implementacja nie umożliwia wykonania automatycznego zestawienia wyników wielu niezależnych eksperymentów. Każde uruchomienie jest zapisywane w osobnym katalogu, którego zawartość może następnie zostać wykorzystana do ręcznej analizy. W przyszłości możliwe jest przygotowanie dodatkowego narzędzia, dedykowanego do tego celu.
