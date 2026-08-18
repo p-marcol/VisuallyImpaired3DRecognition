@@ -368,6 +368,7 @@ Ocena modelu na wydzielonym zbiorze testowym jest realizowana przez skrypt \text
 Narzędzie udostępnia również skrypt \texttt{predict.py}, który umożliwia wykonanie predykcji na pojedynczym obrazie. Służy on przede wszystkim do wizualnej kontroli wyników detekcji i nie wykonuje pełnej oceny modelu.
 
 \subsection{Filtry wejściowe i zapis wyników}
+\label{ssec:filtry}
 
 Mechanizm treningu umożliwia wprowadzenie dodatkowego przetwarzania obrazów przed ich przekazaniem do modelu. Moduł \texttt{filtered\_dataset} tworzy przetworzoną wersję zbioru danych, w której obrazy poddawane zostały filtrowaniu. Projekt zawiera dwa filtry: \texttt{GrayscaleInputFilter} i \texttt{SobelInputFilter}, jednakże możliwe jest przygotowanie własnych filtrów. Działają one jako niezależne moduły, przez co możliwe jest ich wskazanie przez narzędzie treningowe bez wprowadzania zmian w jego kodzie źródłowym. Istnieje również narzędzie umożliwiające podgląd działania filtrów na wybranych obrazach zbioru danych, bez ich zapisywania.
 

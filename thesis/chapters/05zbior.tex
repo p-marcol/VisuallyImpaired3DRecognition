@@ -21,7 +21,7 @@ Obrazy w zbiorze zostały pozyskane z nagrań wideo, z zachowaniem występowania
 
 Liczbę obrazów w poszczególnych zbiorach z podziałem na klasy i tła przedstawiono w tabeli~\ref{tab:dataset_split}. Podział danych został wykonany w taki sposób, aby dane z jednego nagrania nie znalazły się w kilku zbiorach. Ogranicza to ryzyko przecieku danych oraz możliwość zawyżenia wyników poprzez rozpoznanie obiektu bazując jedynie na wyglądzie sceny, a nie na faktycznym kształcie bryły.
 
-Pełen zbiór danych wraz z adnotacjami zawiera 9332 obrazów i adnotacji w formacie YOLO oraz 4 pliki tekstowe. Zajmuje on łącznie $3,19$ GB.
+Pełen zbiór danych wraz z adnotacjami zawiera 4666 obrazów i 4666 odpowiadających im plików adnotacji w formacie YOLO, a także 4 pliki tekstowe. Łączny rozmiar zbioru danych to $3,19$ GB.
 
 \begin{table}
     \centering
@@ -146,15 +146,15 @@ Skrypt treningowy \texttt{train.py} umożliwia konfigurację wielu parametrów t
 \end{itemize}
 Łącznie wytrenowano 7 modeli, które pozwoliły na przeprowadzenie eksperymentów i porównanie jakości detekcji pomiędzy nimi.
 
-Urządzenia wykorzystane do treningu były wybierane według dostępności w danym momencie, a nie według ich wydajności. Trening na karcie graficznej NVIDIA RTX 4060 był wykonywany na lokalnym komputerze z systemem Windows~11, a treningi na pozostałych kartach odbywały się w chmurze za pomocą platformy RunPod z systemem Ubuntu~22.04. Wybór urządzenia i systemu operacyjnego miał wpływ jedynie na czas treningu, a nie na jakość detekcji.
+Urządzenia wykorzystane do treningu były wybierane według dostępności w danym momencie, a nie według ich wydajności. Trening na karcie graficznej NVIDIA RTX 4060 był wykonywany na lokalnym komputerze z systemem Windows~11, a treningi na pozostałych kartach odbywały się w chmurze za pomocą platformy RunPod z systemem Ubuntu~22.04. Urządzenie obliczeniowe i system operacyjny nie są zmiennymi badanymi,a ich wpływ na jakość uzyskanych modeli nie jest przedmiotem badań.
 
 Augmentacja danych została włączona w celu zwiększenia różnorodności danych treningowych i poprawy zdolności generalizacji modeli. Wykorzystano w tym celu wbudowane w narzędzie Ultralytics YOLO mechanizmy augmentacji pozostawiając ich parametry domyślne. Obejmują one modyfikacje składowych HSV, translację, skalowanie, odbicia poziome oraz augmentację mozaikową.
 
 Trening modeli był prowadzony do momentu braku poprawy kryterium walidacyjnego przez 50 kolejnych epok (ang. \english{early stop}). Po tym czasie trening był przerywany i uznawano, że model osiągnął swoje plateau i dalszy trening nie przyniesie znaczącej poprawy jakości detekcji. Przyjęta wartość parametru \texttt{patience} jest kompromisem pomiędzy przedwczesnym zakończeniem treningu a niepotrzebnym wydłużeniem jego czasu \cite{bib:Prechelt1998}.
 
-Każdy trening uruchomiony został z ustawieniem ziarna generatora liczb pseudolosowych na wartość 42. Zapewnia to powtarzalność wyników w identycznych warunkach, a także umożliwia odtworzenie wyników w przyszłości. Wartość ta została wybrana ze względu na jej popularność w literaturze i kulturze komputerowej\footnote{Wartość 42 jest nawiązaniem do powieści Douglasa Adamsa \textit{Autostopem przez Galaktykę}, gdzie stanowi odpowiedź na  "Wielkie Pytanie o Życie, Wszechświat i całą resztę"}.
+Każdy trening uruchomiony został z ustawieniem ziarna generatora liczb pseudolosowych na wartość 42. Zwiększa to powtarzalność wyników oraz ułatwia odtworzenie eksperymentów w przyszłości. Wartość ta została wybrana ze względu na jej popularność w literaturze i kulturze komputerowej\footnote{Wartość 42 jest nawiązaniem do powieści Douglasa Adamsa \textit{Autostopem przez Galaktykę}, gdzie stanowi odpowiedź na  "Wielkie Pytanie o Życie, Wszechświat i całą resztę"}.
 
-Wartości pozostałych parametrów treningu zostały przyjęte jako domyślne w bibliotece Ultralytics i nie były modyfikowane. Do treningu wykorzystano następujące wersje bibliotek i narzędzi:
+Do treningu wykorzystano następujące wersje bibliotek i narzędzi:
 \begin{itemize}
     \item \textbf{Python} -- 3.11.11,
     \item \textbf{Ultralytics} -- 8.4.63,
@@ -163,7 +163,6 @@ Wartości pozostałych parametrów treningu zostały przyjęte jako domyślne w 
     \item \textbf{opencv-python} -- 4.13.0.92,
     \item \textbf{CUDA} -- 13.2.
 \end{itemize}
-
 
 \subsection{Metryki oceny}
 
@@ -187,8 +186,7 @@ Aby móc dokonać porównania jakości detekcji pomiędzy poszczególnymi warian
 \begin{enumerate}[label=\textbf{Eksperyment \Alph*:}, leftmargin=*, align=left]
     \item Porównanie jakości detekcji pomiędzy rozmiarami modelu YOLO26 \texttt{n} i \texttt{s} dla danych wejściowych w wariancie kolorowym. Pozwoli to ocenić wpływ skali modelu i ilość jego parametrów na jakość detekcji.
     \item Porównanie jakości detekcji pomiędzy wariantami z różnymi rozdzielczościami obrazu wejściowego: $640$ oraz $1024$. Pozwoli on ocenic wpływ rozdzielczości obrazu na jakość detekcji.
-    \item Porównanie jakości detekcji pomiędzy wariantami danych: kolorowym i w odcieniach szarości. Pozwoli to ocenić, czy usunięcie informacji o barwie wpływa na jakość detekcji i czy model jest w stanie rozpoznać obiekty wyłącznie na podstawie ich kształtu.
-    \item Porównanie jakości detekcji pomiędzy najlepszymi modelami z poprzednich eksperymentów. Umożliwi to ocenę, który z badanych wariantów modelu jest najlepszy.
+    \item Porównanie jakości detekcji pomiędzy wariantami danych: kolorowym i w odcieniach szarości. Pozwoli to ocenić, czy usunięcie informacji o barwie wpływa na jakość detekcji i czy model jest w stanie skutecznie rozpoznać obiekty bez wykorzystania informacji o kolorze.
 \end{enumerate}
 
 Przedstawione eksperymenty pozwalają ocenić, czy możliwe jest skuteczne rozpoznawanie trzymanych obiektów trójwymiarowych bez informacji o kolorze, a także czy możliwe jest uzyskanie zadowalających wyników przy użyciu modeli o mniejszej liczbie parametrów. Wyniki poszczególnych eksperymentów zostały przedstawione w rozdziale~\ref{c:badania}.
