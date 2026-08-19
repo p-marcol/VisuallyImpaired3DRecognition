@@ -1,0 +1,8 @@
+﻿nazwa runu;model;RGB / grayscale;imgsz;liczba faktycznie wykonanych epok;numer najlepszej epoki;precision test;recall test;mAP50 test;mAP50-95 test;F1 test;Jednostka obliczeniowa;data treningu
+yolo26n_dataset1_cuda_imgsz640_lr0.01_seed42_09_06_2026_T_14_15;yolo26n.pt;RGB;640;190;140;0.90132;0.87623;0.9448;0.87618;0.8885979281595454;RTX 4060;2026-06-09 14:15
+yolo26s_dataset1_cuda_imgsz640_lr0.01_seed42_10_06_2026_T_15_00;yolo26s.pt;RGB;640;108;60;0.86812;0.89471;0.94341;0.88226;0.8812144621999852;RTX 4060;2026-06-10 15:00
+yolo26n_dataset1_cuda_imgsz1024_lr0.01_seed42_11_06_2026_T_10_02;yolo26n.pt;RGB;1024;211;161;0.87447;0.89102;0.95331;0.89684;0.8826674287591546;L40S;2026-06-11 10:02
+yolo26s_dataset1_cuda_imgsz1024_lr0.01_seed42_11_06_2026_T_13_06;yolo26s.pt;RGB;1024;114;64;0.90483;0.90184;0.95125;0.89878;0.903332525807148;L40S;2026-06-11 13:06
+yolo26n_dataset1_cuda_imgsz640_lr0.01_seed42_filtergrayscale_15_06_2026_T_14_26;yolo26n.pt;grayscale;640;203;153;0.8474;0.78525;0.86096;0.72145;0.8151420696413807;A100;2026-06-15 14:26
+yolo26s_dataset1_cuda_imgsz640_lr0.01_seed42_filtergrayscale_15_06_2026_T_15_47;yolo26s.pt;grayscale;640;280;230;0.87385;0.80283;0.86731;0.76026;0.8368358846052913;A100;2026-06-15 15:47
+yolo26n_dataset1_cuda_imgsz1024_lr0.01_seed42_filtergrayscale_16_06_2026_T_11_51;yolo26n.pt;grayscale;1024;230;180;0.87348;0.81896;0.88291;0.7841;0.8453418505825909;A100;2026-06-16 11:51

@@ -1,0 +1,70 @@
+@startuml
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam defaultFontName "Arial"
+top to bottom direction
+
+package "Aplikacja mobilna VI3DR" as MobileApp {
+
+    package "androidMain — implementacja Android" as Android {
+        component "Host aplikacji\nMainActivity / AndroidApp" as AndroidHost
+        component "Rejestrowanie i kodowanie obrazu\nCameraX / CameraAnalyzer / JPEG" as AndroidCamera
+        component "Wykrywanie serwera\nAndroid NSD / mDNS" as Discovery
+        component "Rozpoznawanie mowy\nSpeechRecognizer" as Voice
+        component "Synteza mowy\nTextToSpeech" as TTS
+    }
+
+    package "commonMain — kod współdzielony" as Common {
+        component "Interfejs użytkownika\nCompose Multiplatform" as UI
+        component "Kontroler transmisji i stanu\nStreamingController" as Controller
+        component "Klient WebSocket\nFrameSocketClient" as WSClient
+
+        UI --> Controller : odczytuje stan\ni wywołuje operacje
+        Controller --> WSClient : zleca transmisję\ni odbiera odpowiedzi
+    }
+
+    package "iosMain i iosApp — implementacja iOS" as IOS {
+        component "Host aplikacji\niOSApp / MainViewController" as IOSHost
+        component "Rejestrowanie i kodowanie obrazu\nAVFoundation / IosCameraManager / JPEG" as IOSCamera
+    }
+
+    note top of IOS
+        Implementacja częściowa:
+        - brak rozpoznawania mowy,
+        - brak syntezy mowy,
+        - brak wykrywania serwera w sieci.
+    end note
+}
+
+together {
+    interface "Komunikacja WebSocket" as IWebSocket
+    component "Część serwerowa VI3DR" as Server
+}
+
+' Android
+AndroidHost --> UI : osadza wspólny interfejs
+AndroidHost --> Controller : tworzy i obserwuje
+AndroidHost --> AndroidCamera : uruchamia kamerę
+AndroidHost --> Discovery : wyszukuje serwer
+AndroidHost --> Voice : uruchamia nasłuch
+AndroidHost --> TTS : przekazuje odpowiedź
+
+AndroidCamera --> Controller : przekazuje klatki JPEG
+Discovery --> AndroidHost : zwraca adres i port
+Voice --> Controller : inicjuje żądanie informacji
+
+' iOS
+IOSHost --> UI : osadza wspólny interfejs
+IOSHost --> Controller : tworzy i obserwuje
+IOSHost --> IOSCamera : uruchamia kamerę
+IOSCamera --> Controller : przekazuje klatki JPEG
+
+' Pozycjonowanie elementów zewnętrznych
+WSClient -[hidden]down-> IWebSocket
+IWebSocket -[hidden]right-> Server
+
+' Komunikacja z częścią serwerową
+WSClient ..> IWebSocket : wykorzystuje
+Server .left.|> IWebSocket : udostępnia
+
+@enduml
