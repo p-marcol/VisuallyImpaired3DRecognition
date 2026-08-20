@@ -104,9 +104,9 @@
 
 % ! comment these lines to disable watermark in the final version of the document
 
-\usepackage{draftwatermark}
-\SetWatermarkText{DRAFT}
-\SetWatermarkScale{1}
+% \usepackage{draftwatermark}
+% \SetWatermarkText{DRAFT}
+% \SetWatermarkScale{1}
 
 % ! end of section to disable watermark in the final version of the document
 
@@ -116,17 +116,17 @@
 
 % ! Comment next section to disable notes and drafts in the final version of the document
 
-\renewcommand{\note}[2][]{%
-    \ifthenelse{\equal{#1}{hide}}%
-    {}%
-    {{\color{red}{#2}}}%
-}
+% \renewcommand{\note}[2][]{%
+%     \ifthenelse{\equal{#1}{hide}}%
+%     {}%
+%     {{\color{red}{#2}}}%
+% }
 
-\renewcommand{\draft}[2][]{%
-    \ifthenelse{\equal{#1}{hide}}%
-    {}%
-    {{\color{olive}{#2}}}%
-}
+% \renewcommand{\draft}[2][]{%
+%     \ifthenelse{\equal{#1}{hide}}%
+%     {}%
+%     {{\color{olive}{#2}}}%
+% }
 
 % ! end of section to disable notes and drafts in the final version of the document
 
