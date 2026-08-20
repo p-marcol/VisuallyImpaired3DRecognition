@@ -2,14 +2,12 @@
 \Title
 
 \subsubsection*{Streszczenie}  
+Celem niniejszej pracy było opracowanie systemu wspomagającego osoby niewidome i słabowidzące w nauce geometrii przestrzennej. Zaprojektowano i zaimplementowano prototyp systemu działający w architekturze klient-serwer, wykorzystujący aplikację mobilną oraz część serwerową. System umożliwia rozpoznanie widocznej powierzchni bryły oraz przekazanie informacji zwrotnej na jej temat. Przygotowano zbiór danych obejmujący sześć klas brył i przeprowadzono eksperymenty dla siedmiu konfiguracji modeli YOLO26, badając wpływ skali modelu, rozdzielczości i reprezentacji obrazu na skuteczność detekcji. Najlepszy kompromis uzyskano dla modelu YOLO26n wykorzystującego obrazy RGB o rozdzielczości 1024. Wyniki potwierdzają możliwość wykorzystania uczenia głębokiego w systemie wspomagającym naukę stereometrii.
 % (Streszczenie pracy – odpowiednie pole w systemie APD powinno zawierać kopię tego streszczenia.)
 
-Celem niniejszej pracy było opracowanie systemu wspomagającego osoby niewidome i słabowidzące w nauce geometrii przestrzennej poprzez rozpoznawanie fizycznych modeli brył podczas ich eksploracji dotykowej. W ramach pracy zaprojektowano i zaimplementowano prototyp systemu działający w architekturze klient-serwer, wykorzystujący aplikację mobilną do rejestracji obrazu i komunikacji z użytkownikiem oraz część serwerową wykonującą detekcję i analizę obiektów. System umożliwia analizę widocznej powierzchni bryły oraz przekazanie użytkownikowi informacji na jej temat zawartych w bazie wiedzy. Przygotowano własny zbiór danych obejmujący sześć klas brył geometrycznych oraz przeprowadzono eksperymenty dla siedmiu konfiguracji modeli YOLO26 badając wpływ skali modelu, rozdzielczości obrazu wejściowego oraz jego reprezentacji na skuteczność detekcji. Najlepszy kompromis pomiędzy jakością detekcji a czasem inferencji uzyskano dla modelu YOLO26n wykorzystującego obrazy kolorowe o rozdzielczości 1024 pikseli. Uzyskane wyniki potwierdzają możliwość wykorzystania metod uczenia głębokiego jako podstawy działania systemu wspierającego naukę podstaw geometrii przestrzennej.
-
 \subsubsection*{Słowa kluczowe} 
-% (2-5 slow (fraz) kluczowych, oddzielonych przecinkami)
-
 Technologie asystujące, Detekcja obiektów, YOLO, Geometria przestrzenna, Osoby niewidome
+% (2-5 slow (fraz) kluczowych, oddzielonych przecinkami)
 
 \subsubsection*{Thesis title} 
 \begin{otherlanguage}{british}
@@ -18,16 +16,15 @@ Technologie asystujące, Detekcja obiektów, YOLO, Geometria przestrzenna, Osoby
 
 \subsubsection*{Abstract} 
 \begin{otherlanguage}{british}
+The aim of this thesis was to develop a system supporting blind and visually impaired people in learning spatial geometry. A prototype system operating in a client-server architecture was designed and implemented, using a mobile application and a server component. The system allows for the recognition of the visible surface of a solid and provides feedback about it. A dataset covering six classes of solids was prepared, and experiments were conducted for seven configurations of YOLO26 models, examining the impact of model scale, image resolution, and representation on detection accuracy. The best compromise was achieved for the YOLO26n model using RGB images with a resolution of 1024. The results confirm the possibility of using deep learning in a system supporting the learning of stereometry.
 % (Thesis abstract – to be copied into an appropriate field during an electronic submission – in English.)
-
-The aim of this thesis was to develop a system supporting blind and visually impaired people in learning spatial geometry by recognizing physical models of solids during their tactile exploration. As part of the work, a prototype system was designed and implemented, operating in a client-server architecture, using a mobile application for image registration and user communication, and a server-side component performing object detection and analysis. The system allows for the analysis of the visible surface of the solid and provides the user with information about it contained in a knowledge base. A custom dataset covering six classes of geometric solids was prepared, and experiments were conducted for seven configurations of YOLO26 models, examining the impact of model scale, input image resolution, and representation on detection effectiveness. The best compromise between detection quality and inference time was achieved for the YOLO26n model using color images with a resolution of 1024 pixels. The obtained results confirm the possibility of using deep learning methods as the basis for a system supporting the learning of basic spatial geometry.
+    
 
 \end{otherlanguage}
 \subsubsection*{Key words}  
 \begin{otherlanguage}{british}
-% (2-5 keywords, separated by commas)
-
 Assistive technologies, Object detection, YOLO, Spatial geometry, Visually impaired
+% (2-5 keywords, separated by commas)
 
 \end{otherlanguage}
 
