@@ -55,8 +55,8 @@ Rozdzielenie kodu poszczególnych części umożliwia niezależny rozwój i test
         \addlinespace
 
         Część serwerowa                                      &
-        Python, websockets, OpenCV, Ultralytics, PyTorch     &
-        Obsługa komunikacji, dekodowanie obrazu i wykonywanie detekcji obiektów                                          \\
+        Python, websockets, OpenCV, Ultralytics, PyTorch, webcolors     &
+        Obsługa komunikacji, dekodowanie i przetwarzanie obrazu, wykonywanie detekcji obiektów i dopasowanie kolorów powierzchni                                          \\
 
         \addlinespace
 
@@ -133,6 +133,8 @@ Ustawienia serwera zgromadzono w pliku \texttt{settings.py}, gdzie możliwe jest
 
 Możliwa jest wymiana modelu detekcji na inny bez konieczności modyfikacji pozostałych elementów systemu. Wariant z interfejsem użytkownika umożliwia wybranie modelu z pliku \texttt{.pt}, korzystając z systemowego okna dialogowego. Jest on następnie ładowany przez klasę \texttt{YOLODetector}. Obiekt detektora nie jest zmieniany, więc sesje odwołują się do tej samej funkcji przetwarzającej, ale kolejne iteracje detekcji wykonywane są na nowym modelu. Wariant konsolowy wymaga podania ścieżki do modelu w pliku konfiguracyjnym i ponownego uruchomienia serwera.
 
+Podczas tworzenia obiektu \texttt{ApplicationRuntime} wczytywana jest również przygotowana wcześniej baza wiedzy zawierająca informacje o powierzchniach brył oraz odpowiadające im informacje. Dane przechowywane są w pojedynczym pliku \texttt{.json} o ustalonej strukturze. Loader przekształca zawartość pliku do struktur danych reprezentujących bryły, powierzchnie i parametry dopasowania kolorów. Baza może zostać przeładowana w trakcie działania serwera, a przy obsłudze kolejnych żądań informacji wykorzystywana jest nowa konfiguracja.
+
 \subsection{Odbieranie i przygotowanie obrazu}
 \label{ssec:odb_prz_obrazu}
 
@@ -140,7 +142,9 @@ Po nawiązaniu połączenia z klientem klasa \texttt{CaptureServer} tworzy obiek
 
 Aby ograniczyć liczbę zaległych klatek, rozmiar kolejki wejściowej ustawiono na pojedynczą wiadomość. Metoda \texttt{\_drain\_to\_latest\_frame} sprawdza, czy w kolejce znajdują się kolejne dane binarne, a jeżeli tak, to zastępuje starszy obraz nowszym. Taki mechanizm nie gwarantuje zachowania wszystkich klatek, ale zmniejsza ryzyko wykonania detekcji na obrazie, który nie jest już aktualny i nie odpowiada aktualnemu położeniu bryły. Jeżeli serwer nie zdąży przetworzyć starszych klatek są one pomijane, a do detekcji przekazywana jest najnowsza z nich.
 
-Wiadomości binarne są wstępnie sprawdzane pod kątem występowania plików JPEG na podstawie dwóch pierwszych bajtów \texttt{FF D8}. Następnie są one przekazywane do tablicy \texttt{NumPy}, gdzie dekodowane są do formatu z kanałami BGR korzystając z funkcji \texttt{cv2.imdecode}. W przypadku niepowodzenia dana wiadomość zostaje pominięta bez przerywania sesji. Poprawnie zdekodowany obraz jest zapamiętywany przez \texttt{CaptureSession}, a następnie przekazywany do modelu detekcji, dzięki czemu możliwe jest jego ponowne wykorzystanie. W chwili otrzymania żądania informacji zapamiętana klatka zostaje wysłana do zadania analizy, dzięki czemu kolejne obrazy mogą być w tym czasie odbierane przez serwer i przetwarzane niezależnie.
+Wiadomości binarne są wstępnie sprawdzane pod kątem występowania plików JPEG na podstawie dwóch pierwszych bajtów \texttt{FF D8}. Następnie są one przekazywane do tablicy \texttt{NumPy}, gdzie dekodowane są do formatu z kanałami BGR korzystając z funkcji \texttt{cv2.imdecode}. W przypadku niepowodzenia dana wiadomość zostaje pominięta bez przerywania sesji. Poprawnie zdekodowany obraz jest przekazywany do modelu detekcji. Po zakończeniu predykcji wynik zostaje zapisany razem z kopią odpowiadającej mu klatki obrazu w strukturze \texttt{DetectionSnapshot}. Dzięki temu przechowywana jest spójna para obrazu i wyniku wykonanej na nim detekcji. Dostęp do aktualnego snapshotu chroniony jest blokadą wątkową, aby nie było możliwe jednoczesne zapisywanie i odczytywanie danych. 
+
+W chwili otrzymania żądania informacji pobierany jest najnowszy kompletny \texttt{DetectionSnapshot}. Dalsza analiza oparta jest na informacjach w nim zawartych, a kolejne obrazy mogą być niezależnie odbierane i przetwarzane przez serwer.
 
 Wynikiem przetwarzania, zwracanym przez model, jest między innymi klatka z naniesionymi ramkami detekcji, która wykorzystywana jest w oknie podglądu. Częstotliwość z jaką aktualizowany jest podgląd nie jest zależna od inferencji. Brak aktualizacji podglądu nie oznacza, że nie została wykonana detekcja, a jedynie, że nie zdążyła ona zostać wyświetlona w interfejsie.
 
@@ -155,27 +159,21 @@ Istnieje możliwość, że w wyniku detekcji na obrazie zostanie oznaczonych wie
 \end{equation}
 ograniczonych do wymiarów obrazu. Eliminuje to możliwość wyznaczenia obszaru znajdującego się poza jego granicami.
 
-Informacje o obiekcie są przechowywane w strukturze \texttt{DetectionResult}, która zawiera nazwę klasy, wartość pewności detekcji i obiekt \texttt{DetectionBox} z informacjami o położeniu ramki detekcji. Struktura ta jest następnie wykorzystywana w kolejnych etapach przetwarzania, a dostęp do niej jest sterowany przez blokadę wątkową, aby uniknąć sytuacji jednoczesnego zapisywania i odczytywania danych.
+Informacje o obiekcie są przechowywane w strukturze \texttt{DetectionResult}, która zawiera nazwę przewidywanej klasy, wartość pewności detekcji i obiekt \texttt{DetectionBox} z informacjami o położeniu ramki ograniczającej. Struktura ta posiada metodę, która umożliwia wyodrębnienie z obrazu fragmentu odpowiadającego zapisanej ramce. Po zakończeniu predykcji tworzony jest obiekt \texttt{DetectionSnapshot}, zawierający kopię przetworzonej klatki oraz odpowiadający jej \texttt{DetectionResult}. Oba elementy wykorzystują wspólną blokadę wątkową, aby zapobiec sytuacji, w której podczas przygotowywania odpowiedzi wykorzystana zostałaby klatka pochodząca z innej iteracji modelu detekcji. Snapshot zostaje zaktualizowany po każdej zakończonej predykcji i może zostać pobrany w chwili żądania informacji.
 
 Ładowanie modelu i wykonywanie detekcji również są operacjami chronionymi blokadą wątkową, aby uniknąć sytuacji, w której model mógłby zostać nadpisany w trakcie wykonywania predykcji.
 
 \subsection{Analiza wycinka i przygotowanie informacji zwrotnej}
 
-Szczegółowa analiza obiektu jest wykonywana wyłącznie po otrzymaniu żądania informacji od klienta. Dzięki temu detekcja pozostaje oddzielona od pozostałych operacji wymaganych jedynie do przygotowania informacji zwrotnej. Odebranie komunikatu \texttt{info-request} skutkuje przekazaniem klatki zapamiętanej w obiekcie \texttt{CaptureSession} do zadania analizy. Główna pętla sesji pozostaje w tym czasie wolna i może odbierać kolejne klatki z kamery urządzenia klienckiego.
+Szczegółowa analiza obiektu jest wykonywana wyłącznie po otrzymaniu żądania informacji od klienta. Dzięki temu detekcja pozostaje oddzielona od pozostałych operacji wymaganych jedynie do przygotowania informacji zwrotnej. Odebranie komunikatu \texttt{info-request} skutkuje utworzeniem obiektu \texttt{AnalysisContext}, przechowującego najnowszy kompletny \texttt{DetectionSnapshot} oraz referencję do bazy wiedzy. Dzięki takiemu mechanizmowi późniejsze procesy nie wpływają na już rozpoczętą analizę.
 
-Analiza wykonywana jest używając klasy \texttt{AnalysisWorker}. Wykorzystuje ona osobny wątek w obiekcie \texttt{ThreadPoolExecutor}, dzięki czemu może wykonywać obliczenia poza pętlą zdarzeń serwera. Takie rozdzielenie jest kluczowe szczególnie z punktu widzenia algorytmu analizy, którego czas działania może być dłuższy niż pozostałe operacje serwera.
+Analiza wykonywana jest używając klasy \texttt{AnalysisWorker}. Wykorzystuje ona osobny wątek w obiekcie \texttt{ThreadPoolExecutor}, dzięki czemu może wykonywać obliczenia poza główną pętlą zdarzeń serwera. Klasa na podstawie wyniku detekcji w kontekście wyodrębnia fragment obrazu ograniczony ramką detekcji. Jeżeli snapshot nie istnieje, model nie wykrył obiektu lub wycinek jest niepoprawny, dalsza analiza nie jest wykonywana.
 
-Zadanie analizy rozpoczyna się od pobrania aktualnie dostępnego wyniku detekcji i wyodrębnienia z klatki wycinka odpowiadającego ramce detekcji. Dalsze przetwarzanie odbywa się w module \texttt{SliceAnalyzer}, gdzie po odebraniu wycinka i danych z modelu detekcji, przygotowywany jest tekst do przekazania użytkownikowi.
+Właściwe przetwarzanie wycinka obrazu odbywa się w klasie \texttt{SliceAnalyzer}. Jako parametry otrzymuje ona wycinek obrazu, nazwę rozpoznanej klasy obiektu oraz bazę wiedzy. Klasa służy jedynie do pobrania odpowiednich informacji o powierzchniach bryły i dopasowaniu kolorów. Niweluje to sposobność powielania obliczeń dla obiektów, których nie dotyczy analiza. 
 
-\note{
-    \LARGE DO OGARNIĘCIA!!!
-}
+Rozpoznanie widocznej powierzchni odbywa się w module \texttt{SurfaceMacher}. Do każdej powierzchni w bazie wiedzy dopasowywany jest kolor referencyjny zapisany jako nazwa koloru CSS oraz komunikat informacyjny. Nazwa koloru jest przekształcana do przestrzeni RGB, a następnie do układu BGR i przestrzeni Lab. Wycinek obrazu również jest przekształcany do przestrzeni Lab, a następnie wykonywane jest dopasowanie kolorów. Odbywa się ono dla każdego piksela wycinka poprzez obliczenie kwadratu odległości euklidesowej od kolorów referencyjnych wszystkich powierzchni. Piksel jest przypisywany do koloru wyłącznie wtedy, gdy uzyskana odległość jest mniejsza od ustalonego progu \texttt{max\_distance} znajdujacego się w konfiguracji bryły. Następnie zliczana jest ilość pikseli należących do każdej z powierzchni. Wynikiem jest informacja o powierzchni, której kolor został dopasowany do największej liczby pikseli wycinka. 
 
-\note{
-    Obecny etap implementacji nie obsługuje jeszcze analizy wycinka obrazu i przygotowania informacji zwrotnej. Funkcja niezależnie od wejścia zwraca komunikat \textit{„Jeszcze nie zaimplementowano”}. Określenie formatu danych wejściowych i wyjściowych stanowi podstawę do dalszych prac nad implementacją algorytmu analizy.
-}
-
-Po zakończeniu analizy, tekst przygotowany przez moduł jest przekazywany do zadania działającego w pętli zdarzeń serwera, które następnie przekazuje go do dalszej obsługi.
+Po określeniu powierzchni \texttt{SliceAnalyzer} zwraca komunikat informacyjny, który następnie jest przekazywany do klienta. Jeżeli zajdzie błąd w trakcie analizy, np. nie zostanie wykryta powierzchnia, klient otrzymuje komunikat: "Nie udało się rozpoznać widocznej powierzchni". 
 
 \subsection{Organizacja przetwarzania współbieżnego}
 
@@ -183,7 +181,7 @@ Obsługa serwera i sesji odbywa się w pętli zdarzeń biblioteki \texttt{asynci
 
 Operacje, których wykonanie może trwać dłużej od pozostałych, a tym samym mogące blokować pętlę zdarzeń są wykonywane poza głównym wątkiem serwera. Wykorzystują one mechanizm \texttt{asyncio.to\_thread}, a należą do nich: ładowanie modelu, inferencja, rejestrowanie i wyrejestrowanie usługi w sieci lokalnej. Inferencja, mimo oddzielnego wątku, pozostaje operacją sekwencyjnego przepływu obrazu -- sesja oczekuje na jej zakończenie zanim rozpocznie kolejną iterację.
 
-Odmienne podejście przyjęto w przypadku analizy wycinka obrazu uruchamianej na żądanie klienta. Tutaj, po otrzymaniu żądania, jest ono przekazywane do nowego zadania, a obliczenia są delegowane do klasy workera, dzięki czemu nie jest blokowana główna pętla zdarzeń serwera. Umożliwia to wykonanie analizy w chwili żądania niezależnie od pracy sesji. Wynik jest zwracany do pętli zdarzeń, gdzie następuje jego dalsza obsługa. Zamknięcie sesji skutkuje anulowaniem wszystkich zadań analizy, które nie zostały jeszcze zakończone.
+Odmienne podejście przyjęto w przypadku analizy wycinka obrazu uruchamianej na żądanie klienta. Tutaj, po otrzymaniu żądania, synchronicznie tworzony jest obiekt kontekstu analizy. Następnie tworzone jest nowe zadanie \texttt{asyncio}, a obliczenia są przekazywane do klasy workera. Wykorzystuje on obiekt \texttt{ThreadPoolExecutor} z pojedynczym wątkiem, co nie blokuje głównej pętli zdarzeń serwera. W czasie wykonywania analizy, serwer może odbierać kolejne klatki i wykonywać na nich detekcję obiektów. Nie wpływa to na rozpoczętą analizę, ponieważ korzysta ona z kopii snapshotu, który został utworzony w momencie otrzymania żądania. Po zakończeniu pracy wynik powraca do pętli zdarzeń, gdzie następuje jego dalsza obsługa. Zamknięcie sesji skutkuje anulowaniem wszystkich zadań analizy, które nie zostały jeszcze zakończone.
 
 Wariant desktopowy dzieli przetwarzanie na dwa wątki wykonania. Główny wątek obsługuje interfejs graficzny, a backend uruchamiany jest w osobnym wątku z własną pętlą zdarzeń. Operacje wykonywane na interfejsie graficznym przez użytkownika są przekazywane do backendu poprzez mechanizm korutyn biblioteki \texttt{asyncio}. Dane przekazywane z backendu do interfejsu graficznego są emitowane w formie sygnałów Qt. Stan współdzielony jest chroniony blokadą wątkową.
 
@@ -211,7 +209,7 @@ Podczas uruchomienia serwera, przed udostępnieniem możliwości nawiązania po�
 
 Problemy dotyczące pojedynczej klatki nie są przyczyną przerwania sesji. W przypadku zaistnienia nieobsługiwanych danych przesyłanych przez klienta, serwer ignoruje je i kontynuuje działanie. Przy błędzie modułu detekcji do interfejsu przekazywana jest klatka bez naniesionych ramek detekcji, komunikat o błędzie pojawia się w logach serwera, a serwer kontynuuje pracę i obsługę kolejnych klatek.
 
-Obsługa żądania informacji przewiduje możliwość wystąpienia wyjątku przy wykonywaniu analizy wycinka. Błąd nie zatrzymuje działania serwera, ale jest odnotowywany w logach. Do klienta wysyłany jest komunikat zawierający informację o tym, że wystąpił błąd w przygotowaniu informacji. Zdarzenia związane z obsługą żądania są również rejestrowane w logach serwera, aby możliwa była późniejsza analiza problemu.
+Obsługa żądania informacji przewiduje możliwość wystąpienia wyjątku przy wykonywaniu analizy wycinka. Błąd nie zatrzymuje działania serwera, a skutkuje przygotowaniem komunikatu zastępczego. Wyjątki związane bezpośrednio z odczytem bazy wiedzy i dopasowaniem powierzchni są obsługiwane w module analizy i również prowadzą do przygotowania komunikatu zastępczego. Nieprzewidziane wyjątki w trakcie zadania analizy są odnotowane w logach serwera, ale do klienta nie jest wysyłany żaden komunikat o wystąpieniu błędu. 
 
 Rozłączeniu klienta towarzyszy zamknięcie podglądu w interfejsie serwera, wyzerowanie metryk sesji i usunięcie ostatniego obrazu z interfejsu. Anulowane zostają aktywne zadania analizy, a przypisany worker zostaje zatrzymany. Informacje o aktywnej sesji są zwalniane i możliwe jest nawiązanie połączenia z kolejnym klientem. Zatrzymanie serwera skutkuje zamknięciem mechanizmu WebSocket i wyrejestrowaniem usługi w sieci lokalnej. Następnie następuje zakończenie wszystkich wątków i zamknięcie procesu aplikacji. Wariant desktopowy w pierwszej kolejności kończy działanie wątku backendu, a następnie zamyka interfejs graficzny Qt.
 
@@ -309,7 +307,7 @@ Poza wiadomosciami binarnymi w systemie wymieniane są również komunikaty ster
 
 Po rozpoznaniu komendy głosowej aplikacja przekazuje do serwera wiadomość \texttt{info-request}. Jej odebranie przez serwer skutkuje zakolejkowaniem zadania przygotowania tekstu zawierającego informacje zwrotne. Obsługa kończy się bez oczekiwania na rezultat, aby nie blokować potoku i by sesja mogła kontynuować swoje działanie.
 
-Końcowym etapem analizy obiektu jest przekazanie przygotowanego tekstu z powrotem do sesji, a następnie jego wysłanie w postaci \texttt{info-response:<tekst>}. Aplikacja kliencka rozpoznaje prefiks odpowiedzi i przekazuje zawartość do dalszej obsługi w kontrolerze. Ostatecznie tekst zostaje przekazany do mechanizmu syntezatora mowy opisanego w sekcji \ref{ssec:interakcja_glosowa}.
+Końcowym etapem analizy obiektu jest przekazanie przygotowanego przez moduł tekstu z powrotem do sesji, a następnie jego wysłanie w postaci \texttt{info-response:<tekst>}. Aplikacja kliencka rozpoznaje prefiks odpowiedzi i przekazuje zawartość do dalszej obsługi w kontrolerze. Ostatecznie tekst zostaje przekazany do mechanizmu syntezatora mowy opisanego w sekcji \ref{ssec:interakcja_glosowa}.
 
 \subsection{Cykl życia połączenia i obsługa błędów}
 
