@@ -12,6 +12,7 @@ class DesktopBridge(QObject):
     previewFrameChanged = Signal(str, int, int)
     detectionModelChanged = Signal(str, str, str)
     detectionResultChanged = Signal(str, float)
+    knowledgeDatabaseChanged = Signal(str, str, str)
 
     def __init__(self, backend_controller):
         super().__init__()
@@ -24,6 +25,7 @@ class DesktopBridge(QObject):
         self.backend_controller.previewFrameChanged.connect(self.previewFrameChanged.emit)
         self.backend_controller.detectionModelChanged.connect(self.detectionModelChanged.emit)
         self.backend_controller.detectionResultChanged.connect(self.detectionResultChanged.emit)
+        self.backend_controller.knowledgeDatabaseChanged.connect(self.knowledgeDatabaseChanged.emit)
 
     @Slot()
     def requestInitialState(self):
@@ -50,6 +52,11 @@ class DesktopBridge(QObject):
             state["detection_label"],
             state["detection_confidence"],
         )
+        self.knowledgeDatabaseChanged.emit(
+            state["knowledge_database_path"],
+            state["knowledge_database_status"],
+            state["knowledge_database_message"],
+        )
 
     @Slot()
     def chooseDetectionModel(self):
@@ -61,6 +68,17 @@ class DesktopBridge(QObject):
         )
         if model_path:
             self.backend_controller.load_detection_model(model_path)
+
+    @Slot()
+    def chooseKnowledgeDatabase(self):
+        database_path, _ = QFileDialog.getOpenFileName(
+            None,
+            "Choose knowledge database",
+            "",
+            "JSON files (*.json);;All files (*)",
+        )
+        if database_path:
+            self.backend_controller.load_knowledge_database(database_path)
 
     @Slot(str)
     def sendDebugInfoResponse(self, message: str):

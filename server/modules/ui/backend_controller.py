@@ -23,6 +23,7 @@ class BackendController(QObject):
     previewFrameChanged = Signal(str, int, int)
     detectionModelChanged = Signal(str, str, str)
     detectionResultChanged = Signal(str, float)
+    knowledgeDatabaseChanged = Signal(str, str, str)
 
     def __init__(self):
         super().__init__()
@@ -45,6 +46,9 @@ class BackendController(QObject):
         self._detection_label = ""
         self._detection_confidence = 0.0
         self._detection_box = None
+        self._knowledge_database_path = ""
+        self._knowledge_database_status = "booting"
+        self._knowledge_database_message = "Knowledge database is starting."
         self._preview_frame = ""
         self._frame_width = 0
         self._frame_height = 0
@@ -95,6 +99,9 @@ class BackendController(QObject):
                 "detection_label": self._detection_label,
                 "detection_confidence": self._detection_confidence,
                 "detection_box": self._detection_box,
+                "knowledge_database_path": self._knowledge_database_path,
+                "knowledge_database_status": self._knowledge_database_status,
+                "knowledge_database_message": self._knowledge_database_message,
                 "preview_frame": self._preview_frame,
                 "frame_width": self._frame_width,
                 "frame_height": self._frame_height,
@@ -112,6 +119,26 @@ class BackendController(QObject):
             self._loop,
         )
         future.add_done_callback(self._handle_detection_model_loaded)
+
+    def load_knowledge_database(self, database_path: str):
+        if self._loop is None or self._runtime is None:
+            self._set_knowledge_database_state(
+                database_path,
+                "error",
+                "Backend is not running.",
+            )
+            return
+
+        self._set_knowledge_database_state(
+            database_path,
+            "loading",
+            "Loading knowledge database.",
+        )
+        future = asyncio.run_coroutine_threadsafe(
+            self._reload_knowledge_database(database_path),
+            self._loop,
+        )
+        future.add_done_callback(self._handle_knowledge_database_loaded)
 
     def send_debug_info_response(self, message: str):
         normalized_message = (message or "").strip()
@@ -164,6 +191,10 @@ class BackendController(QObject):
             self._runtime = None
             self._thread = None
 
+    async def _reload_knowledge_database(self, database_path: str):
+        self._runtime.reload_knowledge_base(database_path)
+        return self._runtime.get_knowledge_details()
+
     def _handle_runtime_status(self, status: str, details: dict):
         with self._state_lock:
             self._status = status
@@ -180,6 +211,26 @@ class BackendController(QObject):
         )
 
         if self._runtime is not None:
+            knowledge_details = self._runtime.get_knowledge_details()
+            if status == "starting":
+                knowledge_status = "loading"
+                knowledge_message = "Loading knowledge database."
+            elif status == "running":
+                knowledge_status = "ready"
+                knowledge_message = "Knowledge database is ready."
+            elif status == "error":
+                knowledge_status = "error"
+                knowledge_message = "Knowledge database error."
+            else:
+                knowledge_status = self._knowledge_database_status
+                knowledge_message = self._knowledge_database_message
+
+            self._set_knowledge_database_state(
+                knowledge_details["path"],
+                knowledge_status,
+                knowledge_message,
+            )
+
             detection_details = self._runtime.get_detection_details()
             if not detection_details["enabled"]:
                 detection_status = "disabled"
@@ -274,6 +325,24 @@ class BackendController(QObject):
             else "Detection is disabled.",
         )
 
+    def _handle_knowledge_database_loaded(self, future):
+        try:
+            details = future.result()
+        except Exception as err:
+            self._set_knowledge_database_state(
+                self._knowledge_database_path,
+                "error",
+                str(err),
+            )
+            self._safe_emit(self.backendErrorChanged, str(err))
+            return
+
+        self._set_knowledge_database_state(
+            details["path"],
+            "ready",
+            f"Knowledge database is ready ({details['objects']} objects).",
+        )
+
     def _set_detection_state(self, model_path: str, status: str, message: str):
         with self._state_lock:
             self._detection_model_path = model_path or ""
@@ -283,6 +352,19 @@ class BackendController(QObject):
         self._safe_emit(
             self.detectionModelChanged,
             self._detection_model_path,
+            status,
+            message,
+        )
+
+    def _set_knowledge_database_state(self, database_path: str, status: str, message: str):
+        with self._state_lock:
+            self._knowledge_database_path = database_path or ""
+            self._knowledge_database_status = status
+            self._knowledge_database_message = message
+
+        self._safe_emit(
+            self.knowledgeDatabaseChanged,
+            self._knowledge_database_path,
             status,
             message,
         )

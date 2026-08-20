@@ -1,5 +1,4 @@
 import asyncio
-import inspect
 import time
 
 import cv2
@@ -26,6 +25,7 @@ class CaptureSession:
         frame_callback_interval_seconds: float = 0.0,
         frame_processor=None,
         info_provider=None,
+        analysis_context_provider=None,
         session_event_callback=None,
         session_metrics_callback=None,
     ):
@@ -35,8 +35,9 @@ class CaptureSession:
         self.frame_callback_interval_seconds = frame_callback_interval_seconds
         self.frame_processor = frame_processor
         self.info_provider = info_provider
+        self.analysis_context_provider = analysis_context_provider
         self.analysis_worker = (
-            AnalysisWorker(self._provide_info_response)
+            AnalysisWorker(info_provider)
             if info_provider is not None
             else None
         )
@@ -55,7 +56,6 @@ class CaptureSession:
         self.last_fps_at = time.time()
         self.fps = 0
         self.client_ip = self._extract_client_ip()
-        self._last_frame = None
         self._analysis_tasks = set()
         self._last_frame_callback_at = 0.0
 
@@ -139,7 +139,6 @@ class CaptureSession:
             print("unsupported frame")
             return True
 
-        self._last_frame = frame
         width, height = self._log_resolution(frame)
         self._log_performance(width, height, payload, frame)
         preview_frame = await self._process_frame(frame)
@@ -228,44 +227,22 @@ class CaptureSession:
             print(f"detection error: {err}")
             return frame
 
-    def _provide_info_response(self, request, frame=None):
-        if self.info_provider is None:
-            return None
-
-        analysis_frame = self._last_frame if frame is None else frame
-
-        signature = inspect.signature(self.info_provider)
-        if any(
-            parameter.kind == inspect.Parameter.VAR_POSITIONAL
-            for parameter in signature.parameters.values()
-        ):
-            return self.info_provider(request, analysis_frame)
-
-        positional_parameters = [
-            parameter
-            for parameter in signature.parameters.values()
-            if parameter.kind
-            in (
-                inspect.Parameter.POSITIONAL_ONLY,
-                inspect.Parameter.POSITIONAL_OR_KEYWORD,
-            )
-        ]
-        if len(positional_parameters) >= 2:
-            return self.info_provider(request, analysis_frame)
-
-        return self.info_provider(request)
-
     def _queue_info_response_analysis(self, request):
-        task = asyncio.create_task(self._run_info_response_analysis(request, self._last_frame))
+        context = (
+            self.analysis_context_provider(request)
+            if self.analysis_context_provider is not None
+            else request
+        )
+        task = asyncio.create_task(self._run_info_response_analysis(context))
         self._analysis_tasks.add(task)
         task.add_done_callback(self._analysis_tasks.discard)
 
-    async def _run_info_response_analysis(self, request, frame):
+    async def _run_info_response_analysis(self, context):
         if self.analysis_worker is None:
             return
 
         try:
-            data = await self.analysis_worker.analyze(request, frame)
+            data = await self.analysis_worker.analyze(context)
         except asyncio.CancelledError:
             raise
         except Exception as err:

@@ -23,6 +23,7 @@ class CaptureServer:
         frame_callback_interval_seconds: float = PREVIEW_FRAME_PUSH_INTERVAL_SECONDS,
         frame_processor=None,
         info_provider=None,
+        analysis_context_provider=None,
         session_event_callback=None,
         session_metrics_callback=None,
     ):
@@ -34,6 +35,7 @@ class CaptureServer:
         self.frame_callback_interval_seconds = frame_callback_interval_seconds
         self.frame_processor = frame_processor
         self.info_provider = info_provider
+        self.analysis_context_provider = analysis_context_provider
         self.session_event_callback = session_event_callback
         self.session_metrics_callback = session_metrics_callback
         self._session_active = False
@@ -95,6 +97,7 @@ class CaptureServer:
                 frame_callback_interval_seconds=self.frame_callback_interval_seconds,
                 frame_processor=self.frame_processor,
                 info_provider=self.info_provider,
+                analysis_context_provider=self.analysis_context_provider,
                 session_event_callback=self.session_event_callback,
                 session_metrics_callback=self.session_metrics_callback,
             )

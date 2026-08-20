@@ -7,6 +7,9 @@ const compressionValue = document.getElementById("compression-value");
 const modelValue = document.getElementById("model-value");
 const modelStatusValue = document.getElementById("model-status-value");
 const modelDetail = document.getElementById("model-detail");
+const knowledgeDatabaseValue = document.getElementById("knowledge-database-value");
+const knowledgeDatabaseStatusValue = document.getElementById("knowledge-database-status-value");
+const knowledgeDatabaseDetail = document.getElementById("knowledge-database-detail");
 const detectedObjectValue = document.getElementById("detected-object-value");
 const detectedObjectConfidenceValue = document.getElementById("detected-object-confidence-value");
 const detectedObjectConfidenceBar = document.getElementById("detected-object-confidence-bar");
@@ -16,6 +19,7 @@ const frameMeta = document.getElementById("frame-meta");
 const previewImage = document.getElementById("preview-image");
 const previewPlaceholder = document.getElementById("preview-placeholder");
 const chooseModelButton = document.getElementById("choose-model-button");
+const chooseKnowledgeDatabaseButton = document.getElementById("choose-knowledge-database-button");
 const shutdownButton = document.getElementById("shutdown-button");
 const languageSelect = document.getElementById("language-select");
 const debugMessageInput = document.getElementById("debug-message-input");
@@ -27,6 +31,9 @@ let currentCaptureMessage = "";
 let currentModelPath = "";
 let currentModelStatus = "unknown";
 let currentModelMessage = "";
+let currentKnowledgeDatabasePath = "";
+let currentKnowledgeDatabaseStatus = "unknown";
+let currentKnowledgeDatabaseMessage = "";
 let currentDetectionLabel = "";
 let currentDetectionConfidence = 0;
 
@@ -80,6 +87,29 @@ function updateDetectionModel(modelPath, status, message) {
   setTextIfChanged(modelDetail, translateModelMessage(currentModelStatus, currentModelMessage));
   chooseModelButton.disabled = currentModelStatus === "loading";
   chooseModelButton.setAttribute("aria-busy", currentModelStatus === "loading" ? "true" : "false");
+}
+
+function updateKnowledgeDatabase(databasePath, status, message) {
+  currentKnowledgeDatabasePath = databasePath || "";
+  currentKnowledgeDatabaseStatus = status || "unknown";
+  currentKnowledgeDatabaseMessage = message || "";
+  setTextIfChanged(knowledgeDatabaseValue, formatFileName(currentKnowledgeDatabasePath));
+  setTextIfChanged(
+    knowledgeDatabaseStatusValue,
+    translate(`model_status.${currentKnowledgeDatabaseStatus}`),
+  );
+  setTextIfChanged(
+    knowledgeDatabaseDetail,
+    translateKnowledgeDatabaseMessage(
+      currentKnowledgeDatabaseStatus,
+      currentKnowledgeDatabaseMessage,
+    ),
+  );
+  chooseKnowledgeDatabaseButton.disabled = currentKnowledgeDatabaseStatus === "loading";
+  chooseKnowledgeDatabaseButton.setAttribute(
+    "aria-busy",
+    currentKnowledgeDatabaseStatus === "loading" ? "true" : "false",
+  );
 }
 
 function updateDetectionResult(label, confidence) {
@@ -142,7 +172,19 @@ function translateModelMessage(status, message) {
     : translated;
 }
 
+function translateKnowledgeDatabaseMessage(status, message) {
+  const statusKey = `database_message.${status}`;
+  const translated = translate(statusKey);
+  return translated === statusKey
+    ? message || translate("messages.database_waiting")
+    : translated;
+}
+
 function formatModelName(modelPath) {
+  return formatFileName(modelPath);
+}
+
+function formatFileName(modelPath) {
   if (!modelPath) {
     return "-";
   }
@@ -177,6 +219,11 @@ function setLocale(locale) {
     );
   }
   updateDetectionModel(currentModelPath, currentModelStatus, currentModelMessage);
+  updateKnowledgeDatabase(
+    currentKnowledgeDatabasePath,
+    currentKnowledgeDatabaseStatus,
+    currentKnowledgeDatabaseMessage,
+  );
   updateDetectionResult(currentDetectionLabel, currentDetectionConfidence);
 
   window.localStorage.setItem(LOCALE_STORAGE_KEY, i18n.getLocale());
@@ -201,6 +248,7 @@ function attachBridge() {
     bridge.previewFrameChanged.connect(updatePreviewFrame);
     bridge.detectionModelChanged.connect(updateDetectionModel);
     bridge.detectionResultChanged.connect(updateDetectionResult);
+    bridge.knowledgeDatabaseChanged.connect(updateKnowledgeDatabase);
     bridge.backendErrorChanged.connect((message) => {
       updateBackendStatus("error");
       updateCaptureStatus("error", message || translate("errors.backend_error"));
@@ -208,6 +256,10 @@ function attachBridge() {
 
     chooseModelButton.addEventListener("click", () => {
       bridge.chooseDetectionModel();
+    });
+
+    chooseKnowledgeDatabaseButton.addEventListener("click", () => {
+      bridge.chooseKnowledgeDatabase();
     });
 
     shutdownButton.addEventListener("click", () => {

@@ -1,11 +1,26 @@
 import asyncio
+from dataclasses import dataclass
 
 from model_loader import load_model
 from mdns_publisher import MDNSPublisher
 from settings import HOST, PORT
 
-from .analysis import SliceAnalyzer
+from .analysis import UNRECOGNIZED_SURFACE_MESSAGE, SliceAnalyzer
 from .capture import CaptureServer
+from .detection import DetectionSnapshot
+from .knowledge import (
+    DEFAULT_KNOWLEDGE_PATH,
+    KnowledgeBase,
+    load_knowledge_base,
+    reload_knowledge_base as reload_loaded_knowledge_base,
+)
+
+
+@dataclass(frozen=True)
+class AnalysisContext:
+    request: object
+    snapshot: DetectionSnapshot | None
+    knowledge: KnowledgeBase
 
 
 class ApplicationRuntime:
@@ -24,12 +39,15 @@ class ApplicationRuntime:
         self.port = port
         self.status_callback = status_callback
         self.mdns = MDNSPublisher(port=port)
+        self.knowledge_path = str(DEFAULT_KNOWLEDGE_PATH)
+        self.knowledge = load_knowledge_base()
         self.capture_server = CaptureServer(
             host=host,
             port=port,
             preview_enabled=preview_enabled,
             frame_callback=frame_callback,
             info_provider=self.provide_analysis_response,
+            analysis_context_provider=self.create_analysis_context,
             session_event_callback=capture_event_callback,
             session_metrics_callback=capture_metrics_callback,
         )
@@ -93,10 +111,46 @@ class ApplicationRuntime:
     def get_last_detection(self):
         return self.detector.get_last_detection()
 
-    def provide_analysis_response(self, request, frame=None) -> str:
-        detection = self.get_last_detection()
-        crop = detection.crop_from(frame) if frame is not None else None
-        result = self.slice_analyzer.analyze(crop, detection, request=request)
+    def get_last_detection_snapshot(self):
+        return self.detector.get_last_snapshot()
+
+    def reload_knowledge_base(self, path=None):
+        self.knowledge = (
+            reload_loaded_knowledge_base()
+            if path is None
+            else reload_loaded_knowledge_base(path)
+        )
+        self.knowledge_path = str(DEFAULT_KNOWLEDGE_PATH if path is None else path)
+        return self.knowledge
+
+    def get_knowledge_details(self):
+        return {
+            "path": self.knowledge_path,
+            "objects": len(self.knowledge.solids),
+        }
+
+    def create_analysis_context(self, request) -> AnalysisContext:
+        return AnalysisContext(
+            request=request,
+            snapshot=self.get_last_detection_snapshot(),
+            knowledge=self.knowledge,
+        )
+
+    def provide_analysis_response(self, context: AnalysisContext) -> str:
+        if context.snapshot is None:
+            return UNRECOGNIZED_SURFACE_MESSAGE
+
+        detection = context.snapshot.detection
+        if not detection.has_detection:
+            return UNRECOGNIZED_SURFACE_MESSAGE
+
+        crop = detection.crop_from(context.snapshot.frame)
+        result = self.slice_analyzer.analyze(
+            crop,
+            detection.class_name,
+            context.knowledge,
+            request=context.request,
+        )
         return result.text
 
     def provide_client_info(self, request):

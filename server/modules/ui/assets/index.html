@@ -138,6 +138,34 @@
             >Choose model</button>
           </section>
 
+          <section class="info-card" aria-labelledby="knowledge-heading">
+            <h2 id="knowledge-heading" class="card-heading" data-i18n="labels.knowledge_database">Knowledge DB</h2>
+            <dl class="kv-list">
+              <div>
+                <dt data-i18n="labels.database_file">File</dt>
+                <dd id="knowledge-database-value">-</dd>
+              </div>
+              <div>
+                <dt data-i18n="labels.database_status">Status</dt>
+                <dd id="knowledge-database-status-value">-</dd>
+              </div>
+            </dl>
+            <p
+              id="knowledge-database-detail"
+              class="detail-text"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-i18n="messages.database_waiting"
+            >Waiting for database status.</p>
+            <button
+              id="choose-knowledge-database-button"
+              type="button"
+              class="action-button action-button--secondary action-button--block"
+              data-i18n="actions.choose_database"
+            >Choose JSON</button>
+          </section>
+
           <section class="info-card detected-object-card" aria-labelledby="detected-object-heading">
             <h2 id="detected-object-heading" class="card-heading" data-i18n="labels.detected_object">Detected Object</h2>
             <strong
@@ -163,7 +191,7 @@
             <textarea
               id="debug-message-input"
               class="debug-card__input"
-              rows="3"
+              rows="2"
               data-i18n-attr-placeholder="messages.debug_message_placeholder"
               placeholder="Text sent as info-response"
             ></textarea>
@@ -176,12 +204,6 @@
             >Send info-response</button>
           </section>
 
-          <section class="info-card" aria-labelledby="next-heading">
-            <h2 id="next-heading" class="card-heading" data-i18n="labels.next">Next</h2>
-            <p class="detail-text" data-i18n="messages.next_step">
-              The next step is a YOLO overlay and shape material controls.
-            </p>
-          </section>
         </aside>
       </main>
     </div>

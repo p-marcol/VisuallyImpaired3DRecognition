@@ -44,6 +44,10 @@ class DetectionResult:
     box: DetectionBox | None = None
 
     @property
+    def class_name(self) -> str:
+        return self.label
+
+    @property
     def has_detection(self) -> bool:
         return bool(self.label and self.box is not None and not self.box.is_empty)
 
@@ -58,6 +62,12 @@ class DetectionResult:
 
 
 EMPTY_DETECTION = DetectionResult("", 0.0)
+
+
+@dataclass(frozen=True)
+class DetectionSnapshot:
+    frame: object
+    detection: DetectionResult
 
 
 class YOLODetector:
@@ -79,6 +89,7 @@ class YOLODetector:
         self._model = None
         self._model_lock = threading.Lock()
         self._last_detection = EMPTY_DETECTION
+        self._last_snapshot = None
         self._last_detection_lock = threading.Lock()
 
     async def start(self):
@@ -128,12 +139,12 @@ class YOLODetector:
                 verbose=False,
             )
         if not results:
-            self._emit_best_detection(EMPTY_DETECTION)
+            self._store_processed_detection(frame, EMPTY_DETECTION)
             return frame
 
         result = results[0]
         detection = self._extract_best_detection(result, frame)
-        self._emit_best_detection(detection)
+        self._store_processed_detection(frame, detection)
         return result.plot(boxes=True, labels=True, conf=True)
 
     def _extract_best_detection(self, result, frame) -> DetectionResult:
@@ -182,9 +193,15 @@ class YOLODetector:
         with self._last_detection_lock:
             return self._last_detection
 
-    def _emit_best_detection(self, detection: DetectionResult):
+    def get_last_snapshot(self) -> DetectionSnapshot | None:
+        with self._last_detection_lock:
+            return self._last_snapshot
+
+    def _store_processed_detection(self, frame, detection: DetectionResult):
+        snapshot = DetectionSnapshot(frame.copy(), detection)
         with self._last_detection_lock:
             self._last_detection = detection
+            self._last_snapshot = snapshot
 
         if self.result_callback is not None:
             self.result_callback(detection)

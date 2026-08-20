@@ -25,6 +25,8 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
+  overflow: hidden;
+  font-size: 14px;
   font-family: "Avenir Next", "Segoe UI", sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -66,17 +68,17 @@ a:focus-visible,
 .app-shell {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  min-height: 100vh;
-  padding: clamp(16px, 2vw, 24px);
-  overflow: visible;
+  height: 100vh;
+  padding: 10px;
+  overflow: hidden;
 }
 
 .topbar {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .brand-block h1,
@@ -86,15 +88,15 @@ a:focus-visible,
 }
 
 .brand-block h1 {
-  font-size: 2rem;
+  font-size: 1.35rem;
 }
 
 .eyebrow,
 .status-chip__label,
 .card-heading {
   display: inline-block;
-  margin-bottom: 6px;
-  font-size: 0.7rem;
+  margin-bottom: 3px;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -102,13 +104,13 @@ a:focus-visible,
 }
 
 .card-heading {
-  margin: 0 0 8px;
+  margin: 0 0 5px;
 }
 
 .status-group {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -122,23 +124,23 @@ a:focus-visible,
 }
 
 .status-chip {
-  min-width: 160px;
+  min-width: 132px;
   max-width: 100%;
-  padding: 12px 16px;
+  padding: 8px 10px;
 }
 
 .status-chip strong {
   display: block;
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   letter-spacing: 0;
   overflow-wrap: anywhere;
 }
 
 .action-button {
-  min-height: 44px;
+  min-height: 34px;
   border: 1px solid transparent;
   border-radius: 8px;
-  padding: 12px 18px;
+  padding: 7px 11px;
   font-weight: 700;
   color: #061018;
   background: var(--warning);
@@ -151,7 +153,7 @@ a:focus-visible,
 }
 
 .action-button--secondary {
-  margin-top: 14px;
+  margin-top: 8px;
   color: var(--text);
   background: var(--control-bg);
   border: 1px solid var(--line);
@@ -164,12 +166,12 @@ a:focus-visible,
 .toolbar-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .language-picker {
-  min-width: 160px;
-  padding: 12px 16px;
+  min-width: 132px;
+  padding: 8px 10px;
 }
 
 .status-chip--select {
@@ -178,38 +180,38 @@ a:focus-visible,
 }
 
 .language-picker__select {
-  min-height: 44px;
+  min-height: 34px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 6px 8px;
   color: var(--text);
   background: var(--control-bg);
 }
 
 .main-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 10px;
   min-height: 0;
 }
 
 .preview-panel {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 16px;
-  min-height: 420px;
-  padding: 20px;
+  gap: 8px;
+  min-height: 0;
+  padding: 12px;
 }
 
 .preview-panel__header {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .preview-panel__header h2 {
-  font-size: 1.9rem;
+  font-size: 1.25rem;
 }
 
 .frame-meta,
@@ -247,7 +249,7 @@ a:focus-visible,
 .preview-placeholder {
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: 16px;
   text-align: center;
   color: var(--muted);
   line-height: 1.5;
@@ -257,28 +259,28 @@ a:focus-visible,
 
 .side-panel {
   display: grid;
-  gap: 16px;
+  gap: 8px;
   align-content: start;
   min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
+  overflow: hidden;
+  padding-right: 0;
 }
 
 .info-card {
-  padding: 18px;
+  padding: 10px;
 }
 
 .kv-list {
   display: grid;
-  gap: 10px;
-  margin: 8px 0 0;
+  gap: 5px;
+  margin: 5px 0 0;
 }
 
 .kv-list div {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 10px;
+  gap: 8px;
+  padding-bottom: 5px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -290,19 +292,20 @@ a:focus-visible,
 }
 
 .detail-text {
-  margin: 8px 0 0;
-  line-height: 1.6;
+  margin: 5px 0 0;
+  line-height: 1.35;
+  font-size: 0.82rem;
 }
 
 .detected-object-card {
   display: grid;
-  gap: 12px;
+  gap: 7px;
 }
 
 .detected-object-card__value {
   display: block;
-  min-height: 44px;
-  font-size: 1.55rem;
+  min-height: 28px;
+  font-size: 1.05rem;
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
@@ -311,7 +314,7 @@ a:focus-visible,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   color: var(--muted);
 }
 
@@ -320,7 +323,7 @@ a:focus-visible,
 }
 
 .confidence-meter {
-  height: 8px;
+  height: 6px;
   overflow: hidden;
   border-radius: 8px;
   background: #2a3544;
@@ -337,22 +340,22 @@ a:focus-visible,
 
 .debug-card {
   display: grid;
-  gap: 10px;
+  gap: 6px;
 }
 
 .debug-card__label {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
 .debug-card__input {
   width: 100%;
-  min-height: 84px;
+  min-height: 50px;
   resize: vertical;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 7px 9px;
   color: var(--text);
   background: var(--control-bg);
   line-height: 1.4;

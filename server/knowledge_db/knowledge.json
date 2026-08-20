@@ -1,0 +1,42 @@
+[
+  {
+    "id": "cube",
+    "name": "sześcian",
+    "color_matching": {
+      "space": "lab",
+      "max_distance": 35.0
+    },
+    "surfaces": [
+      {
+        "id": "red",
+        "color": "red",
+        "message": "ściana czerwona"
+      },
+      {
+        "id": "yellow",
+        "color": "yellow",
+        "message": "ściana żółta"
+      },
+      {
+        "id": "dark_blue",
+        "color": "darkblue",
+        "message": "ściana ciemnoniebieska"
+      },
+      {
+        "id": "purple",
+        "color": "purple",
+        "message": "ściana fioletowa"
+      },
+      {
+        "id": "cyan",
+        "color": "cyan",
+        "message": "ściana cyjanowa"
+      },
+      {
+        "id": "light_green",
+        "color": "lightgreen",
+        "message": "ściana jasnozielona"
+      }
+    ]
+  }
+]
