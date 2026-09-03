@@ -3,10 +3,15 @@ package com.example.wi3dr_kmp.input
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import java.util.Locale
+
+private const val RESTART_DELAY_MS = 350L
+private const val BUSY_RESTART_DELAY_MS = 1000L
 
 class VoiceCommandRecognizer(
     context: Context,
@@ -15,11 +20,14 @@ class VoiceCommandRecognizer(
     private val onListeningChanged: (Boolean) -> Unit
 ) {
     private val appContext = context.applicationContext
+    private val mainHandler = Handler(Looper.getMainLooper())
     private val speechRecognizer = if (SpeechRecognizer.isRecognitionAvailable(appContext)) {
         SpeechRecognizer.createSpeechRecognizer(appContext)
     } else {
         null
     }
+    private var isContinuousListeningEnabled = false
+    private var isRecognitionActive = false
 
     val isAvailable: Boolean
         get() = speechRecognizer != null
@@ -54,11 +62,17 @@ class VoiceCommandRecognizer(
                 }
 
                 override fun onError(error: Int) {
+                    isRecognitionActive = false
                     onListeningChanged(false)
+
+                    if (!isContinuousListeningEnabled) return
+
                     onStatusChanged(error.toStatusMessage())
+                    scheduleRestart(error.restartDelayMs())
                 }
 
                 override fun onResults(results: Bundle?) {
+                    isRecognitionActive = false
                     onListeningChanged(false)
                     val matches = results
                         ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
@@ -70,6 +84,7 @@ class VoiceCommandRecognizer(
                     } else {
                         onStatusChanged("Voice command not recognized")
                     }
+                    scheduleRestart()
                 }
 
                 override fun onPartialResults(partialResults: Bundle?) = Unit
@@ -79,19 +94,50 @@ class VoiceCommandRecognizer(
         )
     }
 
-    fun startListening() {
+    fun startContinuousListening() {
+        isContinuousListeningEnabled = true
+        startListeningSession()
+    }
+
+    fun stopContinuousListening() {
+        isContinuousListeningEnabled = false
+        mainHandler.removeCallbacksAndMessages(null)
+        isRecognitionActive = false
+        onListeningChanged(false)
+        speechRecognizer?.cancel()
+        onStatusChanged(null)
+    }
+
+    private fun startListeningSession() {
         val recognizer = speechRecognizer
         if (recognizer == null) {
             onStatusChanged("Voice recognition unavailable")
             return
         }
+        if (isRecognitionActive) return
 
+        isRecognitionActive = true
         onListeningChanged(true)
         onStatusChanged("Listening")
         recognizer.startListening(recognizerIntent)
     }
 
+    private fun scheduleRestart(delayMs: Long = RESTART_DELAY_MS) {
+        if (!isContinuousListeningEnabled) return
+
+        mainHandler.removeCallbacksAndMessages(null)
+        mainHandler.postDelayed(
+            {
+                if (isContinuousListeningEnabled) {
+                    startListeningSession()
+                }
+            },
+            delayMs
+        )
+    }
+
     fun dispose() {
+        stopContinuousListening()
         speechRecognizer?.destroy()
     }
 }
@@ -113,4 +159,9 @@ private fun Int.toStatusMessage(): String = when (this) {
     SpeechRecognizer.ERROR_SERVER -> "Voice recognition server error"
     SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech detected"
     else -> "Voice recognition error"
+}
+
+private fun Int.restartDelayMs(): Long = when (this) {
+    SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> BUSY_RESTART_DELAY_MS
+    else -> RESTART_DELAY_MS
 }

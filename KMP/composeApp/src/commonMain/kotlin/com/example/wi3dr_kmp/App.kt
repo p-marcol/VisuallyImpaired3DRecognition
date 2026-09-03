@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,12 +39,7 @@ fun App(
     streamingController: StreamingController,
     modifier: Modifier = Modifier,
     onScanClick: () -> Unit = {},
-    isScanInProgress: Boolean = false,
-    showVoiceRecognitionSection: Boolean = false,
-    isVoiceRecognitionAvailable: Boolean = false,
-    isVoiceRecognitionInProgress: Boolean = false,
-    voiceRecognitionStatus: String? = null,
-    onVoiceCommandClick: () -> Unit = {}
+    isScanInProgress: Boolean = false
 ) {
     MaterialTheme {
         val uiState by streamingController.uiState.collectAsState()
@@ -153,29 +147,6 @@ fun App(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(if (uiState.isStreaming) "Stop Streaming" else "Start Streaming")
-            }
-
-            if (showVoiceRecognitionSection) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text("Voice recognition")
-                    Button(
-                        onClick = onVoiceCommandClick,
-                        enabled = isVoiceRecognitionAvailable &&
-                            !isVoiceRecognitionInProgress &&
-                            uiState.isLive,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (isVoiceRecognitionInProgress) "Listening..." else "Listen")
-                    }
-                    voiceRecognitionStatus?.let { status ->
-                        Text(status)
-                    }
-                }
             }
         }
     }

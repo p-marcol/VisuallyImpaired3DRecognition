@@ -40,6 +40,8 @@ import com.example.wi3dr_kmp.streaming.StreamingController
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -51,9 +53,7 @@ class MainActivity : ComponentActivity() {
     private var appliedCameraQualityPreset: ImageQualityPreset? = null
     private var isScanInProgress by mutableStateOf(false)
     private var voiceCommandRecognizer: VoiceCommandRecognizer? = null
-    private var isVoiceRecognitionAvailable by mutableStateOf(false)
-    private var isVoiceRecognitionInProgress by mutableStateOf(false)
-    private var voiceRecognitionStatus by mutableStateOf<String?>(null)
+    private var isRecordAudioPermissionRequestInProgress = false
     private var textToSpeech: TextToSpeech? = null
     private var isTextToSpeechReady = false
 
@@ -96,12 +96,7 @@ class MainActivity : ComponentActivity() {
                     streamingController = streamingController,
                     modifier = Modifier.width(300.dp),
                     onScanClick = ::scanForServerInLan,
-                    isScanInProgress = isScanInProgress,
-                    showVoiceRecognitionSection = true,
-                    isVoiceRecognitionAvailable = isVoiceRecognitionAvailable,
-                    isVoiceRecognitionInProgress = isVoiceRecognitionInProgress,
-                    voiceRecognitionStatus = voiceRecognitionStatus,
-                    onVoiceCommandClick = ::startVoiceCommandRecognition
+                    isScanInProgress = isScanInProgress
                 )
 
                 AndroidApp(
@@ -114,6 +109,7 @@ class MainActivity : ComponentActivity() {
 
         startCamera(streamingController.uiState.value.imageQualityPreset)
         observeCameraQualityChanges()
+        observeVoiceRecognitionChanges()
     }
 
     private fun initializeVoiceCommandRecognizer() {
@@ -124,16 +120,17 @@ class MainActivity : ComponentActivity() {
                 Toast.makeText(this, "Info request sent", Toast.LENGTH_SHORT).show()
             },
             onStatusChanged = { status ->
-                voiceRecognitionStatus = status
+                if (status != null) {
+                    Log.d(VOICE_RECOGNITION_LOG_TAG, status)
+                }
             },
             onListeningChanged = { isListening ->
-                isVoiceRecognitionInProgress = isListening
+                Log.d(VOICE_RECOGNITION_LOG_TAG, "Listening active: $isListening")
             }
         )
         voiceCommandRecognizer = recognizer
-        isVoiceRecognitionAvailable = recognizer.isAvailable
         if (!recognizer.isAvailable) {
-            voiceRecognitionStatus = "Voice recognition unavailable"
+            Log.w(VOICE_RECOGNITION_LOG_TAG, "Voice recognition unavailable")
         }
     }
 
@@ -180,6 +177,21 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun observeVoiceRecognitionChanges() {
+        lifecycleScope.launch {
+            streamingController.uiState
+                .map { it.isLive }
+                .distinctUntilChanged()
+                .collect { isLive ->
+                    if (isLive) {
+                        startVoiceCommandRecognition()
+                    } else {
+                        voiceCommandRecognizer?.stopContinuousListening()
+                    }
+                }
+        }
+    }
+
     private fun observeConnectionErrors() {
         lifecycleScope.launch {
             streamingController.connectionErrors.collect { message ->
@@ -223,7 +235,13 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startVoiceCommandRecognition() {
+        val recognizer = voiceCommandRecognizer ?: return
+        if (!recognizer.isAvailable) return
+
         if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            if (isRecordAudioPermissionRequestInProgress) return
+
+            isRecordAudioPermissionRequestInProgress = true
             requestPermissions(
                 arrayOf(android.Manifest.permission.RECORD_AUDIO),
                 RECORD_AUDIO_PERMISSION_REQUEST_CODE
@@ -231,7 +249,7 @@ class MainActivity : ComponentActivity() {
             return
         }
 
-        voiceCommandRecognizer?.startListening()
+        recognizer.startContinuousListening()
     }
 
     private fun scanForServerInLan() {
@@ -300,10 +318,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
             RECORD_AUDIO_PERMISSION_REQUEST_CODE -> {
+                isRecordAudioPermissionRequestInProgress = false
                 if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
-                    startVoiceCommandRecognition()
+                    if (streamingController.uiState.value.isLive) {
+                        startVoiceCommandRecognition()
+                    }
                 } else {
-                    voiceRecognitionStatus = "Microphone permission denied"
                     Toast.makeText(this, "Microphone permission denied", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -314,5 +334,6 @@ class MainActivity : ComponentActivity() {
         private const val CAMERA_PERMISSION_REQUEST_CODE = 1001
         private const val RECORD_AUDIO_PERMISSION_REQUEST_CODE = 1002
         private const val INFO_RESPONSE_UTTERANCE_ID = "info-response"
+        private const val VOICE_RECOGNITION_LOG_TAG = "VoiceRecognition"
     }
 }
