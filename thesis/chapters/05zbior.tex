@@ -5,11 +5,11 @@ Specyfika problemu rozpoznawania trzymanych obiektów trójwymiarowych wymaga pr
 
 \section{Zbiór danych}
 
-Stworzenie odpowiedniego zbioru danych jest kluczowe dla przeprowadzenia eksperymentów i~oceny jakości detekcji. Kluczowe jest, aby odpowiadał on rzeczywistym zastosowaniom systemu, a~także aby był wystarczająco zróżnicowany i~reprezentatywny dla problemu.
+Stworzenie odpowiedniego zbioru danych jest kluczowe dla przeprowadzenia eksperymentów i~oceny jakości detekcji. Kluczowe jest, aby odpowiadał on rzeczywistym zastosowaniom systemu, a~także aby był wystarczająco zróżnicowany i~reprezentatywny dla~\nobreakdash{problemu}.
 
 \subsection{Charakterystyka zbioru danych}
 
-Przygotowany zbiór danych składa się z~4666 obrazów JPEG o~rozdzielczości $1920\times1440$ podzielonych na zbiory treningowy, walidacyjny i~testowy. Przedstawiają one osobę siedzącą przed kamerą, manipulującą w~dłoniach bryłami należącymi do jednej z~6 klas obiektów:
+Przygotowany zbiór danych składa się z~4666 obrazów JPEG o~rozdzielczości $1920\times1440$ podzielonych na zbiory treningowy, walidacyjny i~testowy. Przedstawiają one osobę siedzącą przed kamerą, manipulującą w~dłoniach bryłami należącymi do jednej z~6 klas~\nobreakdash{obiektów:}
 \begin{itemize}
     \item sześcian,
     \item prostopadłościan,
@@ -47,7 +47,7 @@ Pełen zbiór danych wraz z~adnotacjami zawiera 4666 obrazów i~4666 odpowiadaj�
     \end{tabularx}
 \end{table}
 
-Dodatkowa charakterystyka zbioru uczącego została przedstawiona na rysunku~\ref{fig:dataset_labels}. Oprócz liczności poszczególnych klas przedstawiono na nim również rozkład położenia ramek ograniczających oraz ich znormalizowane wymiary. Większość z~nich znajduje się w~centralnej części obrazu, co jest skutkiem przyjętego sposobu rejestrowania materiałów wideo.
+Dodatkowa charakterystyka zbioru uczącego została przedstawiona na rysunku~\ref{fig:dataset_labels}. Oprócz liczności poszczególnych klas przedstawiono na nim również rozkład położenia ramek ograniczających oraz ich znormalizowane wymiary. Większość z~nich znajduje się w~centralnej części obrazu, co jest skutkiem przyjętego sposobu rejestrowania materiałów~\nobreakdash{wideo}.
 
 \begin{figure}[h]
     \centering
@@ -90,7 +90,7 @@ Po oznaczeniu danych należało je podzielić na zbiory treningowy, walidacyjny 
     \end{tabularx}
 \end{table}
 
-Przeznaczenie poszczególnych zbiorów danych jest zgodne z~przyjętymi w~literaturze standardami oraz nie występuje nakładanie się ich zastosowań. Zbiór treningowy służy wyłącznie do trenowania modeli, zbiór walidacyjny do oceny jakości modeli w~trakcie treningu, a~zbiór testowy jest używany wyłącznie do oceny jakości modeli po zakończeniu treningu.
+Przeznaczenie poszczególnych zbiorów danych jest zgodne z~przyjętymi w~literaturze standardami oraz nie występuje nakładanie się ich zastosowań. Zbiór treningowy służy wyłącznie do trenowania modeli, zbiór walidacyjny do oceny jakości modeli w~trakcie treningu, a~zbiór testowy jest używany wyłącznie do oceny jakości modeli po zakończeniu~\nobreakdash{treningu}.
 
 \subsection{Warianty danych wejściowych}
 
@@ -151,7 +151,7 @@ Urządzenia wykorzystane do treningu były wybierane według dostępności w~dan
 
 Augmentacja danych została włączona w~celu zwiększenia różnorodności danych treningowych i~poprawy zdolności generalizacji modeli. Wykorzystano w~tym celu wbudowane w~narzędzie Ultralytics YOLO mechanizmy augmentacji pozostawiając ich parametry domyślne. Obejmują one modyfikacje składowych HSV, translację, skalowanie, odbicia poziome oraz augmentację mozaikową.
 
-Trening modeli był prowadzony do momentu braku poprawy kryterium walidacyjnego przez 50 kolejnych epok (ang. \english{early stop}). Po tym czasie trening był przerywany i~uznawano, że model osiągnął swoje plateau i~dalszy trening nie przyniesie znaczącej poprawy jakości detekcji. Przyjęta wartość parametru \texttt{patience} jest kompromisem pomiędzy przedwczesnym zakończeniem treningu a~niepotrzebnym wydłużeniem jego czasu \cite{bib:Prechelt1998}.
+Trening modeli był prowadzony do momentu braku poprawy kryterium walidacyjnego przez 50 kolejnych epok (ang. \english{early stop}). Po tym czasie trening był przerywany i~uznawano, że model osiągnął swoje plateau i~dalszy trening nie przyniesie znaczącej poprawy jakości detekcji. Przyjęta wartość parametru \texttt{patience} jest kompromisem pomiędzy przedwczesnym zakończeniem treningu a~niepotrzebnym wydłużeniem jego czasu~\cite{bib:Prechelt1998}.
 
 Każdy trening uruchomiony został z~ustawieniem ziarna generatora liczb pseudolosowych na wartość 42. Zwiększa to powtarzalność wyników oraz ułatwia odtworzenie eksperymentów w~przyszłości. Wartość ta została wybrana ze względu na jej popularność w~literaturze i~kulturze komputerowej\footnote{Wartość 42 jest nawiązaniem do powieści Douglasa Adamsa \textit{Autostopem przez Galaktykę}, gdzie stanowi odpowiedź na  "Wielkie Pytanie o~Życie, Wszechświat i~całą resztę"}.
 
