@@ -32,43 +32,43 @@ Rozdzielenie kodu poszczególnych części umożliwia niezależny rozwój i~test
         }
         \toprule
 
-        \textbf{Część systemu}                               & \textbf{Technologie i~biblioteki} & \textbf{Zastosowanie} \\
+        \textbf{Część systemu}                                      & \textbf{Technologie i~biblioteki} & \textbf{Zastosowanie}  \\
 
         \midrule
 
-        Aplikacja\newline mobilna                            &
-        Kotlin Multiplatform, Compose Multiplatform, Ktor    &
-        Współdzielona logika aplikacji, interfejs użytkownika i~komunikacja \nolinebreak{WebSocket}                      \\
+        Aplikacja\newline mobilna                                   &
+        Kotlin Multiplatform, Compose Multiplatform, Ktor           &
+        Współdzielona logika aplikacji, interfejs użytkownika i~komunikacja \nolinebreak{WebSocket}                              \\
 
         \addlinespace
 
-        Android                                              &
-        CameraX, SpeechRecognizer, TextToSpeech, Android NSD &
-        Rejestrowanie obrazu, rozpoznawanie komend głosowych, synteza mowy i~wykrywanie serwera w~sieci lokalnej         \\
+        Android                                                     &
+        CameraX, SpeechRecognizer, TextToSpeech, Android NSD        &
+        Rejestrowanie obrazu, rozpoznawanie komend głosowych, synteza mowy i~wykrywanie serwera w~sieci lokalnej                 \\
 
         \addlinespace
 
-        iOS                                                  &
-        AVFoundation, SwiftUI                                &
-        Rejestrowanie obrazu, podgląd kamery i~osadzenie współdzielonego interfejsu aplikacji                            \\
+        iOS                                                         &
+        AVFoundation, SwiftUI                                       &
+        Rejestrowanie obrazu, podgląd kamery i~osadzenie współdzielonego interfejsu aplikacji                                    \\
 
         \addlinespace
 
-        Część serwerowa                                      &
-        Python, websockets, OpenCV, Ultralytics, PyTorch, webcolors     &
-        Obsługa komunikacji, dekodowanie i~przetwarzanie obrazu, wykonywanie detekcji obiektów i~dopasowanie kolorów powierzchni                                          \\
+        Część serwerowa                                             &
+        Python, websockets, OpenCV, Ultralytics, PyTorch, webcolors &
+        Obsługa komunikacji, dekodowanie i~przetwarzanie obrazu, wykonywanie detekcji obiektów i~dopasowanie kolorów powierzchni \\
 
         \addlinespace
 
-        Interfejs serwera                                    &
-        PySide6, QWebChannel                                 &
-        Prezentowanie obrazu, stanu połączenia i~bieżących wyników detekcji                                              \\
+        Interfejs serwera                                           &
+        PySide6, QWebChannel                                        &
+        Prezentowanie obrazu, stanu połączenia i~bieżących wyników detekcji                                                      \\
 
         \addlinespace
 
-        Narzędzia\newline badawcze                           &
-        Ultralytics, OpenCV, NumPy, scikit-learn, matplotlib &
-        Przygotowanie zbioru danych, uczenie, testowanie i~analiza wyników modeli                                        \\
+        Narzędzia\newline badawcze                                  &
+        Ultralytics, OpenCV, NumPy, scikit-learn, matplotlib        &
+        Przygotowanie zbioru danych, uczenie, testowanie i~analiza wyników modeli                                                \\
 
         \bottomrule
     \end{tabularx}
@@ -142,7 +142,7 @@ Po nawiązaniu połączenia z~klientem klasa \texttt{CaptureServer} tworzy obiek
 
 Aby ograniczyć liczbę zaległych klatek, rozmiar kolejki wejściowej ustawiono na pojedynczą wiadomość. Metoda \texttt{\_drain\_to\_latest\_frame} sprawdza, czy w~kolejce znajdują się kolejne dane binarne, a~jeżeli tak, to zastępuje starszy obraz nowszym. Taki mechanizm nie gwarantuje zachowania wszystkich klatek, ale zmniejsza ryzyko wykonania detekcji na obrazie, który nie jest już aktualny i~nie odpowiada aktualnemu położeniu bryły. Jeżeli serwer nie zdąży przetworzyć starszych klatek są one pomijane, a~do detekcji przekazywana jest najnowsza z~nich.
 
-Wiadomości binarne są wstępnie sprawdzane pod kątem występowania plików JPEG na podstawie dwóch pierwszych bajtów \texttt{FF D8}. Następnie są one przekazywane do tablicy \texttt{NumPy}, gdzie dekodowane są do formatu z~kanałami BGR korzystając z~funkcji \texttt{cv2.imdecode}. W~przypadku niepowodzenia dana wiadomość zostaje pominięta bez przerywania sesji. Poprawnie zdekodowany obraz jest przekazywany do modelu detekcji. Po zakończeniu predykcji wynik zostaje zapisany razem z~kopią odpowiadającej mu klatki obrazu w~strukturze \texttt{DetectionSnapshot}. Dzięki temu przechowywana jest spójna para obrazu i~wyniku wykonanej na nim detekcji. Dostęp do aktualnego snapshotu chroniony jest blokadą wątkową, aby nie było możliwe jednoczesne zapisywanie i~odczytywanie danych. 
+Wiadomości binarne są wstępnie sprawdzane pod kątem występowania plików JPEG na podstawie dwóch pierwszych bajtów \texttt{FF D8}. Następnie są one przekazywane do tablicy \texttt{NumPy}, gdzie dekodowane są do formatu z~kanałami BGR korzystając z~funkcji \texttt{cv2.imdecode}. W~przypadku niepowodzenia dana wiadomość zostaje pominięta bez przerywania sesji. Poprawnie zdekodowany obraz jest przekazywany do modelu detekcji. Po zakończeniu predykcji wynik zostaje zapisany razem z~kopią odpowiadającej mu klatki obrazu w~strukturze \texttt{DetectionSnapshot}. Dzięki temu przechowywana jest spójna para obrazu i~wyniku wykonanej na nim detekcji. Dostęp do aktualnego snapshotu chroniony jest blokadą wątkową, aby nie było możliwe jednoczesne zapisywanie i~odczytywanie danych.
 
 W~chwili otrzymania żądania informacji pobierany jest najnowszy kompletny \texttt{DetectionSnapshot}. Dalsza analiza oparta jest na informacjach w~nim zawartych, a~kolejne obrazy mogą być niezależnie odbierane i~przetwarzane przez serwer.
 
@@ -169,11 +169,11 @@ Szczegółowa analiza obiektu jest wykonywana wyłącznie po otrzymaniu żądani
 
 Analiza wykonywana jest używając klasy \texttt{AnalysisWorker}. Wykorzystuje ona osobny wątek w~obiekcie \texttt{ThreadPoolExecutor}, dzięki czemu może wykonywać obliczenia poza główną pętlą zdarzeń serwera. W~ramach zadania, na podstawie wyniku detekcji w~kontekście, wyodrębniany jest fragment obrazu ograniczony ramką detekcji. Jeżeli snapshot nie istnieje, model nie wykrył obiektu lub wycinek jest niepoprawny, dalsza analiza nie jest wykonywana.
 
-Właściwe przetwarzanie wycinka obrazu odbywa się w~klasie \texttt{SliceAnalyzer}. Jako parametry otrzymuje ona wycinek obrazu, nazwę rozpoznanej klasy obiektu oraz bazę wiedzy. Klasa służy jedynie do pobrania odpowiednich informacji o~powierzchniach bryły i~dopasowaniu kolorów. Niweluje to sposobność powielania obliczeń dla obiektów, których nie dotyczy analiza. 
+Właściwe przetwarzanie wycinka obrazu odbywa się w~klasie \texttt{SliceAnalyzer}. Jako parametry otrzymuje ona wycinek obrazu, nazwę rozpoznanej klasy obiektu oraz bazę wiedzy. Klasa służy jedynie do pobrania odpowiednich informacji o~powierzchniach bryły i~dopasowaniu kolorów. Niweluje to sposobność powielania obliczeń dla obiektów, których nie dotyczy analiza.
 
-Rozpoznanie widocznej powierzchni odbywa się w~module \texttt{SurfaceMatcher}. Do każdej powierzchni w~bazie wiedzy dopasowywany jest kolor referencyjny zapisany jako nazwa koloru CSS oraz komunikat informacyjny. Nazwa koloru jest przekształcana do przestrzeni RGB, a~następnie do układu BGR i~przestrzeni Lab. Wycinek obrazu również jest przekształcany do przestrzeni Lab, a~następnie wykonywane jest dopasowanie kolorów. Odbywa się ono dla każdego piksela wycinka poprzez obliczenie kwadratu odległości euklidesowej od kolorów referencyjnych wszystkich powierzchni. Piksel jest przypisywany do koloru wyłącznie wtedy, gdy uzyskana odległość nie przekracza ustalonego progu \texttt{max\_distance} znajdującego się w~konfiguracji bryły. Następnie zliczana jest liczba pikseli należących do każdej z~powierzchni. Wynikiem jest informacja o~powierzchni, której kolor został dopasowany do największej liczby pikseli wycinka. 
+Rozpoznanie widocznej powierzchni odbywa się w~module \texttt{SurfaceMatcher}. Do każdej powierzchni w~bazie wiedzy dopasowywany jest kolor referencyjny zapisany jako nazwa koloru CSS oraz komunikat informacyjny. Nazwa koloru jest przekształcana do przestrzeni RGB, a~następnie do układu BGR i~przestrzeni Lab. Wycinek obrazu również jest przekształcany do przestrzeni Lab, a~następnie wykonywane jest dopasowanie kolorów. Odbywa się ono dla każdego piksela wycinka poprzez obliczenie kwadratu odległości euklidesowej od kolorów referencyjnych wszystkich powierzchni. Piksel jest przypisywany do koloru wyłącznie wtedy, gdy uzyskana odległość nie przekracza ustalonego progu \texttt{max\_distance} znajdującego się w~konfiguracji bryły. Następnie zliczana jest liczba pikseli należących do każdej z~powierzchni. Wynikiem jest informacja o~powierzchni, której kolor został dopasowany do największej liczby pikseli wycinka.
 
-Po określeniu powierzchni \texttt{SliceAnalyzer} zwraca komunikat informacyjny, który następnie jest przekazywany do klienta. Jeżeli zajdzie błąd w~trakcie analizy, np. nie zostanie wykryta powierzchnia, klient otrzymuje komunikat: "Nie udało się rozpoznać widocznej powierzchni". 
+Po określeniu powierzchni \texttt{SliceAnalyzer} zwraca komunikat informacyjny, który następnie jest przekazywany do klienta. Jeżeli zajdzie błąd w~trakcie analizy, np. nie zostanie wykryta powierzchnia, klient otrzymuje komunikat: "Nie udało się rozpoznać widocznej powierzchni".
 
 \subsection{Organizacja przetwarzania współbieżnego}
 
@@ -197,7 +197,7 @@ Aplikacja umożliwia obserwowanie stanu backendu, aktywnej sesji, parametrów ob
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.85\textwidth]{example-image-duck}
+    \includegraphics[width=0.85\textwidth]{./graf/server_interface.png}
     \caption{Interfejs graficzny serwera}
     \label{fig:interfejs_serwera}
 \end{figure}
@@ -209,7 +209,7 @@ Podczas uruchomienia serwera, przed udostępnieniem możliwości nawiązania po�
 
 Problemy dotyczące pojedynczej klatki nie są przyczyną przerwania sesji. W~przypadku zaistnienia nieobsługiwanych danych przesyłanych przez klienta, serwer ignoruje je i~kontynuuje działanie. Przy błędzie modułu detekcji do interfejsu przekazywana jest klatka bez naniesionych ramek detekcji, komunikat o~błędzie pojawia się w~logach serwera, a~serwer kontynuuje pracę i~obsługę kolejnych klatek.
 
-Obsługa żądania informacji przewiduje typowe sytuacje uniemożliwiające wykonanie analizy wycinka. Wystąpienie błędu nie zatrzymuje działania serwera, a~skutkuje jedynie przygotowaniem komunikatu zastępczego. Wyjątki związane bezpośrednio z~odczytem bazy wiedzy i~dopasowaniem powierzchni są obsługiwane w~module analizy. Nieprzewidziane wyjątki w~trakcie zadania analizy są odnotowane w~logach serwera, ale w~tym wypadku do klienta nie jest wysyłany żaden komunikat o~wystąpieniu błędu. 
+Obsługa żądania informacji przewiduje typowe sytuacje uniemożliwiające wykonanie analizy wycinka. Wystąpienie błędu nie zatrzymuje działania serwera, a~skutkuje jedynie przygotowaniem komunikatu zastępczego. Wyjątki związane bezpośrednio z~odczytem bazy wiedzy i~dopasowaniem powierzchni są obsługiwane w~module analizy. Nieprzewidziane wyjątki w~trakcie zadania analizy są odnotowane w~logach serwera, ale w~tym wypadku do klienta nie jest wysyłany żaden komunikat o~wystąpieniu błędu.
 
 Rozłączeniu klienta towarzyszy zamknięcie podglądu w~interfejsie serwera, wyzerowanie metryk sesji i~usunięcie ostatniego obrazu z~interfejsu. Anulowane zostają aktywne zadania analizy, a~przypisany worker zostaje zatrzymany. Informacje o~aktywnej sesji są zwalniane i~możliwe jest nawiązanie połączenia z~kolejnym klientem. Zatrzymanie serwera skutkuje zamknięciem mechanizmu WebSocket i~wyrejestrowaniem usługi w~sieci lokalnej. Następnie następuje zakończenie wszystkich wątków i~zamknięcie procesu aplikacji. Wariant desktopowy w~pierwszej kolejności kończy działanie wątku backendu, a~następnie zamyka interfejs graficzny Qt.
 

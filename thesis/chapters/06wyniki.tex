@@ -7,6 +7,8 @@ Do przeprowadzenia eksperymentów wytrenowano siedem sieci o~architekturze YOLO,
 
 \begin{table}[ht]
     \centering
+    \caption{Macierz modeli wytrenowanych w~ramach badań.}
+    \label{tab:exp_matrix}
     \begin{tabular}{l|cccc}
         \toprule
         \textbf{Model} & \textbf{RGB 640} & \textbf{RGB 1024} & \textbf{grayscale 640} & \textbf{grayscale 1024} \\
@@ -15,8 +17,6 @@ Do przeprowadzenia eksperymentów wytrenowano siedem sieci o~architekturze YOLO,
         YOLO26s        & \checkmark       & \checkmark        & \checkmark             &                         \\
         \bottomrule
     \end{tabular}
-    \caption{Macierz modeli wytrenowanych w~ramach badań.}
-    \label{tab:exp_matrix}
 \end{table}
 
 \section{Zestawienie wyników treningów} % 6.1
@@ -38,11 +38,11 @@ Każdy z~wytrenowanych modeli został oceniony pod kątem jakości detekcji na z
         \textbf{Ostatnia epoka}  & 190      & 108      & 211     & 114     & 203       & 280       & 230       \\
         \textbf{Najlepsza epoka} & 140      & 60       & 161     & 64      & 153       & 230       & 180       \\
         \midrule
-        \textbf{Precision}       & 0.71430  & 0.70292  & 0.79384 & 0.84550 & 0.59059   & 0.62975   & 0.64939   \\
-        \textbf{Recall}          & 0.67800  & 0.76013  & 0.82491 & 0.73629 & 0.47472   & 0.60142   & 0.60100   \\
-        $mAP50$                  & 0.71595  & 0.78551  & 0.86231 & 0.84409 & 0.48831   & 0.55971   & 0.62098   \\
-        $mAP50\text{-}95$        & 0.59866  & 0.64119  & 0.71856 & 0.72932 & 0.36001   & 0.44940   & 0.49469   \\
-        \textbf{$F1$-score}      & 0.69568  & 0.73041  & 0.80908 & 0.78712 & 0.52635   & 0.61526   & 0.62426   \\
+        \textbf{Precision}       & 0.714    & 0.701    & 0.794   & 0.846   & 0.591     & 0.630     & 0.649     \\
+        \textbf{Recall}          & 0.678    & 0.760    & 0.825   & 0.736   & 0.475     & 0.601     & 0.601     \\
+        $mAP50$                  & 0.716    & 0.786    & 0.862   & 0.844   & 0.488     & 0.560     & 0.621     \\
+        $mAP50\text{-}95$        & 0.599    & 0.641    & 0.719   & 0.729   & 0.360     & 0.449     & 0.495     \\
+        \textbf{$F1$-score}      & 0.696    & 0.730    & 0.809   & 0.787   & 0.526     & 0.615     & 0.624     \\
         \midrule
         \textbf{GPU}             & RTX 4060 & RTX 4060 & L40S    & L40S    & A100      & A100      & A100      \\
         \bottomrule
@@ -266,33 +266,39 @@ Globalne wartości $mAP$ i~$F1$-score pozwalają wykonać ogólną ocenę skutec
 
 Znormalizowane macierze pomyłek ukazują procentowy udział predykcji modelu. Mocno zarysowana główna przekątna wskazuje, że model poprawnie klasyfikuje większość obiektów, a~wartości poza nią wskazują na błędy detekcji. Kolumny macierzy odpowiadają rzeczywistym klasom obiektów, natomiast wiersze klasom przewidywanym przez model. Wiersz \english{background} oznacza przypadki, w~których model nie wykrył żadnego obiektu, a~kolumna \english{background} przypadki, w~których na obrazie nie było żadnego obiektu. Macierze analizowanych modeli przedstawiono na rysunku~\ref{fig:confusion_matrices}.
 
-\begin{figure}[ht]
+\begin{figure}[htbp!]
     \centering
-    \begin{subfigure}{0.49\textwidth}
-        \includegraphics[width=\textwidth]{./graf/conf_matrix/E1.png}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{./graf/conf_matrix/E1.png}
         \caption{Wariant $E_1$: YOLO26n 640 RGB.}
         \label{fig:confusion_matrix_e1}
     \end{subfigure}
     \hfill
-    \begin{subfigure}{0.49\textwidth}
-        \includegraphics[width=\textwidth]{./graf/conf_matrix/E3.png}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{./graf/conf_matrix/E3.png}
         \caption{Wariant $E_3$: YOLO26n 1024 RGB.}
         \label{fig:confusion_matrix_e3}
     \end{subfigure}
-
-    \begin{subfigure}{0.49\textwidth}
-        \includegraphics[width=\textwidth]{./graf/conf_matrix/E4.png}
+\end{figure}
+\begin{figure}[htbp!]
+    \ContinuedFloat\centering
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{./graf/conf_matrix/E4.png}
         \caption{Wariant $E_4$: YOLO26s 1024 RGB.}
         \label{fig:confusion_matrix_e4}
     \end{subfigure}
     \hfill
-    \begin{subfigure}{0.49\textwidth}
-        \includegraphics[width=\textwidth]{./graf/conf_matrix/E7.png}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{./graf/conf_matrix/E7.png}
         \caption{Wariant $E_7$: YOLO26n 1024 grayscale.}
         \label{fig:confusion_matrix_e7}
     \end{subfigure}
 
-    \caption{Znormalizowane macierze pomyłek badanych modeli.}
+    \caption{Wybrane znormalizowane macierze pomyłek badanych modeli.}
     \label{fig:confusion_matrices}
 \end{figure}
 
@@ -308,15 +314,16 @@ Model pracujący na obrazach w~odcieniach szarości wykazuje również większą
 
 Macierze pomyłek nie są jednak jedynym źródłem informacji o~błędach detekcji. Warto również przyjrzeć się krzywym precyzji i~czułości, które pozwalają ocenić jak zmienia się kompromis pomiędzy tymi dwoma metrykami w~zależności od progu decyzyjnego. Z~tego względu analizę uzupełniono o~wykresy krzywych precision--recall. Na rysunku~\ref{fig:pr_curves} zestawiono je dla wariantów $E_3$ oraz $E_7$. Reprezentują one wybraną konfigurację docelową oraz wpływ ograniczenia koloru na jakość detekcji.
 
-\begin{figure}[ht]
+\begin{figure}[htbp!]
     \centering
-    \begin{subfigure}{0.49\textwidth}
+    \begin{subfigure}{\textwidth}
+        \centering
         \includegraphics[width=\textwidth]{./graf/pr_curve/E3.png}
         \caption{Wariant $E_3$: YOLO26n 1024 RGB.}
         \label{fig:pr_curve_e3}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.49\textwidth}
+    \begin{subfigure}{\textwidth}
+        \centering
         \includegraphics[width=\textwidth]{./graf/pr_curve/E7.png}
         \caption{Wariant $E_7$: YOLO26n 1024 grayscale.}
         \label{fig:pr_curve_e7}
@@ -338,7 +345,7 @@ Poza zależnościami precision-recall z~punktu widzenia systemu istotny jest ró
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.7\textwidth]{./graf/E3_F1_curve.png}
+    \includegraphics[width=0.9\textwidth]{./graf/E3_F1_curve.png}
     \caption{Krzywa $F1$ dla wariantu $E_3$.}
     \label{fig:f1_curve_e3}
 \end{figure}
@@ -359,7 +366,7 @@ Przeprowadzone badania pozwoliły ocenić wpływ kilku czynników na jakość de
 
 Wielkość adnotowanych obiektów w~zbiorze danych może częściowo wyjaśniać poprawę wyników obserwowaną po zwiększeniu rozdzielczości obrazu wejściowego. W~przygotowanym zbiorze danych obiekty zajmowały średnio około $1,51\%$ powierzchni obrazu, a~największy z~nich zajął około $7,31\%$ powierzchni. Różnice w~wielkościach wynikają przede wszystkim z~różnej odległości obiektów od kamery, a~także z~ich zasłonięć palcami. W~takich warunkach zwiększenie rozdzielczości obrazu wejściowego pozwala zachować znacznie więcej szczegółów, które mogą być istotne w~procesie detekcji. Wniosek ten dotyczy jednak wyłącznie modeli uczonych na przygotowanym zbiorze danych i~nie może być uogólniany na inne zadania detekcji obiektów.
 
-Bardzo istotnym wynikiem jest duży spadek skuteczności detekcji po usunięciu informacji o~barwie. W~każdym z~badanych przypadków zaobserwowano, że osiągają one wyniki gorsze od wariantów pracujących na obrazach RGB. Nie oznacza to jednak, że modele rozpoznają obiekty wyłącznie na podstawie ich koloru. Wskazuje to raczej, że informacja o~barwie jest istotnym źródłem informacji, które model wykorzystuje w~procesie detekcji, ale nie określają stopnia w~jakim model wykorzystuje go jako cechę charakterystyczną. To ograniczenie jest istotne ze względu na sposób przygotowania modeli brył. W~pracy wykorzystano ich pojedynczy zestaw o~stałej kolorystyce. Nie przeprowadzono eksperymentu w~którym bryły miałyby inne przypisanie kolorów niż w~zbiorze uczącym, dlatego nie można jednoznacznie stwierdzić, jaki wpływ na skuteczność modeli pracujących w~przestrzeni RGB i~grayscale miałaby zmiana kolorystyki obiektów. Aby móc to określić, konieczne byłoby przeprowadzenie dodatkowych badań na zbiorach zawierających zróżnicowane kolorystycznie obiekty odpowiadające klasom wykrywanych brył. Dopiero wtedy możliwe byłoby określenie, czy obserwowany spadek skuteczności detekcji wynika z~wykorzystania barwy jako cechy charakterystycznej, czy też z~silnego powiązania konkretnych kolorów z~klasami.
+Bardzo istotnym wynikiem jest duży spadek skuteczności detekcji po usunięciu informacji o~barwie. W~każdym z~badanych przypadków zaobserwowano, że modele pracujące na obrazach grayscale osiągają wyniki gorsze od wariantów wykorzystujących obrazy RGB. Nie oznacza to jednak, że modele rozpoznają obiekty wyłącznie na podstawie koloru. Powierzchnie poszczególnych brył z~zastosowanego zestawu zostały pokryte różnymi kolorami należącymi do wspólnej palety barw, więc nie występuje jednoznaczne powiązanie koloru z~klasą obiektu. Informacja o~barwie może stanowić dodatkową cechę wykorzystywaną przez model, na przykład przez charakterystyczne kombinacje kolorów, ich rozmieszczenie lub udział w~widocznej części bryły. Przeprowadzone badania nie pozwalają jednoznacznie określić, w~jakim stopniu modele korzystają z~tych zależności. Ograniczenie to wynika ze sposobu przygotowania zbioru danych, w~którym zastosowano pojedynczy zestaw fizycznych brył o~stałym przypisaniu kolorów do ich powierzchni. Nie przeprowadzono eksperymentu z~innym zestawem brył, w~którym kolory powierzchni byłyby przypisane w~inny sposób. Nie jest więc możliwe określenie, jaki wpływ na działanie modeli RGB miałaby zmiana przypisania barw do powierzchni obiektów. Aby można było to ocenić, konieczne byłoby przygotowanie dodatkowych wariantów brył o~zmienionym układzie kolorów i~sprawdzenie zachowania modeli w~takich warunkach.
 
 Kolejne ograniczenia wynikają z~samego sposobu przygotowania zbioru danych. W~badaniach wykorzystano obrazy pochodzące z~kilku nagrań wideo z~których wyodrębniono pojedyncze klatki. Takie podejście umożliwiło pozyskanie dużej liczby obrazów, ale przedstawiających podobną scenę i~obiekty w~podobnych pozycjach. Zastosowany podział według nagrań pozwolił na ograniczenie możliwości przecieku podobnych klatek pomiędzy zbiorami, ale nie zwiększył różnorodności warunków. Liczba różnych scen, osób, sposobów ułożenia kamery i~warunków otoczenia pozostaje więc ograniczona. Sam zbiór testowy obejmuje $477$ obrazów, co nie pozwala na pełną ocenę generalizacji modeli na inne pomieszczenia, urządzenia rejestrujące, warunki oświetleniowe czy sposób eksploracji brył. Dodatkowo, użycie pojedynczego urządzenia do rejestracji nagrań nie pozwala na ocenę wpływu różnych parametrów kamery na pracę modeli.
 
